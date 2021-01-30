@@ -1,9 +1,9 @@
 # Tree class for RRT* management
-from enum import Enum, auto
+from enum import IntEnum, auto
 import numpy as np
 
 # helper for indexing in Tree.nodes
-class n(Enum):
+class n(IntEnum):
     x = 0
     y = 1
     z = 2
@@ -34,7 +34,7 @@ class n(Enum):
 # self.nodes and other variables are preallocated, however, indexing beyond Tree.n_nodes causes undefined behavior
 # because even though there may be state values pre-initialized for performance issues, the node have not be added to the tree (therefore invalid)
 class Tree:
-    def __init__(self,root_state,max_node=2000):
+    def __init__(self,root_state,max_node=10):
         self.max_node = max_node
         self.nodes = np.zeros((max_node,7),dtype=np.float)
         # index of a parent
@@ -50,12 +50,13 @@ class Tree:
 
     # add a node with prescribed node and children
     # return index of node
-    def addNode(self,state,parent,children=[]):
+    def addNode(self,state,parent):
         if (self.n_nodes == self.max_node):
             print_error("max node limit exceeded")
         self.nodes[self.n_nodes,:] = state
         self.parent[self.n_nodes] = parent
-        self.children[self.n_nodes] = children
+        #self.children[self.n_nodes] = []
+        self.children[parent].append(self.n_nodes)
         self.n_nodes += 1
         return self.n_nodes-1
 
@@ -94,25 +95,30 @@ class Tree:
         zz = (self.nodes[:self.n_nodes,n.z] - state[2])**2
         dist_sq = (xx+yy+zz)
         mask = dist_sq < dist**2
-        return mask.nonzero()
+        return mask.nonzero()[0]
 
 
 
 if __name__=="__main__":
     root = np.array((5,3,10,0,0,0,0),dtype=np.float)
     tree = Tree(root)
+    print(tree.children)
     
     state = np.array((4.5,3,10,0,0,0,0),dtype=np.float)
     n1 = tree.addNode(state,0)
+    print(tree.children)
 
     state = np.array((4,3.5,10,0,0,0,0),dtype=np.float)
     n2 = tree.addNode(state,n1)
+    print(tree.children)
 
     state = np.array((4.5,3.5,10,0,0,0,0),dtype=np.float)
     n3 = tree.addNode(state,n2)
+    print(tree.children)
 
     state = np.array((4.5,3.5,9,0,0,0,0),dtype=np.float)
     n4 = tree.addNode(state,n2)
+    print(tree.children)
 
     state = np.array((4,3,10,0,0,0),dtype=np.float)
     neighbour = tree.getNeighbour(state,0.6)
