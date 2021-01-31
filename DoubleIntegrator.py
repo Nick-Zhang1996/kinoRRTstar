@@ -42,7 +42,7 @@ class DoubleIntegrator:
 
         return p.T
 
-    def DI3d_state(self,t,t_s,x01,x02,x03,x04,x05,x06,x11,x12,x13,x14,x15,x16):
+    def DI3d_state(self,t_s,x01,x02,x03,x04,x05,x06,x11,x12,x13,x14,x15,x16,n_interior=10):
         t = np.linspace(0,t_s,n_interior+2)
         p = np.vstack([x11 + x14*(t - t_s) + ((t - t_s)**3*(2*x01 - 2*x11 + t_s*x04 + t_s*x14))/t_s**3 + ((t - t_s)**2*(3*x01 - 3*x11 + t_s*x04 + 2*t_s*x14))/t_s**2,
               x12 + x15*(t - t_s) + ((t - t_s)**3*(2*x02 - 2*x12 + t_s*x05 + t_s*x15))/t_s**3 + ((t - t_s)**2*(3*x02 - 3*x12 + t_s*x05 + 2*t_s*x15))/t_s**2,
@@ -54,16 +54,14 @@ class DoubleIntegrator:
         return p.T
 
     # following functions solve the particular polynomial equation and
-    # we assert there's only one positive real root
-    # return the positive real root
+    # return the smallest positive real root
     def DI3d_timeFreeVel(self,x01, x02, x03, x04, x05, x06, x11, x12, x13):
         p = [ 1, 0, 
             - 3*x04**2 - 3*x05**2 - 3*x06**2, 12*x04*x11 - 12*x02*x05 - 12*x03*x06 - 12*x01*x04 + 12*x05*x12 + 12*x06*x13, 
             - 9*x01**2 + 18*x01*x11 - 9*x02**2 + 18*x02*x12 - 9*x03**2 + 18*x03*x13 - 9*x11**2 - 9*x12**2 - 9*x13**2]
         x = np.roots(p)
         mask = np.logical_and(x.imag == 0, x.real > 0)
-        assert x[mask].real.shape == (1,)
-        return x[mask].real.item()
+        return np.min(x[mask].real)
 
     def DI3d_time(self,x01, x02, x03, x04, x05, x06, x11, x12, x13, x14, x15, x16):
         p = [ 1, 0, 
@@ -73,8 +71,7 @@ class DoubleIntegrator:
 
         x = np.roots(p)
         mask = np.logical_and(x.imag == 0, x.real > 0)
-        assert x[mask].real.shape == (1,)
-        return x[mask].real.item()
+        return np.min(x[mask].real)
 
 
 if __name__=="__main__":
@@ -85,8 +82,16 @@ if __name__=="__main__":
     print(ans-5.26)
 
     # should be 4.6188
-    ans = DI.DI3d_costFreeVel(3.46410,2.00000,2.00000,2.00000,0.00000,0.00000,0.00000,5.24243,3.90719,3.35989)
-    print(ans-4.6188)
+    cost_free = DI.DI3d_costFreeVel(3.46410,2.00000,2.00000,2.00000,0.00000,0.00000,0.00000,5.24243,3.90719,3.35989)
+    print(cost_free-4.6188)
+    tf = DI.DI3d_timeFreeVel(2.00000,2.00000,2.00000,0.00000,0.00000,0.00000,5.24243,3.90719,3.35989)
+    print(tf-3.46410)
+    # now get cost
+    state = DI.DI3d_stateFreeVel(tf,2.00000,2.00000,2.00000,0.00000,0.00000,0.00000,5.24243,3.90719,3.35989)
+    final_state = state[-1,:]
+    cost_fixed = DI.DI3d_cost(tf,2.00000,2.00000,2.00000,0.00000,0.00000,0.0,*final_state)
+    print(cost_fixed-cost_free)
+
 
     # should be
     expected = \

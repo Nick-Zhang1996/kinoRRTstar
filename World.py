@@ -32,7 +32,7 @@ class World:
 
     # given a list-like of (x,y,z), check if any of the coordinates is in collision
     # or out side of boundary
-    # coord: np.array of size (n,3), n being number of coordinates in the batch
+    # coord: np.array of size (n,3+), n being number of coordinates in the batch, only first three states are used (x,y,z,...)
     # NOTE does not check data type and format
     # return True if no cllision, false if collide
     def checkNoCollision(self,coord):
