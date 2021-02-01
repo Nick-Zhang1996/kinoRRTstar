@@ -1,6 +1,9 @@
 # Tree class for RRT* management
 from enum import IntEnum, auto
 import numpy as np
+from common import *
+# DEBUG
+import copy
 
 # helper for indexing in Tree.nodes
 class n(IntEnum):
@@ -116,9 +119,28 @@ class Tree:
 
     # apply a delta in cost to node and all its descendents
     def spreadCostDelta(self,node,delta):
-        self.nodes[node,-1] += delta
-        for child in self.children[node]:
-            self.spreadCostDelta(child,delta)
+        # DEBUG
+        self.backup_nodes = self.nodes.copy()
+        self.backup_parent = self.parent.copy()
+        self.backup_children = copy.deepcopy(self.children)
+        if (np.any(self.nodes[:,-1]<0)):
+            print("error, negative cost")
+            breakpoint()
+
+        parent_queue = [node]
+
+        count = 0
+        while (len(parent_queue)>0):
+            count += 1
+            child_queue = [ child for parent in parent_queue for child in self.children[parent]]
+            self.nodes[parent_queue,-1] += delta
+            if (np.any(self.nodes[parent_queue,-1]) <0):
+                breakpoint()
+
+            parent_queue = child_queue
+            if (count > 100):
+                breakpoint()
+
         return
 
     def setNodeCost(self,nodecost):
@@ -149,7 +171,7 @@ class Tree:
         return self.nodes[node,:6]
 
     def setEndState(self,node,state):
-        self.nodes[node,6] = state
+        self.near_end_node[node] = state
         return
 
 
