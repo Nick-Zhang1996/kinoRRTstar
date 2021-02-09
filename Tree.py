@@ -3,7 +3,7 @@ from enum import IntEnum, auto
 import numpy as np
 from common import *
 # DEBUG
-import copy
+#import copy
 
 # helper for indexing in Tree.nodes
 class n(IntEnum):
@@ -120,9 +120,9 @@ class Tree:
     # apply a delta in cost to node and all its descendents
     def spreadCostDelta(self,node,delta):
         # DEBUG
-        self.backup_nodes = self.nodes.copy()
-        self.backup_parent = self.parent.copy()
-        self.backup_children = copy.deepcopy(self.children)
+        #self.backup_nodes = self.nodes.copy()
+        #self.backup_parent = self.parent.copy()
+        #self.backup_children = copy.deepcopy(self.children)
         if (np.any(self.nodes[:,-1]<0)):
             print("error, negative cost")
             breakpoint()

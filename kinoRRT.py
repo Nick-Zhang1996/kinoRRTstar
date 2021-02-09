@@ -7,6 +7,7 @@ from DoubleIntegrator import DoubleIntegrator
 from Tree import Tree,n
 from timeUtil import execution_timer
 import matplotlib.pyplot as plt
+from time import time
 
 import pickle
 
@@ -68,6 +69,7 @@ class kinoRRT:
     # cost function is encoded in DoubleIntegrator class in the polynomials
     # and cannot be changed
     def run(self):
+        start_t = time()
         for i in range(self.max_nodes-1):
             # randomly sample until we add a valid node to tree
             while (not self.sampleSpace()):
@@ -77,7 +79,7 @@ class kinoRRT:
                 pass
             #print("--- total nodes %d"%(self.tree.n_nodes))
             if (i % 100==0):
-                print(i)
+                print(i,time()-start_t)
 
 
             # have we found a solution?
@@ -125,7 +127,12 @@ class kinoRRT:
 
         # collision?
         t.s("collision")
-        if (not self.world.checkNoCollision(new_pos.reshape(1,3))):
+
+        t.s("collision")
+        no_collision = self.world.checkNoCollision(new_pos.reshape(1,3))
+        t.e("collision")
+
+        if (not no_collision):
             debug("collision with obstacle, resample...")
             # better luck next time
             t.e("collision")
@@ -146,7 +153,11 @@ class kinoRRT:
         interior_state_vec = state_vec[1:-1]
         debug("checking path collision..")
 
-        if (not self.world.checkNoCollision(interior_state_vec)):
+        t.s("collision")
+        no_collision = self.world.checkNoCollision(interior_state_vec)
+        t.e("collision")
+
+        if (not no_collision):
             debug("path collision found")
             debug(interior_state_vec[:,:3])
             t.e("path collision")
@@ -154,7 +165,6 @@ class kinoRRT:
             return False
         t.e("path collision")
 
-        t.s("find parent")
         # no collision, add this sampled point to our tree
         # search neighbour for best parent
         debug("no path collision from %d"%(closest_id))
@@ -168,25 +178,40 @@ class kinoRRT:
         # pos: pos
         # state: pos,vel
         # full_state: pos,vel,cost
+        t.s("find parent")
         new_full_state = np.hstack([state_vec[-1],min_cost])
         for neighbour in neighbour_id_vec:
+            t.s("cost")
             debug("checking neighbour %d"%(neighbour))
             init_state = self.tree.getNodeState(neighbour)
 
             tf = self.di.DI3d_timeFreeVel(*init_state, *new_pos)
-            state_vec = self.di.DI3d_stateFreeVel(tf,*init_state, *new_pos)
-            # no need to check start and finish
-            interior_state_vec = state_vec[1:-1]
-            if (not self.world.checkNoCollision(interior_state_vec)):
-                continue
             cost = self.di.DI3d_costFreeVel(tf, *init_state, *new_pos) + self.tree.getNodeCost(neighbour)
             assert(cost>0)
             debug("cost %.3f"%(cost))
-            if (cost < min_cost):
+            t.e("cost")
+
+            t.s("update")
+            if (cost + 0.001< min_cost):
                 debug("better cost for %d %.3f < current min %.3f"%(neighbour, cost,min_cost))
+
+                state_vec = self.di.DI3d_stateFreeVel(tf,*init_state, *new_pos)
+                # no need to check start and finish
+                interior_state_vec = state_vec[1:-1]
+
+                t.s("collision")
+                no_collision = self.world.checkNoCollision(interior_state_vec)
+                t.e("collision")
+
+                if (not no_collision):
+                    t.e("update")
+                    continue
+                debug("no collision")
+
                 min_cost = cost
                 best_parent = neighbour
                 new_full_state = np.hstack([state_vec[-1],min_cost])
+            t.e("update")
         t.e("find parent")
 
         # now add new_node to tree
@@ -205,7 +230,12 @@ class kinoRRT:
             tf = self.di.DI3d_timeFreeVel(*new_state, *end_pos)
             state_vec = self.di.DI3d_stateFreeVel(tf,*new_state, *end_pos)
             interior_state_vec = state_vec[1:-1]
-            if (self.world.checkNoCollision(interior_state_vec)):
+
+            t.s("collision")
+            no_collision = self.world.checkNoCollision(interior_state_vec)
+            t.e("collision")
+
+            if (no_collision):
                 # we've found a path
                 self.tree.setEndState(new_node_id,1)
                 cost = self.di.DI3d_costFreeVel(tf, *new_state, *self.end_pos) + self.tree.getNodeCost(new_node_id)
@@ -225,20 +255,30 @@ class kinoRRT:
         t.s("rewire")
         debug("rewiring...")
         for neighbour in neighbour_id_vec:
+            if (neighbour == best_parent): # no need to check parent
+                continue
             debug("checking possible child for new node :%d"%(neighbour))
             neighbour_state = self.tree.getNodeState(neighbour)
             tf = self.di.DI3d_time(*new_state, *neighbour_state)
-            state_vec = self.di.DI3d_state(tf,*new_state, *neighbour_state)
-            interior_state_vec = state_vec[1:-1]
-            if (not self.world.checkNoCollision(interior_state_vec)):
-                debug("collision")
-                continue
             cost = self.di.DI3d_cost(tf, *new_state, *neighbour_state) + self.tree.getNodeCost(new_node_id)
             assert(cost>0)
 
-            debug("no collision, cost %.3f"%(cost))
-            if (cost < self.tree.getNodeCost(neighbour)):
+            # check cost before collision because cost is cheaper to check
+            if (cost + 0.001 < self.tree.getNodeCost(neighbour)):
+
+                # check for collision
+                state_vec = self.di.DI3d_state(tf,*new_state, *neighbour_state)
+                interior_state_vec = state_vec[1:-1]
+
+                t.s("collision")
+                no_collision = self.world.checkNoCollision(interior_state_vec)
+                t.e("collision")
+                if (not no_collision):
+                    debug("collision")
+                    continue
                 debug("new low cost %.3f"%(cost))
+                debug("no collision, cost %.3f"%(cost))
+
                 d_cost = cost - self.tree.getNodeCost(neighbour)
 
                 #print("transferChild(%d,%d)"%(new_node_id,neighbour))
@@ -311,6 +351,6 @@ if __name__=="__main__":
     # keep searching until finding a solution
     rrt = kinoRRT(world,start_pos, end_pos,2000)
     rrt.run()
-    rrt.showResult()
+    #rrt.showResult()
     print(rrt.solutions)
     rrt.t.summary()

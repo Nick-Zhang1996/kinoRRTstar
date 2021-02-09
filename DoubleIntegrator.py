@@ -61,7 +61,10 @@ class DoubleIntegrator:
             - 9*x01**2 + 18*x01*x11 - 9*x02**2 + 18*x02*x12 - 9*x03**2 + 18*x03*x13 - 9*x11**2 - 9*x12**2 - 9*x13**2]
         x = np.roots(p)
         mask = np.logical_and(x.imag == 0, x.real > 0)
-        return np.min(x[mask].real)
+        val = np.min(x[mask].real)
+        #if (np.abs(self.quartic_root(p) - val) > 0.01):
+        #    breakpoint()
+        return val
 
     def DI3d_time(self,x01, x02, x03, x04, x05, x06, x11, x12, x13, x14, x15, x16):
         p = [ 1, 0, 
@@ -71,7 +74,58 @@ class DoubleIntegrator:
 
         x = np.roots(p)
         mask = np.logical_and(x.imag == 0, x.real > 0)
-        return np.min(x[mask].real)
+        val = np.min(x[mask].real)
+        #if (np.abs(self.quartic_root(p) - val) > 0.01):
+        #    breakpoint()
+        return val
+
+    # return the smallest real root of quartic polynomial
+    # according to wikipedia
+    def quartic_root(self,coeffs):
+        a,b,c,d,e = coeffs
+        D0 = c*c - 3*b*d + 12*a*e
+        D1 = 2*c*c*c - 9*b*c*d + 27*b*b*e + 27*a*d*d - 72*a*c*e
+        Q = ((D1 + (D1*D1 - 4*D0*D0*D0)**0.5)/2)**(1.0/3.0)
+        p = (8*a*c - 3*b*b)/(8*a*a)
+        q = (b*b*b - 4*a*b*c + 8*a*a*d)/(8*a*a*a)
+        S = 0.5 * (-2.0/3.0 * p + 1.0/(3*a)*(Q + D0/Q))**0.5
+
+        val = None
+
+        temp1 = -4*S*S - 2*p + q/S
+        if (temp1 > 0):
+            candidate = -b/(4*a) - S + 0.5*temp1**0.5
+            if (candidate > 0):
+                if (val is None):
+                    val = candidate
+                elif (candidate < val):
+                    val = candidate
+
+            candidate = -b/(4*a) - S - 0.5*temp1**0.5
+            if (candidate > 0):
+                if (val is None):
+                    val = candidate
+                elif (candidate < val):
+                    val = candidate
+
+        temp2 = -4*S*S - 2*p - q/S
+        if (temp2 > 0):
+            candidate = -b/(4*a) + S + 0.5*temp2**0.5
+            if (candidate > 0):
+                if (val is None):
+                    val = candidate
+                elif (candidate < val):
+                    val = candidate
+
+            candidate = -b/(4*a) + S - 0.5*temp2**0.5
+            if (candidate > 0):
+                if (val is None):
+                    val = candidate
+                elif (candidate < val):
+                    val = candidate
+        if (val is None):
+            breakpoint()
+        return val
 
 
 if __name__=="__main__":
