@@ -1,5 +1,5 @@
-function [path, cost] = findMinimumPath(tree,end_node,dim)
-
+function mypath = findMinimumPath(tree,end_node,dim)
+    coder.varsize("mypath");
     % find nodes that connect to end_node
 %     connectingNodes = [];
 %     for i=1:size(tree,1)
@@ -10,31 +10,35 @@ function [path, cost] = findMinimumPath(tree,end_node,dim)
 %     end
     idx = tree(:,2*dim+1)==1;
     connectingNodes = tree(idx,:);
-    for k = 1:size(connectingNodes)
+    %NOTE
+    temp = size(connectingNodes);
+    for k = 1:temp(1)
         if  norm(connectingNodes(k, 1 : dim) - end_node(1 : dim)) >= 0.2
             [lcost, ~] = segment_cost(connectingNodes(k, :), end_node, dim);
-            connectingNodes(k, 2*dim+2) = connectingNodes(k, 2*dim+2) + lcost;
+            connectingNodes(k, 2*dim+2) = connectingNodes(k, 2*dim+2) + real(lcost);
         end
     end           
     
     % find minimum cost last node
     [cost,idx] = min(connectingNodes(:,2*dim+2));
+%     cost
     
     % construct lowest cost path
     if  norm(connectingNodes(idx, 1 : dim) - end_node(1 : dim)) >= 0.2
         [lcost, ~] = segment_cost(connectingNodes(idx, :), end_node, dim);
-        connectingNodes(idx, 2*dim+2) = connectingNodes(idx, 2*dim+2) - lcost;
-        path = [connectingNodes(idx,:); end_node];
+        connectingNodes(idx, 2*dim+2) = connectingNodes(idx, 2*dim+2) - real(lcost);
+        mypath = [connectingNodes(idx,:); end_node];
+
         parent_node = connectingNodes(idx,2*dim+3);
         while parent_node>=1
-            path = [tree(parent_node,:); path];
+            mypath = [tree(parent_node,:); mypath];
             parent_node = tree(parent_node,2*dim+3);       
         end
     else
-        path = [connectingNodes(idx,:)];
+        mypath = [connectingNodes(idx,:)];
         parent_node = connectingNodes(idx,2*dim+3);
         while parent_node>=1
-            path = [tree(parent_node,:); path];
+            mypath = [tree(parent_node,:); mypath];
             parent_node = tree(parent_node,2*dim+3);       
         end    
     end

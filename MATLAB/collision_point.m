@@ -12,7 +12,7 @@ end
 if collision_flag == 0 && dim ==2
       % check each obstacle
       for i=1:world.NumObstacles
-        if  p(1) >= world.ox(i) && p(1) <= world.ox(i)+world.oa(i) && p(2) >= world.oy(i) && p(2) <= world.oy(i)+world.ob(i) 
+        if  sqrt(sum(([p(1);p(2)]-[world.cx(i); world.cy(i)]).*([p(1);p(2)]-[world.cx(i); world.cy(i)])))<world.radius(i)+0.1   % (norm([p(1);p(2)]-[world.cx(i); world.cy(i)])<world.radius(i)+0.1)
             collision_flag = 1;
             break;
         end
@@ -21,7 +21,7 @@ if collision_flag == 0 && dim ==2
 elseif collision_flag == 0 && dim ==3
       % check each obstacle
       for i=1:world.NumObstacles
-        if p(1) >= world.ox(i) && p(1) <= world.ox(i)+world.oa(i) && p(2) >= world.oy(i) && p(2) <= world.oy(i)+world.ob(i) && p(3) >= world.oz(i) && p(3) <= world.oz(i)+world.oc(i) 
+        if (norm([p(1);p(2);p(3)]-[world.cx(i); world.cy(i); world.cz(i)])<=world.radius(i))
             collision_flag = 1;
             break;
         end

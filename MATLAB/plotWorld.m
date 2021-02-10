@@ -1,4 +1,4 @@
-function plotWorld(world,dim)
+function plotWorld(world,path,dim)
   % the first element is the north coordinate
   % the second element is the south coordinate
   if dim ==2
@@ -10,13 +10,18 @@ function plotWorld(world,dim)
 %   N = 20;
 %   th = 0:2*pi/N:2*pi;
   for i=1:world.NumObstacles
-      
-      X = [world.ox(i)    world.ox(i)+world.oa(i)    world.ox(i)+world.oa(i)  world.ox(i)  world.ox(i)];
-      Y = [world.oy(i)    world.oy(i)                world.oy(i)+world.ob(i)  world.oy(i)+world.ob(i)   world.oy(i)];
-      fill(X, Y, 'r');
-
+      rectangle('Position',[world.cx(i)-world.radius(i),world.cy(i)-world.radius(i),...
+          2*world.radius(i),2*world.radius(i)],'EdgeColor','[0.5 0.5 0.5]','LineWidth',1,'FaceColor','[0.5 0.5 0.5]','Curvature', [1 1]);
+%           2*world.radius(i),2*world.radius(i)],'EdgeColor','black','LineWidth',1,'FaceColor',[1 0 0],'Curvature', [1 1]);
+%       X = world.radius(i)*sin(th) + world.cx(i);
+%       Y = world.radius(i)*cos(th) + world.cy(i);
+%       fill(X,Y,'blue');
   end
 
+%   X = path(:,1);
+%   Y = path(:,2);
+%   p = plot(X,Y);
+%   set(p,'Color','black','LineStyle','-','LineWidth',2)
    
   elseif dim ==3
   axis([world.origincorner(1),world.endcorner(1),...
@@ -25,30 +30,24 @@ function plotWorld(world,dim)
   hold on
 
   for i=1:world.NumObstacles
-      
-      vert = [world.ox(i)               world.oy(i)              world.oz(i);
-              world.ox(i)+world.oa(i)   world.oy(i)              world.oz(i);
-              world.ox(i)+world.oa(i)   world.oy(i)+world.ob(i)  world.oz(i);
-              world.ox(i)               world.oy(i)+world.ob(i)  world.oz(i);
-              world.ox(i)               world.oy(i)              world.oz(i)+world.oc(i);
-              world.ox(i)+world.oa(i)   world.oy(i)              world.oz(i)+world.oc(i);
-              world.ox(i)+world.oa(i)   world.oy(i)+world.ob(i)  world.oz(i)+world.oc(i);
-              world.ox(i)               world.oy(i)+world.ob(i)  world.oz(i)+world.oc(i)];
-      face = [1 2 3 4;
-              1 2 6 5;
-              2 3 7 6;
-              1 4 8 5;
-              5 8 7 6;
-              3 4 8 7];
-      patch('Faces',face,'Vertices',vert,'FaceColor','[0.5 0.5 0.5]','EdgeColor','[0.2 0.2 0.2]','FaceAlpha',.5)
-%       material shiny;
-%       alpha('color');
-%       alphamap('rampdown');
-      
-  end
-  
+      [X,Y,Z] = sphere;
+      X = (X*world.radius(i));
+      Y = (Y*world.radius(i));
+      Z = (Z*world.radius(i));
+%       c = ones(size(Z));
+%       surf(X+world.cx(i),Y+world.cy(i),Z+world.cz(i),c);
+      surf(X+world.cx(i),Y+world.cy(i),Z+world.cz(i));
+      colormap([0.5,0.5,0.5]);
   end
 
+  X = path(:,1);
+  Y = path(:,2);
+  Z = path(:,3);
+  p = plot3(X,Y,Z);
+  
+  end
+  
+ 
   xl = xlabel('$x  (m)$','Interpreter','LaTeX');
   yl = ylabel('$y  (m)$','Interpreter','LaTeX');
   zl = zlabel('$z  (m)$','Interpreter','LaTeX');
@@ -56,6 +55,4 @@ function plotWorld(world,dim)
   set(yl,'FontSize',18);
   set(zl,'FontSize',18);
   set(gca,'FontSize',16,'FontName','Times');
-  axis equal
-  
 end
