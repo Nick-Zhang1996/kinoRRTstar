@@ -32,16 +32,19 @@ class World:
 
     # given a list-like of (x,y,z), check if any of the coordinates is in collision
     # or out side of boundary
-    # coord: np.array of size (n,3), n being number of coordinates in the batch
+    # coord: np.array of size (n,3+), n being number of coordinates in the batch, only first three states are used (x,y,z,...)
     # NOTE does not check data type and format
     # return True if no cllision, false if collide
     def checkNoCollision(self,coord):
+        coord = coord[:,:3]
         # boundary
         if (np.any(coord<0.0)):
+            #breakpoint()
             return False
         if (np.any(self.size[0] < coord[:,0]) or
             np.any(self.size[1] < coord[:,1]) or 
             np.any(self.size[2] < coord[:,2])):
+            #breakpoint()
             return False
 
         # check obstacle
@@ -52,12 +55,13 @@ class World:
             cond = np.logical_and(x_cond,y_cond)
             cond = np.logical_and(cond,z_cond)
             if np.any(cond):
+                #breakpoint()
                 return False
                 break
 
         return True
 
-    def visualizeWorld(self):
+    def visualizeWorld(self,show=True):
         def cuboid_data(o, size=(1,1,1)):
             # code taken from
             # https://stackoverflow.com/a/35978146/4124317
@@ -82,7 +86,8 @@ class World:
             # Plotting a cube element at position pos
             if ax !=None:
                 X, Y, Z = cuboid_data( pos, size )
-                ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+                #ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
+                ax.plot_wireframe(X, Y, Z, rstride=1, cstride=1,color='tan')
 
         fig = plt.figure()
         ax = fig.gca(projection='3d')
@@ -90,7 +95,7 @@ class World:
         for obstacle in self.obstacles:
             pos = (obstacle[0,0], obstacle[1,0], obstacle[2,0])
             size = (obstacle[0,1]-obstacle[0,0], obstacle[1,1]-obstacle[1,0], obstacle[2,1]-obstacle[2,0])
-            plotCubeAt(pos,size,ax,color='b')
+            plotCubeAt(pos,size,ax,color='tan')
 
 
         # force plt to plot entire world
@@ -100,7 +105,10 @@ class World:
         #ax.plot_wireframe(X, Y, Z, rstride=1, cstride=1,color='w')
         ax.scatter(X, Y, Z,'k')
 
-        plt.show()
+        if show:
+            plt.show()
+        else:
+            return ax
 
 
 

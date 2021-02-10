@@ -1,6 +1,9 @@
 # Tree class for RRT* management
 from enum import IntEnum, auto
 import numpy as np
+from common import *
+# DEBUG
+#import copy
 
 # helper for indexing in Tree.nodes
 class n(IntEnum):
@@ -35,6 +38,7 @@ class n(IntEnum):
 # because even though there may be state values pre-initialized for performance issues, the node have not be added to the tree (therefore invalid)
 class Tree:
     def __init__(self,root_state,max_node=10):
+        root_state = np.array(root_state, dtype=np.float).reshape(7)
         self.max_node = max_node
         self.nodes = np.zeros((max_node,7),dtype=np.float)
         # index of a parent
@@ -47,6 +51,8 @@ class Tree:
         self.addNode(root_state,0)
         return
 
+    def getSolutionCount(self):
+        return np.sum(near_end_node)
 
     # add a node with prescribed node and children
     # return index of node
@@ -66,9 +72,9 @@ class Tree:
     # we don't need old_parent since that can be deduced from child
     def transferChild(self,new_parent,child):
         old_parent = self.parent[child]
-        self.nodes[old_parent].children.remove(child)
+        self.children[old_parent].remove(child)
         # TODO should we maintain a sorted children list?
-        self.nodes[new_parent].children.append(child)
+        self.children[new_parent].append(child)
         self.parent[child] = new_parent
         return
 
@@ -89,13 +95,85 @@ class Tree:
     # get all node index for a node within eucledian distance of dist
     # state can be any length 1d array, the first three values 
     # are expected to be x,y,z
+    # return: neighbour indices
     def getNeighbour(self,state,dist):
         xx = (self.nodes[:self.n_nodes,n.x] - state[0])**2
         yy = (self.nodes[:self.n_nodes,n.y] - state[1])**2
         zz = (self.nodes[:self.n_nodes,n.z] - state[2])**2
         dist_sq = (xx+yy+zz)
         mask = dist_sq < dist**2
-        return mask.nonzero()[0]
+        return mask.nonzero()[0] 
+
+    # find closest node index
+    # and neighbours
+    # similar to getNeighbour
+    def findClosest(self,state,dist):
+        xx = (self.nodes[:self.n_nodes,n.x] - state[0])**2
+        yy = (self.nodes[:self.n_nodes,n.y] - state[1])**2
+        zz = (self.nodes[:self.n_nodes,n.z] - state[2])**2
+        dist_sq = (xx+yy+zz)
+        index = np.argmin(dist_sq)
+
+        mask = dist_sq < dist**2
+        return index, mask.nonzero()[0] 
+
+    # apply a delta in cost to node and all its descendents
+    def spreadCostDelta(self,node,delta):
+        # DEBUG
+        #self.backup_nodes = self.nodes.copy()
+        #self.backup_parent = self.parent.copy()
+        #self.backup_children = copy.deepcopy(self.children)
+        if (np.any(self.nodes[:,-1]<0)):
+            print("error, negative cost")
+            breakpoint()
+
+        parent_queue = [node]
+
+        count = 0
+        while (len(parent_queue)>0):
+            count += 1
+            child_queue = [ child for parent in parent_queue for child in self.children[parent]]
+            self.nodes[parent_queue,-1] += delta
+            if (np.any(self.nodes[parent_queue,-1]) <0):
+                breakpoint()
+
+            parent_queue = child_queue
+            if (count > 100):
+                breakpoint()
+
+        return
+
+    def setNodeCost(self,nodecost):
+        self.nodes[node,-1] = cost
+        return
+
+    # L2 distance from state (x,y,z,...) to node
+    def dist2(self,state,node):
+        x,y,z = self.nodes[node,:3]
+        xx,yy,zz = state[:3]
+        return ((x-xx)**2+(y-yy)**2+(z-zz)**2)**0.5
+
+    # get UNIT vector from node to state (x,y,z,...)
+    def vecFromNode(self,state,node):
+        x,y,z = self.nodes[node,:3]
+        xx,yy,zz = state[:3]
+        vec = np.array([xx-x, yy-y, zz-z])
+        dist = np.sum(vec**2)**0.5
+        return vec/dist
+
+    def getNodePos(self,node):
+        return self.nodes[node,:3]
+
+    def getNodeCost(self,node):
+        return self.nodes[node,6]
+
+    def getNodeState(self,node):
+        return self.nodes[node,:6]
+
+    def setEndState(self,node,state):
+        self.near_end_node[node] = state
+        return
+
 
 
 
