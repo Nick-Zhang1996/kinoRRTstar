@@ -40,6 +40,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include "rtwtypes.h"
+#include <stdio.h>
 #include "benchmarkRRT_types.h"
 
 /* Function Declarations */

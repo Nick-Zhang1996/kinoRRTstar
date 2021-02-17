@@ -49,10 +49,9 @@ static void main_benchmarkRRT(void);
 /* Function Definitions */
 static void main_benchmarkRRT(void)
 {
-  double retval;
 
   /* Call the entry-point 'benchmarkRRT'. */
-  retval = benchmarkRRT();
+  benchmarkRRT();
 }
 
 int main(int argc, const char * const argv[])

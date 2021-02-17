@@ -19,6 +19,7 @@
 #include "findMinCost.h"
 #include "RRTstar3D.h"
 #include <stdio.h>
+#include <sys/time.h>
 
 /* Function Definitions */
 double benchmarkRRT(void)
@@ -78,6 +79,11 @@ double benchmarkRRT(void)
   /*  check to see if start_node connects directly to end_node */
   numPaths = 0.0;
   emxInit_real_T(&connectingNodes, 2);
+
+  // NOTE start timing
+  struct timeval stop, start;
+  gettimeofday(&start, NULL);
+
   for (i = 0; i < 4000; i++) {
     extendTree(tree, GChild, connectingNodes, &flag);
     imid = tree->size[0] * tree->size[1];
@@ -100,6 +106,8 @@ double benchmarkRRT(void)
       flag = findMinCost(connectingNodes);
 
       /* toc */
+      gettimeofday(&stop, NULL);
+      printf("elapsed time %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec); 
       printf("nodes: %.0f, min cost %.3f \n", 1.0 + (double)i, flag);
       fflush(stdout);
     }
@@ -139,6 +147,8 @@ double benchmarkRRT(void)
       flag = findMinCost(connectingNodes);
 
       /* toc */
+      gettimeofday(&stop, NULL);
+      printf("elapsed time %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec); 
       printf("nodes: %.0f, min cost %.3f \n", 1.0 + (double)i, flag);
       fflush(stdout);
     }
