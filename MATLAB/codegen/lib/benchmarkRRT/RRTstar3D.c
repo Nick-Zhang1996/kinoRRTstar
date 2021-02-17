@@ -26,7 +26,7 @@
 #include "benchmarkRRT_data.h"
 
 /* Function Definitions */
-void extendTree(const emxArray_real_T *tree, double GChild[400000],
+void extendTree(const emxArray_real_T *tree, double GChild[16000000],
                 emxArray_real_T *new_tree, double *flag)
 {
   int i3;
@@ -62,8 +62,8 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
   creal_T new_node[8];
   int i4;
   boolean_T b0;
-  boolean_T bv0[200];
-  unsigned char tmp_data[200];
+  boolean_T bv0[4000];
+  short tmp_data[4000];
 
   /*  segmentLength: maximum stepsize, r: neighbor radius */
   /*  NOTE */
@@ -406,7 +406,7 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
 
         /*  ChildNum + 1 */
         d2 = new_node_idx + 1;
-        GChild[min_parent_idx + 2000 * ((int)new_tree->data[min_parent_idx +
+        GChild[min_parent_idx + 4000 * ((int)new_tree->data[min_parent_idx +
           new_tree->size[0] * 7] - 1)] = d2;
 
         /*  update GChild matrix */
@@ -438,8 +438,8 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
                   n = (int)new_tree->data[((int)sqr_dist->data[flag1] +
                     new_tree->size[0] * 6) - 1];
                   nx = 0;
-                  for (i = 0; i < 200; i++) {
-                    b0 = (GChild[(n + 2000 * i) - 1] == randomPoint_idx_0);
+                  for (i = 0; i < 4000; i++) {
+                    b0 = (GChild[(n + 4000 * i) - 1] == randomPoint_idx_0);
                     bv0[i] = b0;
                     if (b0) {
                       nx++;
@@ -447,9 +447,9 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
                   }
 
                   n = 0;
-                  for (i = 0; i < 200; i++) {
+                  for (i = 0; i < 4000; i++) {
                     if (bv0[i]) {
-                      tmp_data[n] = (unsigned char)(i + 1);
+                      tmp_data[n] = (short)(i + 1);
                       n++;
                     }
                   }
@@ -457,7 +457,7 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
                   n = (int)new_tree->data[((int)sqr_dist->data[flag1] +
                     new_tree->size[0] * 6) - 1];
                   for (i4 = 0; i4 < nx; i4++) {
-                    GChild[(n + 2000 * (tmp_data[i4] - 1)) - 1] = -1.0;
+                    GChild[(n + 4000 * (tmp_data[i4] - 1)) - 1] = -1.0;
                   }
 
                   /*  parent of reduced_idx(j) before rewire, change its child list. */
@@ -470,7 +470,7 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
                   new_tree->data[new_node_idx + new_tree->size[0] * 7]++;
 
                   /*  add the node being rewired to the child list of the new added node, new_node_idx. */
-                  GChild[new_node_idx + 2000 * ((int)new_tree->data[new_node_idx
+                  GChild[new_node_idx + 4000 * ((int)new_tree->data[new_node_idx
                     + new_tree->size[0] * 7] - 1)] = sqr_dist->data[flag1];
 
                   /*  update all cost of the descendant of the node being rewired */

@@ -19,7 +19,7 @@
 #include "benchmarkRRT_types.h"
 
 /* Function Declarations */
-extern void extendTree(const emxArray_real_T *tree, double GChild[400000],
+extern void extendTree(const emxArray_real_T *tree, double GChild[16000000],
   emxArray_real_T *new_tree, double *flag);
 
 #endif
