@@ -1,6 +1,6 @@
 #########################
 # customise these
-CFILES := (wildcard ./*.c)
+CFILES := $(wildcard ./*.c)
 
 PROG := benchmarkRRT
 CFLAGS := -Wall -Wextra -g
