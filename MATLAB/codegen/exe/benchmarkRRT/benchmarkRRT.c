@@ -10,7 +10,6 @@
  */
 
 /* Include files */
-#include <math.h>
 #include <string.h>
 #include "rt_nonfinite.h"
 #include "benchmarkRRT.h"
@@ -32,7 +31,7 @@ double benchmarkRRT(void)
   int imid;
   static const signed char start_node[8] = { 2, 2, 0, 0, 0, 0, 0, 0 };
 
-  static double GChild[400000];
+  static double GChild[1200000];
   double numPaths;
   emxArray_real_T *connectingNodes;
   int i;
@@ -75,7 +74,7 @@ double benchmarkRRT(void)
   }
 
   /* coder.varsize('GChild') */
-  memset(&GChild[0], 0, 400000U * sizeof(double));
+  memset(&GChild[0], 0, 1200000U * sizeof(double));
 
   /* GChild = [0]; */
   /* tic */
@@ -94,11 +93,10 @@ double benchmarkRRT(void)
     }
 
     numPaths += flag;
-    if (fmod(1.0 + (double)i, 100.0) == 0.0) {
-      printf("%.0f nodes \n", 1.0 + (double)i);
-      fflush(stdout);
-    }
 
+    /*        if mod(i,100) == 0 */
+    /*            fprintf("%.0f nodes \n",i); */
+    /*        end */
     /*  report first solution */
     /*  its, time, cost */
     if ((flag == 1.0) && (numPaths == 0.0)) {

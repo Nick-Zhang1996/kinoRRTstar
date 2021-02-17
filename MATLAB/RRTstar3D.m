@@ -28,7 +28,7 @@ tree = start_node;
 
 
 %coder.varsize('GChild')
-GChild  = zeros(2000,200);
+GChild  = zeros(samples,samples);
 %GChild = [0];
 %tic
 
@@ -47,9 +47,9 @@ else
   
       numPaths = numPaths + flag;
       its = its+1;
-      if mod(i,100) == 0
-          fprintf("%.0f nodes \n",i);
-      end
+%       if mod(i,100) == 0
+%           fprintf("%.0f nodes \n",i);
+%       end
       
       % report first solution
       % its, time, cost
