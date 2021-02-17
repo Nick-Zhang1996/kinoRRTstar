@@ -10,3 +10,17 @@ Elapsed time is 11.370046 seconds.
 nodes: 3000, min cost 31.668 
 Elapsed time is 17.865010 seconds.
 nodes: 4000, min cost 31.050 
+
+C
+
+elapsed time 112888 us
+nodes: 400, min cost 39.303 
+elapsed time 587364 us
+nodes: 1000, min cost 35.506 
+elapsed time 1991086 us
+nodes: 2000, min cost 33.160 
+elapsed time 3711778 us
+nodes: 3000, min cost 33.160 
+elapsed time 5631604 us
+nodes: 4000, min cost 32.368 
+total took 5734325 us
