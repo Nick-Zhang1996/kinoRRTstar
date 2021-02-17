@@ -816,10 +816,10 @@ double b_collisionKnowTf(const double parent_data[], const double node_data[],
   double c_state;
   int exitg1;
   int state_idx_0_tmp;
-  static const signed char iv8[5] = { 6, 15, 10, 5, 15 };
+  static const signed char iv9[5] = { 6, 15, 10, 5, 15 };
 
   double state_idx_0;
-  static const signed char iv9[5] = { 6, 14, 11, 15, 5 };
+  static const signed char iv10[5] = { 6, 14, 11, 15, 5 };
 
   collision_flag = 0.0;
   linspace(*Tf, t);
@@ -863,10 +863,10 @@ double b_collisionKnowTf(const double parent_data[], const double node_data[],
           exitg1 = 0;
           if (i < 5) {
             state_idx_0_tmp = state_tmp << 2;
-            c_state = b_state[state_idx_0_tmp] - (double)iv8[i];
+            c_state = b_state[state_idx_0_tmp] - (double)iv9[i];
             c_state *= c_state;
             state_idx_0 = c_state;
-            c_state = b_state[1 + state_idx_0_tmp] - (double)iv9[i];
+            c_state = b_state[1 + state_idx_0_tmp] - (double)iv10[i];
             c_state *= c_state;
             if (state_idx_0 + c_state < (dv0[i] + 0.1) * (dv0[i] + 0.1)) {
               /*  (norm([p(1);p(2)]-[world.cx(i); world.cy(i)])<=1*world.radius(i)) */
@@ -908,10 +908,10 @@ double collisionKnowTf(const double parent_data[], const creal_T node[8], const
   double c_state;
   int exitg1;
   int state_idx_0_tmp;
-  static const signed char iv6[5] = { 6, 15, 10, 5, 15 };
+  static const signed char iv7[5] = { 6, 15, 10, 5, 15 };
 
   double state_idx_0;
-  static const signed char iv7[5] = { 6, 14, 11, 15, 5 };
+  static const signed char iv8[5] = { 6, 14, 11, 15, 5 };
 
   collision_flag = 0.0;
   linspace(*Tf, t);
@@ -953,10 +953,10 @@ double collisionKnowTf(const double parent_data[], const creal_T node[8], const
           exitg1 = 0;
           if (i < 5) {
             state_idx_0_tmp = state_tmp << 2;
-            c_state = b_state[state_idx_0_tmp] - (double)iv6[i];
+            c_state = b_state[state_idx_0_tmp] - (double)iv7[i];
             c_state *= c_state;
             state_idx_0 = c_state;
-            c_state = b_state[1 + state_idx_0_tmp] - (double)iv7[i];
+            c_state = b_state[1 + state_idx_0_tmp] - (double)iv8[i];
             c_state *= c_state;
             if (state_idx_0 + c_state < (dv0[i] + 0.1) * (dv0[i] + 0.1)) {
               /*  (norm([p(1);p(2)]-[world.cx(i); world.cy(i)])<=1*world.radius(i)) */

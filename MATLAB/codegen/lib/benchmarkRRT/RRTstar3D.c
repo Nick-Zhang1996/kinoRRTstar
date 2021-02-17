@@ -54,9 +54,9 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
   int i;
   double tree_data[8];
   creal_T Tf;
-  static const signed char iv4[5] = { 6, 15, 10, 5, 15 };
+  static const signed char iv5[5] = { 6, 15, 10, 5, 15 };
 
-  static const signed char iv5[5] = { 6, 14, 11, 15, 5 };
+  static const signed char iv6[5] = { 6, 14, 11, 15, 5 };
 
   creal_T min_cost;
   creal_T new_node[8];
@@ -200,10 +200,10 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
       i = 0;
       exitg1 = false;
       while ((!exitg1) && (i < 5)) {
-        d2 = new_point[0] - (double)iv4[i];
+        d2 = new_point[0] - (double)iv5[i];
         d2 *= d2;
         Vect[0] = d2;
-        d2 = new_point[1] - (double)iv5[i];
+        d2 = new_point[1] - (double)iv6[i];
         d2 *= d2;
         if (sqrt(Vect[0] + d2) < dv0[i] + 0.1) {
           /*  (norm([p(1);p(2)]-[world.cx(i); world.cy(i)])<world.radius(i)+0.1) */
@@ -399,6 +399,8 @@ void extendTree(const emxArray_real_T *tree, double GChild[400000],
           }
         }
 
+        /*  DEBUG check new node cost */
+        /* fprintf("new node cost %.2f",real(min_cost)); */
         new_node_idx = new_tree->size[0] - 1;
         new_tree->data[min_parent_idx + new_tree->size[0] * 7]++;
 

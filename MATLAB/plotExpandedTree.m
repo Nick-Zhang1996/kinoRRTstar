@@ -11,7 +11,7 @@ global obj
             
     in = num2cell([parent_node(1 : 4), node(1 : 4)]);
     Tf = roots(obj.eval_arrival_internal(in{:}));
-    Tf = Tf(imag(Tf) == 0);
+    Tf = Tf(abs(imag(Tf)) < 0.0001);
     Tf = min(Tf(Tf >= 0));
 
     states = @(t)obj.eval_states_internal(t, Tf, in{:});

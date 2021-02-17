@@ -19,37 +19,37 @@
 void sqr_eucl_dist(const emxArray_real_T *array, emxArray_real_T *e_dist)
 {
   emxArray_real_T *sqr_e_dist;
-  int i1;
+  int i0;
   int loop_ub;
   int vstride;
   emxInit_real_T(&sqr_e_dist, 2);
-  i1 = sqr_e_dist->size[0] * sqr_e_dist->size[1];
+  i0 = sqr_e_dist->size[0] * sqr_e_dist->size[1];
   sqr_e_dist->size[0] = array->size[0];
   sqr_e_dist->size[1] = 2;
-  emxEnsureCapacity_real_T(sqr_e_dist, i1);
+  emxEnsureCapacity_real_T(sqr_e_dist, i0);
   loop_ub = array->size[0] << 1;
-  for (i1 = 0; i1 < loop_ub; i1++) {
-    sqr_e_dist->data[i1] = 0.0;
+  for (i0 = 0; i0 < loop_ub; i0++) {
+    sqr_e_dist->data[i0] = 0.0;
   }
 
   loop_ub = array->size[0] - 1;
-  for (i1 = 0; i1 <= loop_ub; i1++) {
-    sqr_e_dist->data[i1] = array->data[i1] * array->data[i1];
+  for (i0 = 0; i0 <= loop_ub; i0++) {
+    sqr_e_dist->data[i0] = array->data[i0] * array->data[i0];
   }
 
   loop_ub = array->size[0] - 1;
-  for (i1 = 0; i1 <= loop_ub; i1++) {
-    sqr_e_dist->data[i1 + sqr_e_dist->size[0]] = array->data[i1 + array->size[0]]
-      * array->data[i1 + array->size[0]];
+  for (i0 = 0; i0 <= loop_ub; i0++) {
+    sqr_e_dist->data[i0 + sqr_e_dist->size[0]] = array->data[i0 + array->size[0]]
+      * array->data[i0 + array->size[0]];
   }
 
   if (sqr_e_dist->size[0] == 0) {
     e_dist->size[0] = 0;
   } else {
     vstride = sqr_e_dist->size[0];
-    i1 = e_dist->size[0];
+    i0 = e_dist->size[0];
     e_dist->size[0] = sqr_e_dist->size[0];
-    emxEnsureCapacity_real_T(e_dist, i1);
+    emxEnsureCapacity_real_T(e_dist, i0);
     for (loop_ub = 0; loop_ub < vstride; loop_ub++) {
       e_dist->data[loop_ub] = sqr_e_dist->data[loop_ub];
     }

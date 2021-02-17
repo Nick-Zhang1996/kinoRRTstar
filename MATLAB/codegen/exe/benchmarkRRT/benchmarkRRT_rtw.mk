@@ -2,12 +2,12 @@
 ## Makefile generated for MATLAB file/project 'benchmarkRRT'. 
 ## 
 ## Makefile     : benchmarkRRT_rtw.mk
-## Generated on : Wed Feb 10 15:04:45 2021
+## Generated on : Wed Feb 17 15:36:56 2021
 ## MATLAB Coder version: 4.1 (R2018b)
 ## 
 ## Build Info:
 ## 
-## Final product: H:/DCSL/dongliang_rrt_star_v2/benchmarkRRT.exe
+## Final product: D:/Documents/GitHub/kinoRRTstar/MATLAB/benchmarkRRT.exe
 ## Product type : executable
 ## 
 ###########################################################################
@@ -30,7 +30,7 @@ MATLAB_ROOT               = E:/MATLAB/R2018b
 MATLAB_BIN                = E:/MATLAB/R2018b/bin
 MATLAB_ARCH_BIN           = $(MATLAB_BIN)/win64
 MASTER_ANCHOR_DIR         = 
-START_DIR                 = H:/DCSL/dongliang_rrt_star_v2/codegen/exe/benchmarkRRT
+START_DIR                 = D:/Documents/GitHub/kinoRRTstar/MATLAB/codegen/exe/benchmarkRRT
 ARCH                      = win64
 RELATIVE_PATH_TO_ANCHOR   = .
 COMPILER_COMMAND_FILE     = benchmarkRRT_rtw_comp.rsp
@@ -190,7 +190,7 @@ MAKE_EXT            = .mk
 ## OUTPUT INFO
 ###########################################################################
 
-PRODUCT = H:/DCSL/dongliang_rrt_star_v2/benchmarkRRT.exe
+PRODUCT = D:/Documents/GitHub/kinoRRTstar/MATLAB/benchmarkRRT.exe
 PRODUCT_TYPE = "executable"
 BUILD_TYPE = "Executable"
 
@@ -198,7 +198,7 @@ BUILD_TYPE = "Executable"
 ## INCLUDE PATHS
 ###########################################################################
 
-INCLUDES_BUILDINFO = -I$(START_DIR) -IH:/DCSL/dongliang_rrt_star_v2 -I$(MATLAB_ROOT)/extern/include -I$(MATLAB_ROOT)/simulink/include -I$(MATLAB_ROOT)/rtw/c/src -I$(MATLAB_ROOT)/rtw/c/src/ext_mode/common -I$(MATLAB_ROOT)/rtw/c/ert
+INCLUDES_BUILDINFO = -I$(START_DIR) -ID:/Documents/GitHub/kinoRRTstar/MATLAB -I$(MATLAB_ROOT)/extern/include -I$(MATLAB_ROOT)/simulink/include -I$(MATLAB_ROOT)/rtw/c/src -I$(MATLAB_ROOT)/rtw/c/src/ext_mode/common -I$(MATLAB_ROOT)/rtw/c/ert
 
 INCLUDES = $(INCLUDES_BUILDINFO)
 
@@ -215,7 +215,7 @@ DEFINES = $(DEFINES_) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/benchmarkRRT_rtwutil.c $(START_DIR)/benchmarkRRT_data.c $(START_DIR)/benchmarkRRT_initialize.c $(START_DIR)/benchmarkRRT_terminate.c $(START_DIR)/benchmarkRRT.c $(START_DIR)/RRTstar3D.c $(START_DIR)/norm.c $(START_DIR)/xnrm2.c $(START_DIR)/sqrt.c $(START_DIR)/rand.c $(START_DIR)/eml_rand_mt19937ar_stateful.c $(START_DIR)/sqr_eucl_dist.c $(START_DIR)/collision.c $(START_DIR)/opt_time.c $(START_DIR)/roots.c $(START_DIR)/anyNonFinite.c $(START_DIR)/xgehrd.c $(START_DIR)/xzlarfg.c $(START_DIR)/xdlapy3.c $(START_DIR)/recip.c $(START_DIR)/xzhseqr.c $(START_DIR)/xzgeev.c $(START_DIR)/xzlartg.c $(START_DIR)/xzhgeqz.c $(START_DIR)/linspace.c $(START_DIR)/state_traj.c $(START_DIR)/cost_eval.c $(START_DIR)/segment_cost.c $(START_DIR)/collisionKnowTf.c $(START_DIR)/benchmarkRRT_emxutil.c $(START_DIR)/rt_nonfinite.c $(START_DIR)/rtGetNaN.c $(START_DIR)/rtGetInf.c H:/DCSL/dongliang_rrt_star_v2/main.c
+SRCS = $(START_DIR)/benchmarkRRT_rtwutil.c $(START_DIR)/benchmarkRRT_data.c $(START_DIR)/benchmarkRRT_initialize.c $(START_DIR)/benchmarkRRT_terminate.c $(START_DIR)/benchmarkRRT.c $(START_DIR)/RRTstar3D.c $(START_DIR)/norm.c $(START_DIR)/xnrm2.c $(START_DIR)/sqrt.c $(START_DIR)/rand.c $(START_DIR)/eml_rand_mt19937ar_stateful.c $(START_DIR)/sqr_eucl_dist.c $(START_DIR)/collision.c $(START_DIR)/opt_time.c $(START_DIR)/roots.c $(START_DIR)/anyNonFinite.c $(START_DIR)/xgehrd.c $(START_DIR)/xzlarfg.c $(START_DIR)/xdlapy3.c $(START_DIR)/recip.c $(START_DIR)/xzhseqr.c $(START_DIR)/xzgeev.c $(START_DIR)/xzlartg.c $(START_DIR)/xzhgeqz.c $(START_DIR)/linspace.c $(START_DIR)/state_traj.c $(START_DIR)/cost_eval.c $(START_DIR)/segment_cost.c $(START_DIR)/collisionKnowTf.c $(START_DIR)/findMinCost.c $(START_DIR)/benchmarkRRT_emxutil.c $(START_DIR)/rt_nonfinite.c $(START_DIR)/rtGetNaN.c $(START_DIR)/rtGetInf.c D:/Documents/GitHub/kinoRRTstar/MATLAB/main.c
 
 ALL_SRCS = $(SRCS)
 
@@ -223,7 +223,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = benchmarkRRT_rtwutil.obj benchmarkRRT_data.obj benchmarkRRT_initialize.obj benchmarkRRT_terminate.obj benchmarkRRT.obj RRTstar3D.obj norm.obj xnrm2.obj sqrt.obj rand.obj eml_rand_mt19937ar_stateful.obj sqr_eucl_dist.obj collision.obj opt_time.obj roots.obj anyNonFinite.obj xgehrd.obj xzlarfg.obj xdlapy3.obj recip.obj xzhseqr.obj xzgeev.obj xzlartg.obj xzhgeqz.obj linspace.obj state_traj.obj cost_eval.obj segment_cost.obj collisionKnowTf.obj benchmarkRRT_emxutil.obj rt_nonfinite.obj rtGetNaN.obj rtGetInf.obj main.obj
+OBJS = benchmarkRRT_rtwutil.obj benchmarkRRT_data.obj benchmarkRRT_initialize.obj benchmarkRRT_terminate.obj benchmarkRRT.obj RRTstar3D.obj norm.obj xnrm2.obj sqrt.obj rand.obj eml_rand_mt19937ar_stateful.obj sqr_eucl_dist.obj collision.obj opt_time.obj roots.obj anyNonFinite.obj xgehrd.obj xzlarfg.obj xdlapy3.obj recip.obj xzhseqr.obj xzgeev.obj xzlartg.obj xzhgeqz.obj linspace.obj state_traj.obj cost_eval.obj segment_cost.obj collisionKnowTf.obj findMinCost.obj benchmarkRRT_emxutil.obj rt_nonfinite.obj rtGetNaN.obj rtGetInf.obj main.obj
 
 ALL_OBJS = $(OBJS)
 
@@ -361,11 +361,11 @@ $(PRODUCT) : $(OBJS) $(PREBUILT_OBJS)
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 
-%.obj : H:/DCSL/dongliang_rrt_star_v2/%.c
+%.obj : D:/Documents/GitHub/kinoRRTstar/MATLAB/%.c
 	$(CC) $(CFLAGS) -o "$@" "$<"
 
 
-%.obj : H:/DCSL/dongliang_rrt_star_v2/%.cpp
+%.obj : D:/Documents/GitHub/kinoRRTstar/MATLAB/%.cpp
 	$(CPP) $(CPPFLAGS) -o "$@" "$<"
 
 

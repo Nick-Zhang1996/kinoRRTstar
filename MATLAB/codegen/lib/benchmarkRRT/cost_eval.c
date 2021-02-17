@@ -1175,6 +1175,9 @@ creal_T cost_eval(const creal_T t_s, double x01, double x02, double x03, double
   cost.im = (((((((((((((((((((t_s.im + im) + b_im) + c_im) + d_im) + e_im) +
     f_im) + g_im) + h_im) + i_im) + j_im) - k_im) + l_im) - m_im) + n_im) - y_im)
                 + b_y_im) - c_y_im) + d_y_im) - e_y_im) - r;
+
+  /* DEBUG */
+  /* fprintf("cost_eval %.2f, %.2f, %.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f, \n",t_s,x01,x02,x03,x04,x11,x12,x13,x14); */
   return cost;
 }
 

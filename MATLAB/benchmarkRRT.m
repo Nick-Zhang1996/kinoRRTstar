@@ -13,7 +13,7 @@ dim=2;
 if dim == 2
     stepsize = 4;
     radius = 3;
-    samples = 2000;
+    samples = 4000;
 elseif dim == 3
     stepsize = 3;
     radius = 3;

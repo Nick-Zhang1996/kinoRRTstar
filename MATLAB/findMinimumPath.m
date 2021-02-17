@@ -1,4 +1,4 @@
-function mypath = findMinimumPath(tree,end_node,dim)
+function [mypath] = findMinimumPath(tree,end_node,dim)
     coder.varsize("mypath");
     % find nodes that connect to end_node
 %     connectingNodes = [];

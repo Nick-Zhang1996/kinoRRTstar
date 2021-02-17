@@ -4,12 +4,27 @@ collision_flag = 0;
 
 if collision_flag == 0 && dim == 2
 
+   
         tf_temp = roots(opt_time(parent(1), parent(2), parent(3), parent(4), node(1), node(2), node(3), node(4)));
-        tf_temp = tf_temp(imag(tf_temp) == 0);
+        
+        % DEBUG
+%         poly = opt_time(parent(1), parent(2), parent(3), parent(4), node(1), node(2), node(3), node(4));
+%         fprintf("\n poly: ");
+%         for i = 1:size(poly,2)
+%             fprintf("%.5f, ", poly(1,i));
+%         end
+%         fprintf("\n");
+            
+        tf_temp = tf_temp(abs(imag(tf_temp)) < 0.0001);
         mask = tf_temp >=0;
         temp = tf_temp(mask);
         %NOTE
         Tf = min(temp);
+        %DEBUG
+%         for i = 1:size(tf_temp,1)
+%             fprintf("\n tf_temp %.0f, %.2f \n ",i,tf_temp(i,1));
+%         end
+%         fprintf("collision Tf = %.2f \n",Tf);
         %Tf = sum(temp);
 
     

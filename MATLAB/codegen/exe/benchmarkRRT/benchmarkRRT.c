@@ -10,38 +10,47 @@
  */
 
 /* Include files */
+#include <math.h>
 #include <string.h>
 #include "rt_nonfinite.h"
 #include "benchmarkRRT.h"
 #include "benchmarkRRT_emxutil.h"
 #include "segment_cost.h"
 #include "norm.h"
+#include "findMinCost.h"
 #include "RRTstar3D.h"
 
 /* Custom Source Code */
 #include "main.h"
+#include <stdio.h>
 
 /* Function Definitions */
 double benchmarkRRT(void)
 {
   double retval;
   emxArray_real_T *tree;
-  int i0;
+  int imid;
   static const signed char start_node[8] = { 2, 2, 0, 0, 0, 0, 0, 0 };
 
   static double GChild[400000];
+  double numPaths;
   emxArray_real_T *connectingNodes;
   int i;
   emxArray_boolean_T *idx;
   double flag;
-  int loop_ub;
-  int end;
+  int n;
+  boolean_T tf;
+  int ilo;
+  int ihi;
+  boolean_T exitg1;
+  static const short iv0[5] = { 400, 1000, 2000, 3000, 4000 };
+
   emxArray_int32_T *r0;
   double b_connectingNodes[2];
   double connectingNodes_data[8];
   creal_T lcost;
   creal_T unusedU0;
-  int exitg1;
+  int exitg2;
   emxInit_real_T(&tree, 2);
 
   /*  clc; */
@@ -57,30 +66,86 @@ double benchmarkRRT(void)
   /*  Create random world */
   /*  Each Row Contains States, ConnectToEnd flag, Costz, ParentNodeIdx, and ChildNum */
   /*  Establish tree starting with the start node */
-  i0 = tree->size[0] * tree->size[1];
+  imid = tree->size[0] * tree->size[1];
   tree->size[0] = 1;
   tree->size[1] = 8;
-  emxEnsureCapacity_real_T(tree, i0);
-  for (i0 = 0; i0 < 8; i0++) {
-    tree->data[i0] = start_node[i0];
+  emxEnsureCapacity_real_T(tree, imid);
+  for (imid = 0; imid < 8; imid++) {
+    tree->data[imid] = start_node[imid];
   }
 
   /* coder.varsize('GChild') */
   memset(&GChild[0], 0, 400000U * sizeof(double));
 
   /* GChild = [0]; */
-  /*  tic */
+  /* tic */
   /*  check to see if start_node connects directly to end_node */
+  numPaths = 0.0;
   emxInit_real_T(&connectingNodes, 2);
-  for (i = 0; i < 2000; i++) {
+  for (i = 0; i < 4000; i++) {
     extendTree(tree, GChild, connectingNodes, &flag);
-    i0 = tree->size[0] * tree->size[1];
+    imid = tree->size[0] * tree->size[1];
     tree->size[0] = connectingNodes->size[0];
     tree->size[1] = 8;
-    emxEnsureCapacity_real_T(tree, i0);
-    loop_ub = connectingNodes->size[0] * connectingNodes->size[1];
-    for (i0 = 0; i0 < loop_ub; i0++) {
-      tree->data[i0] = connectingNodes->data[i0];
+    emxEnsureCapacity_real_T(tree, imid);
+    n = connectingNodes->size[0] * connectingNodes->size[1];
+    for (imid = 0; imid < n; imid++) {
+      tree->data[imid] = connectingNodes->data[imid];
+    }
+
+    numPaths += flag;
+    if (fmod(1.0 + (double)i, 100.0) == 0.0) {
+      printf("%.0f nodes \n", 1.0 + (double)i);
+      fflush(stdout);
+    }
+
+    /*  report first solution */
+    /*  its, time, cost */
+    if ((flag == 1.0) && (numPaths == 0.0)) {
+      flag = findMinCost(connectingNodes);
+
+      /* toc */
+      printf("nodes: %.0f, min cost %.3f \n", 1.0 + (double)i, flag);
+      fflush(stdout);
+    }
+
+    tf = false;
+    n = -1;
+    ilo = 1;
+    ihi = 5;
+    exitg1 = false;
+    while ((!exitg1) && (ihi >= ilo)) {
+      imid = ((ilo >> 1) + (ihi >> 1)) - 1;
+      if (((ilo & 1) == 1) && ((ihi & 1) == 1)) {
+        imid++;
+      }
+
+      if (1 + i == iv0[imid]) {
+        n = imid;
+        exitg1 = true;
+      } else if (1 + i < iv0[imid]) {
+        ihi = imid;
+      } else {
+        ilo = imid + 2;
+      }
+    }
+
+    if (n + 1 > 0) {
+      while ((n > 0) && (1 + i == iv0[n - 1])) {
+        n--;
+      }
+    }
+
+    if (n + 1 > 0) {
+      tf = true;
+    }
+
+    if (tf) {
+      flag = findMinCost(connectingNodes);
+
+      /* toc */
+      printf("nodes: %.0f, min cost %.3f \n", 1.0 + (double)i, flag);
+      fflush(stdout);
     }
 
     /*        if numPaths==1 && firstSol==0 */
@@ -137,117 +202,116 @@ double benchmarkRRT(void)
   /*              connectingNodes = [connectingNodes ; tree(i,:)]; */
   /*          end */
   /*      end */
-  loop_ub = tree->size[0];
-  i0 = idx->size[0];
-  idx->size[0] = loop_ub;
-  emxEnsureCapacity_boolean_T(idx, i0);
-  for (i0 = 0; i0 < loop_ub; i0++) {
-    idx->data[i0] = (tree->data[i0 + (tree->size[0] << 2)] == 1.0);
+  n = tree->size[0];
+  imid = idx->size[0];
+  idx->size[0] = n;
+  emxEnsureCapacity_boolean_T(idx, imid);
+  for (imid = 0; imid < n; imid++) {
+    idx->data[imid] = (tree->data[imid + (tree->size[0] << 2)] == 1.0);
   }
 
-  end = idx->size[0] - 1;
-  loop_ub = 0;
-  for (i = 0; i <= end; i++) {
+  ilo = idx->size[0] - 1;
+  n = 0;
+  for (i = 0; i <= ilo; i++) {
     if (idx->data[i]) {
-      loop_ub++;
+      n++;
     }
   }
 
   emxInit_int32_T(&r0, 1);
-  i0 = r0->size[0];
-  r0->size[0] = loop_ub;
-  emxEnsureCapacity_int32_T(r0, i0);
-  loop_ub = 0;
-  for (i = 0; i <= end; i++) {
+  imid = r0->size[0];
+  r0->size[0] = n;
+  emxEnsureCapacity_int32_T(r0, imid);
+  n = 0;
+  for (i = 0; i <= ilo; i++) {
     if (idx->data[i]) {
-      r0->data[loop_ub] = i + 1;
-      loop_ub++;
+      r0->data[n] = i + 1;
+      n++;
     }
   }
 
   emxFree_boolean_T(&idx);
-  i0 = connectingNodes->size[0] * connectingNodes->size[1];
+  imid = connectingNodes->size[0] * connectingNodes->size[1];
   connectingNodes->size[0] = r0->size[0];
   connectingNodes->size[1] = 8;
-  emxEnsureCapacity_real_T(connectingNodes, i0);
-  for (i0 = 0; i0 < 8; i0++) {
-    loop_ub = r0->size[0];
-    for (i = 0; i < loop_ub; i++) {
-      connectingNodes->data[i + connectingNodes->size[0] * i0] = tree->data
-        [(r0->data[i] + tree->size[0] * i0) - 1];
+  emxEnsureCapacity_real_T(connectingNodes, imid);
+  for (imid = 0; imid < 8; imid++) {
+    n = r0->size[0];
+    for (ihi = 0; ihi < n; ihi++) {
+      connectingNodes->data[ihi + connectingNodes->size[0] * imid] = tree->data
+        [(r0->data[ihi] + tree->size[0] * imid) - 1];
     }
   }
 
   emxFree_real_T(&tree);
 
   /* NOTE */
-  i0 = r0->size[0];
+  imid = r0->size[0];
   emxFree_int32_T(&r0);
-  for (loop_ub = 0; loop_ub < i0; loop_ub++) {
-    b_connectingNodes[0] = connectingNodes->data[loop_ub] - 18.0;
-    b_connectingNodes[1] = connectingNodes->data[loop_ub + connectingNodes->
-      size[0]] - 18.0;
+  for (n = 0; n < imid; n++) {
+    b_connectingNodes[0] = connectingNodes->data[n] - 18.0;
+    b_connectingNodes[1] = connectingNodes->data[n + connectingNodes->size[0]] -
+      18.0;
     if (b_norm(b_connectingNodes) >= 0.2) {
-      for (i = 0; i < 8; i++) {
-        connectingNodes_data[i] = connectingNodes->data[loop_ub +
-          connectingNodes->size[0] * i];
+      for (ihi = 0; ihi < 8; ihi++) {
+        connectingNodes_data[ihi] = connectingNodes->data[n +
+          connectingNodes->size[0] * ihi];
       }
 
       c_segment_cost(connectingNodes_data, &lcost, &unusedU0);
-      connectingNodes->data[loop_ub + connectingNodes->size[0] * 5] += lcost.re;
+      connectingNodes->data[n + connectingNodes->size[0] * 5] += lcost.re;
     }
   }
 
   /*  find minimum cost last node */
-  i0 = connectingNodes->size[0];
-  i = connectingNodes->size[0];
-  if (i <= 2) {
-    i0 = connectingNodes->size[0];
-    if (i0 == 1) {
-      end = 1;
+  imid = connectingNodes->size[0];
+  ihi = connectingNodes->size[0];
+  if (ihi <= 2) {
+    imid = connectingNodes->size[0];
+    if (imid == 1) {
+      ilo = 1;
     } else if ((connectingNodes->data[connectingNodes->size[0] * 5] >
                 connectingNodes->data[1 + connectingNodes->size[0] * 5]) ||
                (rtIsNaN(connectingNodes->data[connectingNodes->size[0] * 5]) &&
                 (!rtIsNaN(connectingNodes->data[1 + connectingNodes->size[0] * 5]))))
     {
-      end = 2;
+      ilo = 2;
     } else {
-      end = 1;
+      ilo = 1;
     }
   } else {
     if (!rtIsNaN(connectingNodes->data[connectingNodes->size[0] * 5])) {
-      end = 1;
+      ilo = 1;
     } else {
-      end = 0;
-      loop_ub = 2;
+      ilo = 0;
+      n = 2;
       do {
-        exitg1 = 0;
-        i = connectingNodes->size[0];
-        if (loop_ub <= i) {
-          if (!rtIsNaN(connectingNodes->data[(loop_ub + connectingNodes->size[0]
-                * 5) - 1])) {
-            end = loop_ub;
-            exitg1 = 1;
+        exitg2 = 0;
+        ihi = connectingNodes->size[0];
+        if (n <= ihi) {
+          if (!rtIsNaN(connectingNodes->data[(n + connectingNodes->size[0] * 5)
+                       - 1])) {
+            ilo = n;
+            exitg2 = 1;
           } else {
-            loop_ub++;
+            n++;
           }
         } else {
-          exitg1 = 1;
+          exitg2 = 1;
         }
-      } while (exitg1 == 0);
+      } while (exitg2 == 0);
     }
 
-    if (end == 0) {
-      end = 1;
+    if (ilo == 0) {
+      ilo = 1;
     } else {
-      flag = connectingNodes->data[(end + connectingNodes->size[0] * 5) - 1];
-      i = end + 1;
-      for (loop_ub = i; loop_ub <= i0; loop_ub++) {
-        if (flag > connectingNodes->data[(loop_ub + connectingNodes->size[0] * 5)
-            - 1]) {
-          flag = connectingNodes->data[(loop_ub + connectingNodes->size[0] * 5)
-            - 1];
-          end = loop_ub;
+      flag = connectingNodes->data[(ilo + connectingNodes->size[0] * 5) - 1];
+      ihi = ilo + 1;
+      for (n = ihi; n <= imid; n++) {
+        if (flag > connectingNodes->data[(n + connectingNodes->size[0] * 5) - 1])
+        {
+          flag = connectingNodes->data[(n + connectingNodes->size[0] * 5) - 1];
+          ilo = n;
         }
       }
     }
@@ -255,13 +319,13 @@ double benchmarkRRT(void)
 
   /*      cost */
   /*  construct lowest cost path */
-  b_connectingNodes[0] = connectingNodes->data[end - 1] - 18.0;
-  b_connectingNodes[1] = connectingNodes->data[(end + connectingNodes->size[0])
+  b_connectingNodes[0] = connectingNodes->data[ilo - 1] - 18.0;
+  b_connectingNodes[1] = connectingNodes->data[(ilo + connectingNodes->size[0])
     - 1] - 18.0;
   if (b_norm(b_connectingNodes) >= 0.2) {
-    for (i0 = 0; i0 < 8; i0++) {
-      connectingNodes_data[i0] = connectingNodes->data[(end +
-        connectingNodes->size[0] * i0) - 1];
+    for (imid = 0; imid < 8; imid++) {
+      connectingNodes_data[imid] = connectingNodes->data[(ilo +
+        connectingNodes->size[0] * imid) - 1];
     }
 
     c_segment_cost(connectingNodes_data, &lcost, &unusedU0);

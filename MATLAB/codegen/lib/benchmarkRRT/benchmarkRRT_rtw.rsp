@@ -10,6 +10,7 @@ collision.obj
 collisionKnowTf.obj
 cost_eval.obj
 eml_rand_mt19937ar_stateful.obj
+findMinCost.obj
 linspace.obj
 norm.obj
 opt_time.obj

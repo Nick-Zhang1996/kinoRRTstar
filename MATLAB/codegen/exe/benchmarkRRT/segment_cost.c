@@ -26,11 +26,14 @@ void b_segment_cost(const double from_node[4], const double to_point_data[],
   double dv3[5];
   creal_T Tf_data[4];
   int Tf_size[1];
-  int end;
+  int nx;
+  int k;
+  double x_data[4];
+  double y_data[4];
+  boolean_T tmp_data[4];
   int trueCount;
-  int i;
   int partialTrueCount;
-  signed char tmp_data[4];
+  signed char b_tmp_data[4];
   creal_T varargin_1_data[4];
   creal_T dc2;
   boolean_T SCALEA;
@@ -45,47 +48,62 @@ void b_segment_cost(const double from_node[4], const double to_point_data[],
            to_point_data[0], to_point_data[1], to_point_data[2], to_point_data[3],
            dv3);
   roots(dv3, Tf_data, Tf_size);
-  end = Tf_size[0] - 1;
+  nx = Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    x_data[k] = Tf_data[k].im;
+  }
+
+  nx = Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    y_data[k] = fabs(x_data[k]);
+  }
+
+  nx = (signed char)Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    tmp_data[k] = (y_data[k] < 0.0001);
+  }
+
+  nx = (signed char)Tf_size[0] - 1;
   trueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].im == 0.0) {
+  for (k = 0; k <= nx; k++) {
+    if (tmp_data[k]) {
       trueCount++;
     }
   }
 
   partialTrueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].im == 0.0) {
-      Tf_data[partialTrueCount] = Tf_data[i];
+  for (k = 0; k <= nx; k++) {
+    if (tmp_data[k]) {
+      Tf_data[partialTrueCount] = Tf_data[k];
       partialTrueCount++;
     }
   }
 
   /* NOTE */
-  end = trueCount - 1;
+  nx = trueCount - 1;
   trueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].re >= 0.0) {
+  for (k = 0; k <= nx; k++) {
+    if (Tf_data[k].re >= 0.0) {
       trueCount++;
     }
   }
 
   partialTrueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].re >= 0.0) {
-      tmp_data[partialTrueCount] = (signed char)(i + 1);
+  for (k = 0; k <= nx; k++) {
+    if (Tf_data[k].re >= 0.0) {
+      b_tmp_data[partialTrueCount] = (signed char)(k + 1);
       partialTrueCount++;
     }
   }
 
-  for (end = 0; end < trueCount; end++) {
-    varargin_1_data[end] = Tf_data[tmp_data[end] - 1];
+  for (k = 0; k < trueCount; k++) {
+    varargin_1_data[k] = Tf_data[b_tmp_data[k] - 1];
   }
 
   *Tf = varargin_1_data[0];
-  for (end = 2; end <= trueCount; end++) {
-    dc2 = varargin_1_data[end - 1];
-    if (rtIsNaN(dc2.re) || rtIsNaN(varargin_1_data[end - 1].im)) {
+  for (k = 2; k <= trueCount; k++) {
+    dc2 = varargin_1_data[k - 1];
+    if (rtIsNaN(dc2.re) || rtIsNaN(varargin_1_data[k - 1].im)) {
       SCALEA = false;
     } else if (rtIsNaN(Tf->re) || rtIsNaN(Tf->im)) {
       SCALEA = true;
@@ -98,8 +116,8 @@ void b_segment_cost(const double from_node[4], const double to_point_data[],
         SCALEA = false;
       }
 
-      mb = fabs(varargin_1_data[end - 1].re);
-      if ((mb > 8.9884656743115785E+307) || (fabs(varargin_1_data[end - 1].im) >
+      mb = fabs(varargin_1_data[k - 1].re);
+      if ((mb > 8.9884656743115785E+307) || (fabs(varargin_1_data[k - 1].im) >
            8.9884656743115785E+307)) {
         SCALEB = true;
       } else {
@@ -108,17 +126,16 @@ void b_segment_cost(const double from_node[4], const double to_point_data[],
 
       if (SCALEA || SCALEB) {
         x = rt_hypotd_snf(Tf->re / 2.0, Tf->im / 2.0);
-        br = rt_hypotd_snf(varargin_1_data[end - 1].re / 2.0,
-                           varargin_1_data[end - 1].im / 2.0);
+        br = rt_hypotd_snf(varargin_1_data[k - 1].re / 2.0, varargin_1_data[k -
+                           1].im / 2.0);
       } else {
         x = rt_hypotd_snf(Tf->re, Tf->im);
-        br = rt_hypotd_snf(varargin_1_data[end - 1].re, varargin_1_data[end - 1]
-                           .im);
+        br = rt_hypotd_snf(varargin_1_data[k - 1].re, varargin_1_data[k - 1].im);
       }
 
       if (x == br) {
         Mb = fabs(Tf->im);
-        br = fabs(varargin_1_data[end - 1].im);
+        br = fabs(varargin_1_data[k - 1].im);
         if (ma > Mb) {
           Ma = ma;
           ma = Mb;
@@ -156,11 +173,11 @@ void b_segment_cost(const double from_node[4], const double to_point_data[],
 
         if (x == br) {
           x = rt_atan2d_snf(Tf->im, Tf->re);
-          br = rt_atan2d_snf(varargin_1_data[end - 1].im, varargin_1_data[end -
-                             1].re);
+          br = rt_atan2d_snf(varargin_1_data[k - 1].im, varargin_1_data[k - 1].
+                             re);
           if (x == br) {
-            br = varargin_1_data[end - 1].re;
-            Mb = varargin_1_data[end - 1].im;
+            br = varargin_1_data[k - 1].re;
+            Mb = varargin_1_data[k - 1].im;
             if (x > 0.78539816339744828) {
               if (x > 2.3561944901923448) {
                 x = -Tf->im;
@@ -205,11 +222,14 @@ void c_segment_cost(const double from_node_data[], creal_T *cost, creal_T *Tf)
   double dv5[5];
   creal_T Tf_data[4];
   int Tf_size[1];
-  int end;
+  int nx;
+  int k;
+  double x_data[4];
+  double y_data[4];
+  boolean_T tmp_data[4];
   int trueCount;
-  int i;
   int partialTrueCount;
-  signed char tmp_data[4];
+  signed char b_tmp_data[4];
   creal_T varargin_1_data[4];
   creal_T dc4;
   boolean_T SCALEA;
@@ -223,47 +243,62 @@ void c_segment_cost(const double from_node_data[], creal_T *cost, creal_T *Tf)
   opt_time(from_node_data[0], from_node_data[1], from_node_data[2],
            from_node_data[3], 18.0, 18.0, 0.0, 0.0, dv5);
   roots(dv5, Tf_data, Tf_size);
-  end = Tf_size[0] - 1;
+  nx = Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    x_data[k] = Tf_data[k].im;
+  }
+
+  nx = Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    y_data[k] = fabs(x_data[k]);
+  }
+
+  nx = (signed char)Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    tmp_data[k] = (y_data[k] < 0.0001);
+  }
+
+  nx = (signed char)Tf_size[0] - 1;
   trueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].im == 0.0) {
+  for (k = 0; k <= nx; k++) {
+    if (tmp_data[k]) {
       trueCount++;
     }
   }
 
   partialTrueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].im == 0.0) {
-      Tf_data[partialTrueCount] = Tf_data[i];
+  for (k = 0; k <= nx; k++) {
+    if (tmp_data[k]) {
+      Tf_data[partialTrueCount] = Tf_data[k];
       partialTrueCount++;
     }
   }
 
   /* NOTE */
-  end = trueCount - 1;
+  nx = trueCount - 1;
   trueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].re >= 0.0) {
+  for (k = 0; k <= nx; k++) {
+    if (Tf_data[k].re >= 0.0) {
       trueCount++;
     }
   }
 
   partialTrueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].re >= 0.0) {
-      tmp_data[partialTrueCount] = (signed char)(i + 1);
+  for (k = 0; k <= nx; k++) {
+    if (Tf_data[k].re >= 0.0) {
+      b_tmp_data[partialTrueCount] = (signed char)(k + 1);
       partialTrueCount++;
     }
   }
 
-  for (end = 0; end < trueCount; end++) {
-    varargin_1_data[end] = Tf_data[tmp_data[end] - 1];
+  for (k = 0; k < trueCount; k++) {
+    varargin_1_data[k] = Tf_data[b_tmp_data[k] - 1];
   }
 
   *Tf = varargin_1_data[0];
-  for (end = 2; end <= trueCount; end++) {
-    dc4 = varargin_1_data[end - 1];
-    if (rtIsNaN(dc4.re) || rtIsNaN(varargin_1_data[end - 1].im)) {
+  for (k = 2; k <= trueCount; k++) {
+    dc4 = varargin_1_data[k - 1];
+    if (rtIsNaN(dc4.re) || rtIsNaN(varargin_1_data[k - 1].im)) {
       SCALEA = false;
     } else if (rtIsNaN(Tf->re) || rtIsNaN(Tf->im)) {
       SCALEA = true;
@@ -276,8 +311,8 @@ void c_segment_cost(const double from_node_data[], creal_T *cost, creal_T *Tf)
         SCALEA = false;
       }
 
-      mb = fabs(varargin_1_data[end - 1].re);
-      if ((mb > 8.9884656743115785E+307) || (fabs(varargin_1_data[end - 1].im) >
+      mb = fabs(varargin_1_data[k - 1].re);
+      if ((mb > 8.9884656743115785E+307) || (fabs(varargin_1_data[k - 1].im) >
            8.9884656743115785E+307)) {
         SCALEB = true;
       } else {
@@ -286,17 +321,16 @@ void c_segment_cost(const double from_node_data[], creal_T *cost, creal_T *Tf)
 
       if (SCALEA || SCALEB) {
         x = rt_hypotd_snf(Tf->re / 2.0, Tf->im / 2.0);
-        br = rt_hypotd_snf(varargin_1_data[end - 1].re / 2.0,
-                           varargin_1_data[end - 1].im / 2.0);
+        br = rt_hypotd_snf(varargin_1_data[k - 1].re / 2.0, varargin_1_data[k -
+                           1].im / 2.0);
       } else {
         x = rt_hypotd_snf(Tf->re, Tf->im);
-        br = rt_hypotd_snf(varargin_1_data[end - 1].re, varargin_1_data[end - 1]
-                           .im);
+        br = rt_hypotd_snf(varargin_1_data[k - 1].re, varargin_1_data[k - 1].im);
       }
 
       if (x == br) {
         Mb = fabs(Tf->im);
-        br = fabs(varargin_1_data[end - 1].im);
+        br = fabs(varargin_1_data[k - 1].im);
         if (ma > Mb) {
           Ma = ma;
           ma = Mb;
@@ -334,11 +368,11 @@ void c_segment_cost(const double from_node_data[], creal_T *cost, creal_T *Tf)
 
         if (x == br) {
           x = rt_atan2d_snf(Tf->im, Tf->re);
-          br = rt_atan2d_snf(varargin_1_data[end - 1].im, varargin_1_data[end -
-                             1].re);
+          br = rt_atan2d_snf(varargin_1_data[k - 1].im, varargin_1_data[k - 1].
+                             re);
           if (x == br) {
-            br = varargin_1_data[end - 1].re;
-            Mb = varargin_1_data[end - 1].im;
+            br = varargin_1_data[k - 1].re;
+            Mb = varargin_1_data[k - 1].im;
             if (x > 0.78539816339744828) {
               if (x > 2.3561944901923448) {
                 x = -Tf->im;
@@ -383,11 +417,14 @@ void segment_cost(const double from_node_data[], const double to_point[4],
   double dv2[5];
   creal_T Tf_data[4];
   int Tf_size[1];
-  int end;
+  int nx;
+  int k;
+  double x_data[4];
+  double y_data[4];
+  boolean_T tmp_data[4];
   int trueCount;
-  int i;
   int partialTrueCount;
-  signed char tmp_data[4];
+  signed char b_tmp_data[4];
   creal_T varargin_1_data[4];
   creal_T dc1;
   boolean_T SCALEA;
@@ -402,47 +439,62 @@ void segment_cost(const double from_node_data[], const double to_point[4],
            from_node_data[3], to_point[0], to_point[1], to_point[2], to_point[3],
            dv2);
   roots(dv2, Tf_data, Tf_size);
-  end = Tf_size[0] - 1;
+  nx = Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    x_data[k] = Tf_data[k].im;
+  }
+
+  nx = Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    y_data[k] = fabs(x_data[k]);
+  }
+
+  nx = (signed char)Tf_size[0];
+  for (k = 0; k < nx; k++) {
+    tmp_data[k] = (y_data[k] < 0.0001);
+  }
+
+  nx = (signed char)Tf_size[0] - 1;
   trueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].im == 0.0) {
+  for (k = 0; k <= nx; k++) {
+    if (tmp_data[k]) {
       trueCount++;
     }
   }
 
   partialTrueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].im == 0.0) {
-      Tf_data[partialTrueCount] = Tf_data[i];
+  for (k = 0; k <= nx; k++) {
+    if (tmp_data[k]) {
+      Tf_data[partialTrueCount] = Tf_data[k];
       partialTrueCount++;
     }
   }
 
   /* NOTE */
-  end = trueCount - 1;
+  nx = trueCount - 1;
   trueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].re >= 0.0) {
+  for (k = 0; k <= nx; k++) {
+    if (Tf_data[k].re >= 0.0) {
       trueCount++;
     }
   }
 
   partialTrueCount = 0;
-  for (i = 0; i <= end; i++) {
-    if (Tf_data[i].re >= 0.0) {
-      tmp_data[partialTrueCount] = (signed char)(i + 1);
+  for (k = 0; k <= nx; k++) {
+    if (Tf_data[k].re >= 0.0) {
+      b_tmp_data[partialTrueCount] = (signed char)(k + 1);
       partialTrueCount++;
     }
   }
 
-  for (end = 0; end < trueCount; end++) {
-    varargin_1_data[end] = Tf_data[tmp_data[end] - 1];
+  for (k = 0; k < trueCount; k++) {
+    varargin_1_data[k] = Tf_data[b_tmp_data[k] - 1];
   }
 
   *Tf = varargin_1_data[0];
-  for (end = 2; end <= trueCount; end++) {
-    dc1 = varargin_1_data[end - 1];
-    if (rtIsNaN(dc1.re) || rtIsNaN(varargin_1_data[end - 1].im)) {
+  for (k = 2; k <= trueCount; k++) {
+    dc1 = varargin_1_data[k - 1];
+    if (rtIsNaN(dc1.re) || rtIsNaN(varargin_1_data[k - 1].im)) {
       SCALEA = false;
     } else if (rtIsNaN(Tf->re) || rtIsNaN(Tf->im)) {
       SCALEA = true;
@@ -455,8 +507,8 @@ void segment_cost(const double from_node_data[], const double to_point[4],
         SCALEA = false;
       }
 
-      mb = fabs(varargin_1_data[end - 1].re);
-      if ((mb > 8.9884656743115785E+307) || (fabs(varargin_1_data[end - 1].im) >
+      mb = fabs(varargin_1_data[k - 1].re);
+      if ((mb > 8.9884656743115785E+307) || (fabs(varargin_1_data[k - 1].im) >
            8.9884656743115785E+307)) {
         SCALEB = true;
       } else {
@@ -465,17 +517,16 @@ void segment_cost(const double from_node_data[], const double to_point[4],
 
       if (SCALEA || SCALEB) {
         x = rt_hypotd_snf(Tf->re / 2.0, Tf->im / 2.0);
-        br = rt_hypotd_snf(varargin_1_data[end - 1].re / 2.0,
-                           varargin_1_data[end - 1].im / 2.0);
+        br = rt_hypotd_snf(varargin_1_data[k - 1].re / 2.0, varargin_1_data[k -
+                           1].im / 2.0);
       } else {
         x = rt_hypotd_snf(Tf->re, Tf->im);
-        br = rt_hypotd_snf(varargin_1_data[end - 1].re, varargin_1_data[end - 1]
-                           .im);
+        br = rt_hypotd_snf(varargin_1_data[k - 1].re, varargin_1_data[k - 1].im);
       }
 
       if (x == br) {
         Mb = fabs(Tf->im);
-        br = fabs(varargin_1_data[end - 1].im);
+        br = fabs(varargin_1_data[k - 1].im);
         if (ma > Mb) {
           Ma = ma;
           ma = Mb;
@@ -513,11 +564,11 @@ void segment_cost(const double from_node_data[], const double to_point[4],
 
         if (x == br) {
           x = rt_atan2d_snf(Tf->im, Tf->re);
-          br = rt_atan2d_snf(varargin_1_data[end - 1].im, varargin_1_data[end -
-                             1].re);
+          br = rt_atan2d_snf(varargin_1_data[k - 1].im, varargin_1_data[k - 1].
+                             re);
           if (x == br) {
-            br = varargin_1_data[end - 1].re;
-            Mb = varargin_1_data[end - 1].im;
+            br = varargin_1_data[k - 1].re;
+            Mb = varargin_1_data[k - 1].im;
             if (x > 0.78539816339744828) {
               if (x > 2.3561944901923448) {
                 x = -Tf->im;

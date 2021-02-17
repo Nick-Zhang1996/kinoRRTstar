@@ -30,7 +30,7 @@ tree = start_node;
 %coder.varsize('GChild')
 GChild  = zeros(2000,200);
 %GChild = [0];
-% tic
+%tic
 
 % check to see if start_node connects directly to end_node
 if norm(start_node(1:dim)-end_node(1:dim))<segmentLength && collision(start_node,end_node,world,dim)==0
@@ -40,12 +40,31 @@ else
   its = 0;
   numPaths = 0;
 
+  found_sol = 0;
   for i = 1:samples
 
       [tree,GChild,flag] = extendTree(tree,GChild,end_node,segmentLength,radius,world,0,dim);
+  
       numPaths = numPaths + flag;
       its = its+1;
-
+      if mod(i,100) == 0
+          fprintf("%.0f nodes \n",i);
+      end
+      
+      % report first solution
+      % its, time, cost
+      if flag == 1 && numPaths==0
+          min_cost = findMinCost(tree,end_node,dim);
+          %toc
+          fprintf("nodes: %.0f, min cost %.3f \n",i, min_cost);
+      end
+      
+      if ismember(i, [400,1000,2000,3000,4000])
+         min_cost = findMinCost(tree,end_node,dim);
+         %toc
+         fprintf("nodes: %.0f, min cost %.3f \n",i, min_cost);
+      end 
+      
 %       if numPaths==1 && firstSol==0
 %         toc  
 %         firstSol=1;
@@ -210,6 +229,8 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
       
       new_node = [new_point, 0 , real(min_cost), min_parent_idx, 0];
       new_tree = [tree; new_node];
+      % DEBUG check new node cost
+      %fprintf("new node cost %.2f",real(min_cost));
       new_node_idx = size(new_tree, 1);      
       new_tree(min_parent_idx, 2 * dim + 4) = new_tree(min_parent_idx, 2 * dim + 4) + 1;     % ChildNum + 1
 

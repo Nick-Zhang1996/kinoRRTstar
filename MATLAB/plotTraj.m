@@ -9,7 +9,7 @@ for i=1:size(path,1)-1
     in = num2cell([path(i, 1 : 4), path(i + 1, 1 : 4)]);
 %     Tf = norm(path(i, 1 : 4) - path(i + 1, 1 : 4))/0.8;
     Tf = roots(obj.eval_arrival_internal(in{:}));
-    Tf = Tf(imag(Tf) == 0);
+    Tf = Tf(abs(imag(Tf)) < 0.0001);
     Tf = min(Tf(Tf >= 0));
 
     states = @(t)obj.eval_states_internal(t, Tf, in{:});
