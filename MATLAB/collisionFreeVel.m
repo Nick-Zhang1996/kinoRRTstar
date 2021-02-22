@@ -1,10 +1,15 @@
-function [collision_flag, Tf] = collisionKnowTf(parent, node, world, dim, Tf)
+function [collision_flag, Tf, xf] = collisionFreeVel(parent, node, world, dim)
 
 collision_flag = 0;
 
 if collision_flag == 0 && dim == 2
     
-    states = @(t)DI_state(t, Tf, parent(1), parent(2), parent(3), parent(4), node(1), node(2), node(3), node(4));
+%     Tf = norm(parent(1 : 4) - node(1 : 4))/0.8;
+    Tf = roots(DI_timeFreeVel(parent(1), parent(2), parent(3), parent(4), node(1), node(2)));
+    Tf = Tf(abs(imag(Tf)) < 0.0001);
+    Tf = min(Tf(Tf >= 0));
+    
+    states = @(t)DI_stateFreeVel(t, Tf, parent(1), parent(2), parent(3), parent(4), node(1), node(2));
     checkpoints = 10;
     state = zeros(2*dim, checkpoints);
     t = linspace(0, Tf, checkpoints + 2);
@@ -12,6 +17,8 @@ if collision_flag == 0 && dim == 2
         state(:, i) = states(t(i + 1));
     end
     traj = state(1 : 2, :);
+    
+    xf = states(Tf);
     
     for j = 1 : checkpoints
     p = traj(:, j);
@@ -35,7 +42,11 @@ if collision_flag == 0 && dim == 2
 %%%%% dim=3 case has not been implemented yet %%%%%
 elseif collision_flag == 0 && dim ==3
     
-    states = @(t)DI3d_state(t, Tf, parent(1), parent(2), parent(3), parent(4), parent(5), parent(6), node(1), node(2), node(3), node(4), node(5), node(6));
+    Tf = roots(DI3d_timeFreeVel(parent(1), parent(2), parent(3), parent(4), parent(5), parent(6), node(1), node(2), node(3)));
+    Tf = Tf(abs(imag(Tf)) < 0.0001);
+    Tf = min(Tf(Tf >= 0));
+    
+    states = @(t)DI3d_stateFreeVel(t, Tf, parent(1), parent(2), parent(3), parent(4), parent(5), parent(6), node(1), node(2), node(3));
     checkpoints = 10;
     state = zeros(2*dim, checkpoints);
     t = linspace(0, Tf, checkpoints + 2);
@@ -43,6 +54,8 @@ elseif collision_flag == 0 && dim ==3
         state(:, i) = states(t(i + 1));
     end
     traj = state(1 : 3, :);
+    
+    xf = states(Tf);
     
     for j = 1 : checkpoints
     p = traj(:, j);

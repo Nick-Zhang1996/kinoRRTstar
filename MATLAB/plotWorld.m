@@ -39,15 +39,9 @@ function plotWorld(world,path,dim)
       surf(X+world.cx(i),Y+world.cy(i),Z+world.cz(i));
       colormap([0.5,0.5,0.5]);
   end
-
-  X = path(:,1);
-  Y = path(:,2);
-  Z = path(:,3);
-  p = plot3(X,Y,Z);
   
   end
-  
- 
+
   xl = xlabel('$x  (m)$','Interpreter','LaTeX');
   yl = ylabel('$y  (m)$','Interpreter','LaTeX');
   zl = zlabel('$z  (m)$','Interpreter','LaTeX');
@@ -55,4 +49,5 @@ function plotWorld(world,path,dim)
   set(yl,'FontSize',18);
   set(zl,'FontSize',18);
   set(gca,'FontSize',16,'FontName','Times');
+  
 end

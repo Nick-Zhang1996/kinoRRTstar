@@ -1,9 +1,8 @@
+
 % clc;
 % close all;
 % clear all;
-
 function [retval] = benchmarkRRT()
-
 %tic
 num_of_runs = 1;
 run_RRTstar = 1;
@@ -15,9 +14,9 @@ if dim == 2
     radius = 3;
     samples = 4000;
 elseif dim == 3
-    stepsize = 3;
-    radius = 3;
-    samples = 1000;
+    stepsize = 4;
+    radius = 4;
+    samples = 4000;
 end
 
 random_world = 0;
@@ -28,25 +27,22 @@ show_output = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-for sits = 1:size(stepsize,2)
-    
-    segmentLength = stepsize(sits);
+    ItsM = [];
+    timeM = [];
+    costM = [];
+    segmentLength = stepsize;
 
     if run_RRTstar == 1
-    avg_its = 0;
-    avg_path = 0;
+
         for i = 1:num_of_runs
-            [n_its, path_n] = RRTstar3D(dim, segmentLength, radius, random_world, show_output, samples);
-            avg_its = avg_its + n_its;
-            avg_path = avg_path + path_n;
+            [Its, time, cost] = RRTstar3D(dim, segmentLength, radius, random_world, show_output, samples);
+            costM = [costM; cost];
+            timeM = [timeM; time];
+            ItsM = [ItsM; Its];
         end
 
     end
     
-end
 retval = 0;
 %toc
 end

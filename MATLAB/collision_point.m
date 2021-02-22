@@ -21,7 +21,7 @@ if collision_flag == 0 && dim ==2
 elseif collision_flag == 0 && dim ==3
       % check each obstacle
       for i=1:world.NumObstacles
-        if (norm([p(1);p(2);p(3)]-[world.cx(i); world.cy(i); world.cz(i)])<=world.radius(i))
+        if (norm([p(1);p(2);p(3)]-[world.cx(i); world.cy(i); world.cz(i)])<=world.radius(i)+0.1)
             collision_flag = 1;
             break;
         end

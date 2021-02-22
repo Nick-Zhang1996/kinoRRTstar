@@ -48,6 +48,8 @@ NumObstacles = 5;
     end
 
   elseif dim == 3
-        return;
+
+   return
+   
    end
 end

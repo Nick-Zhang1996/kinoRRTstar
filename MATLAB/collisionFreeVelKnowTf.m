@@ -1,10 +1,10 @@
-function [collision_flag, Tf] = collisionKnowTf(parent, node, world, dim, Tf)
+function [collision_flag, Tf, xf] = collisionFreeVelKnowTf(parent, node, world, dim, Tf)
 
 collision_flag = 0;
 
 if collision_flag == 0 && dim == 2
     
-    states = @(t)DI_state(t, Tf, parent(1), parent(2), parent(3), parent(4), node(1), node(2), node(3), node(4));
+    states = @(t)DI_stateFreeVel(t, Tf, parent(1), parent(2), parent(3), parent(4), node(1), node(2));
     checkpoints = 10;
     state = zeros(2*dim, checkpoints);
     t = linspace(0, Tf, checkpoints + 2);
@@ -12,6 +12,8 @@ if collision_flag == 0 && dim == 2
         state(:, i) = states(t(i + 1));
     end
     traj = state(1 : 2, :);
+    
+    xf = states(Tf);
     
     for j = 1 : checkpoints
     p = traj(:, j);
@@ -35,7 +37,7 @@ if collision_flag == 0 && dim == 2
 %%%%% dim=3 case has not been implemented yet %%%%%
 elseif collision_flag == 0 && dim ==3
     
-    states = @(t)DI3d_state(t, Tf, parent(1), parent(2), parent(3), parent(4), parent(5), parent(6), node(1), node(2), node(3), node(4), node(5), node(6));
+    states = @(t)DI3d_stateFreeVel(t, Tf, parent(1), parent(2), parent(3), parent(4), parent(5), parent(6), node(1), node(2), node(3));
     checkpoints = 10;
     state = zeros(2*dim, checkpoints);
     t = linspace(0, Tf, checkpoints + 2);
@@ -43,6 +45,8 @@ elseif collision_flag == 0 && dim ==3
         state(:, i) = states(t(i + 1));
     end
     traj = state(1 : 3, :);
+    
+    xf = states(Tf);
     
     for j = 1 : checkpoints
     p = traj(:, j);
@@ -58,7 +62,7 @@ elseif collision_flag == 0 && dim ==3
       for i=1:world.NumObstacles
         if sum(([p(1);p(2);p(3)]-[world.cx(i); world.cy(i); world.cz(i)]).*([p(1);p(2);p(3)]-[world.cx(i); world.cy(i); world.cz(i)]))<(world.radius(i)+0.1)^2  % (norm([p(1);p(2)]-[world.cx(i); world.cy(i)])<=1*world.radius(i))
             collision_flag = 1;
-            return;    
+            return;  
         end
       end
     end
