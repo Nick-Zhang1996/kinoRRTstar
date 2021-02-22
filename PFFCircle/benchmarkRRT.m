@@ -3,7 +3,7 @@
 % close all;
 % clear all;
 function [retval] = benchmarkRRT()
-tic
+%tic
 num_of_runs = 1;
 run_RRTstar = 1;
 
@@ -44,5 +44,5 @@ show_output = 1;
     end
     
 retval = 0;
-toc
+%toc
 end
