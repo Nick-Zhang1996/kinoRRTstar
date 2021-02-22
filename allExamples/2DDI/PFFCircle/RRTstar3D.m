@@ -33,7 +33,7 @@ GChild  = [];
 coder.varsize('GChild')
 % GChild = zeros(400, 500);
 
-tic
+%tic
 
 % check to see if start_node connects directly to end_node
 if norm(start_node(1:dim)-end_node(1:dim))<segmentLength && collision(start_node,end_node,world,dim)==0
@@ -42,79 +42,85 @@ else
   if samples >0
   numPaths = 0;
   for i = 1:samples
-      [tree,GChild,flag] = extendTree(tree,GChild,end_node,segmentLength,radius,world,0,dim,numPaths);
+
+      [a,b,c] = extendTree(tree,GChild,end_node,segmentLength,radius,world,0,dim,numPaths);
+      %[tree,GChild,flag] = [a,b,c];
+      tree = a;
+      GChild = b;
+      flag = c;
+      
       numPaths = numPaths + flag;
 
       if numPaths==1 && firstSol==0
         firstSol=1;
         tree_small = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==200
         tree_200 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==400
         tree_400 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==600
         tree_600 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==800
         tree_800 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==1000
         tree_1000 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==1200
         tree_1200 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==1400
         tree_1400 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==1600
         tree_1600 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==1800
         tree_1800 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==2000
         tree_2000 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==2500
         tree_2500 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==3000
         tree_3000 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
       if i==3500
         tree_3500 = tree;
         Its = [Its, i];
-        time = [time, toc];
+        time = [time, 0];
       end
   end
 
@@ -126,12 +132,12 @@ else
       numPaths = numPaths + flag;
       i = i+1;
   end
-  i
+  i;
   end
 
 end
 
-time = [time, toc];
+time = [time, 0];
 Its = [Its, i];
 
 if show_output == 1
@@ -277,7 +283,7 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
                                                                                                                                          
     if collision_flag == 0  
         
-      new_point(dim + 1 : 2 * dim) = xf(dim + 1 : 2 * dim);
+      new_point(dim + 1 : 2 * dim) = real(xf(dim + 1 : 2 * dim));
       [min_cost, ~] = cost_npFreeVel(tree(idx,:), new_point, dim, Tf);                 % total cost from root to new_point through its parent tree(idx,:)
 
       tmp_dist = tree(:, 1 : dim) - new_point(1 : dim);

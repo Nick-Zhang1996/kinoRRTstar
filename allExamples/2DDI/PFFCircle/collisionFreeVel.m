@@ -14,7 +14,7 @@ if collision_flag == 0 && dim == 2
     state = zeros(2*dim, checkpoints);
     t = linspace(0, Tf, checkpoints + 2);
     for i = 1 : checkpoints
-        state(:, i) = states(t(i + 1));
+        state(:, i) = real(states(t(i + 1)));
     end
     traj = state(1 : 2, :);
     

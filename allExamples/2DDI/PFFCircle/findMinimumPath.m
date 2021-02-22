@@ -1,4 +1,5 @@
 function [mypath, cost] = findMinimumPath(tree,end_node,dim)
+%#codegen
     %NOTE
     coder.varsize("mypath");
     % find nodes that connect to end_node
