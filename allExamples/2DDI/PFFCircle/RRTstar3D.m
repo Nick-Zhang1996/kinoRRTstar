@@ -1,11 +1,10 @@
 
 
-function [Its, time, Cost] =  RRTstar3D(dim, segmentLength, radius, random_world, show_output, samples)
+function [its, sizePath] =  RRTstar3D(dim, segmentLength, radius, random_world, show_output, samples) %#codegen
 
-time=[]; Cost=[]; Its = [];
-firstSol=0;
+% firstSol=0;
 
-% planning in state space
+% Planning in state space
 if dim == 2   
     start_cord = [2,2,0,0];
     goal_cord = [18,18,0,0];
@@ -14,7 +13,7 @@ else
     goal_cord = [18,2,18,0,0,0];
 end
 
-% create random world
+% Create random world
 Size = 20;
 if random_world == 0
     [world,~] = createKnownWorld(ones(1,dim)*Size,zeros(1,dim),dim);
@@ -24,15 +23,15 @@ end
 start_node = [start_cord,0,0,0,0];                
 end_node = [goal_cord,0,0,0,0];
 
-% establish tree starting with the start node
+% Establish tree starting with the start node
 tree = [];
 coder.varsize('tree');
 tree = start_node;
 
-GChild  = [];
-coder.varsize('GChild')
-GChild = zeros(samples, samples);
 
+%coder.varsize('GChild')
+GChild  = zeros(samples,samples);
+%GChild = [0];
 %tic
 
 % check to see if start_node connects directly to end_node
@@ -40,200 +39,98 @@ if norm(start_node(1:dim)-end_node(1:dim))<segmentLength && collision(start_node
   path = [start_node; end_node];
 else
   if samples >0
+  its = 0;
   numPaths = 0;
+
+  found_sol = 0;
   for i = 1:samples
 
-      [a,b,c] = extendTree(tree,GChild,end_node,segmentLength,radius,world,0,dim,numPaths);
-      %[tree,GChild,flag] = [a,b,c];
-      tree = a;
-      GChild = b;
-      flag = c;
-      
-      if (mod(i,100)==0)
-          fprintf("nodes = %.0f\n",i);
-      end
-      
+      [tree,GChild,flag] = extendTree(tree,GChild,end_node,segmentLength,radius,world,0,dim,numPaths);
+  
       numPaths = numPaths + flag;
-
-      if numPaths==1 && firstSol==0
-        firstSol=1;
-        tree_small = tree;
-        Its = [Its, i];
-        time = [time, 0];
+      its = its+1;
+%       if mod(i,100) == 0
+%           fprintf("%.0f nodes \n",i);
+%       end
+      
+      % report first solution
+      % its, time, cost
+      if flag == 1 && numPaths==0
+          min_cost = findMinCost(tree,end_node,dim);
+          %toc
+          fprintf("nodes: %.0f, min cost %.3f \n",i, min_cost);
       end
-      if i==200
-        tree_200 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==400
-        tree_400 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==600
-        tree_600 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==800
-        tree_800 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==1000
-        tree_1000 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==1200
-        tree_1200 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==1400
-        tree_1400 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==1600
-        tree_1600 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==1800
-        tree_1800 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==2000
-        tree_2000 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==2500
-        tree_2500 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==3000
-        tree_3000 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
-      if i==3500
-        tree_3500 = tree;
-        Its = [Its, i];
-        time = [time, 0];
-      end
+      
+      if ismember(i, [400,1000,2000,3000,4000])
+         min_cost = findMinCost(tree,end_node,dim);
+         %toc
+         fprintf("nodes: %.0f, min cost %.3f \n",i, min_cost);
+      end 
+      
+%       if numPaths==1 && firstSol==0
+%         toc  
+%         firstSol=1;
+%         tree_small = tree;
+%         its
+%       end
+%       if its==500
+%         toc
+%         tree_500 = tree;
+%       end
+%       if its==1000
+%         toc
+%         tree_1000 = tree;
+%       end
+%       if its==1500
+%         toc
+%         tree_1500 = tree;
+%       end
   end
 
+  
   else
-  i = 0;
+  its = 0;
   numPaths = 0;
   while numPaths < 1
       [tree,GChild,flag] = extendTree(tree,GChild,end_node,segmentLength,radius,world,0,dim,numPaths);
       numPaths = numPaths + flag;
-      i = i+1;
+      its = its+1;
   end
-  i;
+%   its
   end
 
 end
 
-time = [time, 0];
-Its = [Its, i];
+% toc
+% run_time = toc
 
 if show_output == 1
 % figure;
-% [path_first,cost] = findMinimumPath(tree_small,end_node,dim);
-% Cost=[Cost, cost];
-% plotExpandedTree(tree_small,dim);
+% path_first = findMinimumPath(tree_small,end_node,dim);
+% plotExpandedTree(world,tree_small,dim);
 % plotWorld(world,path_first,dim);
 % plotTraj(path_first,dim);
-% % figure;
-% [path_200,cost] = findMinimumPath(tree_200,end_node,dim);
-% Cost=[Cost, cost];
-% % plotExpandedTree(tree_200,dim);
-% % plotWorld(world,path_200,dim);
-% % plotTraj(path_200,dim);
 % figure;
-% [path_400,cost] = findMinimumPath(tree_400,end_node,dim);
-% Cost=[Cost, cost];
-% plotExpandedTree(tree_400,dim);
-% plotWorld(world,path_400,dim);
-% plotTraj(path_400,dim);
-% % figure;
-% [path_600,cost] = findMinimumPath(tree_600,end_node,dim);
-% Cost=[Cost, cost];
-% % plotExpandedTree(tree_600,dim);
-% % plotWorld(world,path_600,dim);
-% % plotTraj(path_600,dim);
-% % figure;
-% [path_800,cost] = findMinimumPath(tree_800,end_node,dim);
-% Cost=[Cost, cost];
-% % plotExpandedTree(tree_800,dim);
-% % plotWorld(world,path_800,dim);
-% % plotTraj(path_800,dim);
-% % figure;
-% [path_1000,cost] = findMinimumPath(tree_1000,end_node,dim);
-% Cost=[Cost, cost];
-% % plotExpandedTree(tree_1000,dim);
-% % plotWorld(world,path_1000,dim);
-% % plotTraj(path_1000,dim);
-% % figure;
-% [path_1200,cost] = findMinimumPath(tree_1200,end_node,dim);
-% Cost=[Cost, cost];
-% % plotExpandedTree(tree_1200,dim);
-% % plotWorld(world,path_1200,dim);
-% % plotTraj(path_1200,dim);
-% % figure;
-% [path_1400,cost] = findMinimumPath(tree_1400,end_node,dim);
-% Cost=[Cost, cost];
-% % plotExpandedTree(tree_1400,dim);
-% % plotWorld(world,path_1400,dim);
-% % plotTraj(path_1400,dim);
-% % figure;
-% [path_1600,cost] = findMinimumPath(tree_1600,end_node,dim);
-% Cost=[Cost, cost];
-% % plotExpandedTree(tree_1600,dim);
-% % plotWorld(world,path_1600,dim);
-% % plotTraj(path_1600,dim);
-% % figure;
-% [path_1800,cost] = findMinimumPath(tree_1800,end_node,dim);
-% Cost=[Cost, cost];
-% % plotExpandedTree(tree_1800,dim);
-% % plotWorld(world,path_1800,dim);
-% % plotTraj(path_1800,dim);
+% path_500 = findMinimumPath(tree_500,end_node,dim);
+% plotExpandedTree(world,tree_500,dim);
+% plotWorld(world,path_500,dim);
+% plotTraj(path_500,dim);
 % figure;
-% [path_2000,cost] = findMinimumPath(tree_2000,end_node,dim);
-% Cost=[Cost, cost];
-% plotExpandedTree(tree_2000,dim);
-% plotWorld(world,path_2000,dim);
-% plotTraj(path_2000,dim);
-% % % figure;
-% [path_2500,cost] = findMinimumPath(tree_2500,end_node,dim);
-% Cost=[Cost, cost];
-% % % plotExpandedTree(tree_2500,dim);
-% % % plotWorld(world,path_2500,dim);
-% % % plotTraj(path_2500,dim);
-% % % figure;
-% [path_3000,cost] = findMinimumPath(tree_3000,end_node,dim);
-% Cost=[Cost, cost];
-% % % plotExpandedTree(tree_3000,dim);
-% % % plotWorld(world,path_3000,dim);
-% % % plotTraj(path_3000,dim);
-% % % figure;
-% [path_3500,cost] = findMinimumPath(tree_3500,end_node,dim);
-% Cost=[Cost, cost];
-% % % plotExpandedTree(tree_3500,dim);
-% % % plotWorld(world,path_3500,dim);
-% % % plotTraj(path_3500,dim);
+% path_1000 = findMinimumPath(tree_1000,end_node,dim);
+% plotExpandedTree(world,tree_1000,dim);
+% plotWorld(world,path_1000,dim);
+% plotTraj(path_1000,dim);
+% figure;
+% path_1500 = findMinimumPath(tree_1500,end_node,dim);
+% plotExpandedTree(world,tree_1500,dim);
+% plotWorld(world,path_1500,dim);
+% plotTraj(path_1500,dim);
+% figure;
 
 % figure;
-[path,cost] = findMinimumPath(tree,end_node,dim);
-Cost=[Cost, cost];
-% plotExpandedTree(tree,dim);
+path = findMinimumPath(tree,end_node,dim);
+sizePath = size(path,1);
+% plotExpandedTree(world,tree,dim);
 % plotWorld(world,path,dim); hold on
 % plotTraj(path,dim);
 end
@@ -243,7 +140,7 @@ end
 
 function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLength, r, world, flag_chk, dim, numPaths)   % segmentLength: maximum stepsize, r: neighbor radius
   % NOTE
-  new_node  = [0, 0, 0, 0, 0];
+  new_node  = [0, 0, 0, 0, 0, 0, 0, 0];
   new_tree = zeros(1,8);
   
   flag1 = 0;
