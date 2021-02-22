@@ -31,7 +31,7 @@ tree = start_node;
 
 GChild  = [];
 coder.varsize('GChild')
-% GChild = zeros(400, 500);
+GChild = zeros(samples, samples);
 
 %tic
 
@@ -48,6 +48,10 @@ else
       tree = a;
       GChild = b;
       flag = c;
+      
+      if (mod(i,100)==0)
+          fprintf("nodes = %.0f\n",i);
+      end
       
       numPaths = numPaths + flag;
 
