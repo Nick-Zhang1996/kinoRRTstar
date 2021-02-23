@@ -8,6 +8,8 @@ if collision_flag == 0 && dim == 2
     Tf = roots(DI_time(parent(1), parent(2), parent(3), parent(4), node(1), node(2), node(3), node(4)));
     Tf = Tf(abs(imag(Tf)) < 0.0001);
     Tf = min(Tf(Tf >= 0));
+    %fprintf("DI_time(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f)\n",parent(1), parent(2), parent(3), parent(4), node(1), node(2), node(3), node(4));
+    %fprintf("root = %.2f\n",Tf);
 
     states = @(t)DI_state(t, Tf, parent(1), parent(2), parent(3), parent(4), node(1), node(2), node(3), node(4));
     checkpoints = 10;

@@ -73,7 +73,7 @@ int main(int argc, const char * const argv[])
   benchmarkRRT_terminate();
   gettimeofday(&stop, NULL);
   printf("total took %lu us\n", (stop.tv_sec - start.tv_sec) * 1000000 + stop.tv_usec - start.tv_usec); 
-  getchar();
+  //getchar();
 
   return 0;
 }

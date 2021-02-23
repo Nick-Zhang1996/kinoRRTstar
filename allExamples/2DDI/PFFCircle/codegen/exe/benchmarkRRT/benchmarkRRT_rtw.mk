@@ -2,7 +2,7 @@
 ## Makefile generated for MATLAB file/project 'benchmarkRRT'. 
 ## 
 ## Makefile     : benchmarkRRT_rtw.mk
-## Generated on : Mon Feb 22 01:05:42 2021
+## Generated on : Mon Feb 22 21:40:11 2021
 ## MATLAB Coder version: 4.1 (R2018b)
 ## 
 ## Build Info:
@@ -215,7 +215,7 @@ DEFINES = $(DEFINES_) $(DEFINES_STANDARD)
 ## SOURCE FILES
 ###########################################################################
 
-SRCS = $(START_DIR)/benchmarkRRT_rtwutil.c $(START_DIR)/benchmarkRRT_data.c $(START_DIR)/benchmarkRRT_initialize.c $(START_DIR)/benchmarkRRT_terminate.c $(START_DIR)/benchmarkRRT.c $(START_DIR)/RRTstar3D.c $(START_DIR)/norm.c $(START_DIR)/xnrm2.c $(START_DIR)/sqrt.c $(START_DIR)/rand.c $(START_DIR)/eml_rand_mt19937ar_stateful.c $(START_DIR)/collisionFreeVel.c $(START_DIR)/DI_timeFreeVel.c $(START_DIR)/roots.c $(START_DIR)/anyNonFinite.c $(START_DIR)/xgehrd.c $(START_DIR)/xzlarfg.c $(START_DIR)/xdlapy3.c $(START_DIR)/recip.c $(START_DIR)/xzhseqr.c $(START_DIR)/xzgeev.c $(START_DIR)/xzlartg.c $(START_DIR)/xzhgeqz.c $(START_DIR)/linspace.c $(START_DIR)/DI_stateFreeVel.c $(START_DIR)/DI_costFreeVel.c $(START_DIR)/segment_cost.c $(START_DIR)/DI_time.c $(START_DIR)/DI_cost.c $(START_DIR)/DI_state.c $(START_DIR)/collision.c $(START_DIR)/benchmarkRRT_emxutil.c $(START_DIR)/rt_nonfinite.c $(START_DIR)/rtGetNaN.c $(START_DIR)/rtGetInf.c D:/Documents/GitHub/kinoRRTstar/allExamples/2DDI/PFFCircle/main.c
+SRCS = $(START_DIR)/benchmarkRRT_rtwutil.c $(START_DIR)/benchmarkRRT_data.c $(START_DIR)/benchmarkRRT_initialize.c $(START_DIR)/benchmarkRRT_terminate.c $(START_DIR)/benchmarkRRT.c $(START_DIR)/RRTstar3D.c $(START_DIR)/norm.c $(START_DIR)/xnrm2.c $(START_DIR)/sqrt.c $(START_DIR)/rand.c $(START_DIR)/eml_rand_mt19937ar_stateful.c $(START_DIR)/sqr_eucl_dist.c $(START_DIR)/collisionFreeVel.c $(START_DIR)/DI_timeFreeVel.c $(START_DIR)/roots.c $(START_DIR)/anyNonFinite.c $(START_DIR)/xgehrd.c $(START_DIR)/xzlarfg.c $(START_DIR)/xdlapy3.c $(START_DIR)/recip.c $(START_DIR)/xzhseqr.c $(START_DIR)/xzgeev.c $(START_DIR)/xzlartg.c $(START_DIR)/xzhgeqz.c $(START_DIR)/linspace.c $(START_DIR)/DI_stateFreeVel.c $(START_DIR)/DI_costFreeVel.c $(START_DIR)/segment_costFreeVel.c $(START_DIR)/collisionFreeVelKnowTf.c $(START_DIR)/segment_cost.c $(START_DIR)/DI_time.c $(START_DIR)/DI_cost.c $(START_DIR)/collisionKnowTf.c $(START_DIR)/DI_state.c $(START_DIR)/collision.c $(START_DIR)/findMinCost.c $(START_DIR)/benchmarkRRT_emxutil.c $(START_DIR)/rt_nonfinite.c $(START_DIR)/rtGetNaN.c $(START_DIR)/rtGetInf.c D:/Documents/GitHub/kinoRRTstar/allExamples/2DDI/PFFCircle/main.c
 
 ALL_SRCS = $(SRCS)
 
@@ -223,7 +223,7 @@ ALL_SRCS = $(SRCS)
 ## OBJECTS
 ###########################################################################
 
-OBJS = benchmarkRRT_rtwutil.obj benchmarkRRT_data.obj benchmarkRRT_initialize.obj benchmarkRRT_terminate.obj benchmarkRRT.obj RRTstar3D.obj norm.obj xnrm2.obj sqrt.obj rand.obj eml_rand_mt19937ar_stateful.obj collisionFreeVel.obj DI_timeFreeVel.obj roots.obj anyNonFinite.obj xgehrd.obj xzlarfg.obj xdlapy3.obj recip.obj xzhseqr.obj xzgeev.obj xzlartg.obj xzhgeqz.obj linspace.obj DI_stateFreeVel.obj DI_costFreeVel.obj segment_cost.obj DI_time.obj DI_cost.obj DI_state.obj collision.obj benchmarkRRT_emxutil.obj rt_nonfinite.obj rtGetNaN.obj rtGetInf.obj main.obj
+OBJS = benchmarkRRT_rtwutil.obj benchmarkRRT_data.obj benchmarkRRT_initialize.obj benchmarkRRT_terminate.obj benchmarkRRT.obj RRTstar3D.obj norm.obj xnrm2.obj sqrt.obj rand.obj eml_rand_mt19937ar_stateful.obj sqr_eucl_dist.obj collisionFreeVel.obj DI_timeFreeVel.obj roots.obj anyNonFinite.obj xgehrd.obj xzlarfg.obj xdlapy3.obj recip.obj xzhseqr.obj xzgeev.obj xzlartg.obj xzhgeqz.obj linspace.obj DI_stateFreeVel.obj DI_costFreeVel.obj segment_costFreeVel.obj collisionFreeVelKnowTf.obj segment_cost.obj DI_time.obj DI_cost.obj collisionKnowTf.obj DI_state.obj collision.obj findMinCost.obj benchmarkRRT_emxutil.obj rt_nonfinite.obj rtGetNaN.obj rtGetInf.obj main.obj
 
 ALL_OBJS = $(OBJS)
 

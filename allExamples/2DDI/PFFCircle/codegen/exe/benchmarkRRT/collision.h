@@ -19,8 +19,8 @@
 #include "benchmarkRRT_types.h"
 
 /* Function Declarations */
-extern void collision(const double parent_data[], double *collision_flag,
-                      creal_T *Tf);
+extern void collision(const double parent[8], double *collision_flag, creal_T
+                      *Tf);
 
 #endif
 

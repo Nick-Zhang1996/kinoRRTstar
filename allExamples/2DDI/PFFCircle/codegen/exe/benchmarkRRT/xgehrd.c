@@ -23,7 +23,7 @@ void xgehrd(creal_T a_data[], int a_size[2])
 {
   int n;
   int i;
-  int i4;
+  int i5;
   creal_T work_data[4];
   int b_i;
   int im1n_tmp;
@@ -40,24 +40,24 @@ void xgehrd(creal_T a_data[], int a_size[2])
   int knt;
   int lastc;
   double c_im;
-  int i5;
+  int i6;
   int jy;
   boolean_T exitg2;
   int ix;
   double a_data_im;
   int exitg1;
-  int i6;
+  int i7;
   double temp_im;
   creal_T b_alpha1;
   n = a_size[0];
   i = (signed char)a_size[0];
-  for (i4 = 0; i4 < i; i4++) {
-    work_data[i4].re = 0.0;
-    work_data[i4].im = 0.0;
+  for (i5 = 0; i5 < i; i5++) {
+    work_data[i5].re = 0.0;
+    work_data[i5].im = 0.0;
   }
 
-  i4 = a_size[0];
-  for (b_i = 0; b_i <= i4 - 2; b_i++) {
+  i5 = a_size[0];
+  for (b_i = 0; b_i <= i5 - 2; b_i++) {
     im1n_tmp = b_i * n;
     in = (b_i + 1) * n;
     alpha1_tmp = (b_i + a_size[0] * b_i) + 1;
@@ -83,10 +83,10 @@ void xgehrd(creal_T a_data[], int a_size[2])
 
         if (fabs(beta1) < 1.0020841800044864E-292) {
           knt = -1;
-          i5 = i + n_tmp;
+          i6 = i + n_tmp;
           do {
             knt++;
-            for (jy = i; jy <= i5; jy++) {
+            for (jy = i; jy <= i6; jy++) {
               c_re = a_data[jy - 1].re;
               a_data_im = a_data[jy - 1].im;
               a_data[jy - 1].re = 9.9792015476736E+291 * c_re - 0.0 * a_data_im;
@@ -118,8 +118,8 @@ void xgehrd(creal_T a_data[], int a_size[2])
           b_alpha1.re = alpha1.re - beta1;
           b_alpha1.im = alpha1.im;
           alpha1 = recip(b_alpha1);
-          i5 = i + n_tmp;
-          for (jy = i; jy <= i5; jy++) {
+          i6 = i + n_tmp;
+          for (jy = i; jy <= i6; jy++) {
             c_re = a_data[jy - 1].re;
             a_data_im = a_data[jy - 1].im;
             a_data[jy - 1].re = alpha1.re * c_re - alpha1.im * a_data_im;
@@ -149,8 +149,8 @@ void xgehrd(creal_T a_data[], int a_size[2])
           alpha1.re = a_data[(b_i + a_size[0] * b_i) + 1].re - beta1;
           alpha1.im = a_data[(b_i + a_size[0] * b_i) + 1].im;
           alpha1 = recip(alpha1);
-          i5 = i + n_tmp;
-          for (jy = i; jy <= i5; jy++) {
+          i6 = i + n_tmp;
+          for (jy = i; jy <= i6; jy++) {
             c_re = a_data[jy - 1].re;
             a_data_im = a_data[jy - 1].im;
             a_data[jy - 1].re = alpha1.re * c_re - alpha1.im * a_data_im;
@@ -211,13 +211,13 @@ void xgehrd(creal_T a_data[], int a_size[2])
         }
 
         ix = iv0_tmp;
-        i5 = (in + n * (lastv - 1)) + 1;
-        for (jy = im1n_tmp; n < 0 ? jy >= i5 : jy <= i5; jy += n) {
+        i6 = (in + n * (lastv - 1)) + 1;
+        for (jy = im1n_tmp; n < 0 ? jy >= i6 : jy <= i6; jy += n) {
           c_re = a_data[ix - 1].re - 0.0 * a_data[ix - 1].im;
           c_im = a_data[ix - 1].im + 0.0 * a_data[ix - 1].re;
           i = 0;
-          i6 = (jy + lastc) - 1;
-          for (knt = jy; knt <= i6; knt++) {
+          i7 = (jy + lastc) - 1;
+          for (knt = jy; knt <= i7; knt++) {
             work_data[i].re += a_data[knt - 1].re * c_re - a_data[knt - 1].im *
               c_im;
             work_data[i].im += a_data[knt - 1].re * c_im + a_data[knt - 1].im *
@@ -239,9 +239,9 @@ void xgehrd(creal_T a_data[], int a_size[2])
             beta1 = a_data[jy].re * c_re + a_data[jy].im * c_im;
             temp_im = a_data[jy].re * c_im - a_data[jy].im * c_re;
             ix = 0;
-            i5 = i + 1;
-            i6 = lastc + i;
-            for (im1n_tmp = i5; im1n_tmp <= i6; im1n_tmp++) {
+            i6 = i + 1;
+            i7 = lastc + i;
+            for (im1n_tmp = i6; im1n_tmp <= i7; im1n_tmp++) {
               a_data[im1n_tmp - 1].re += work_data[ix].re * beta1 - work_data[ix]
                 .im * temp_im;
               a_data[im1n_tmp - 1].im += work_data[ix].re * temp_im +
@@ -301,13 +301,13 @@ void xgehrd(creal_T a_data[], int a_size[2])
         }
 
         i = 0;
-        i5 = im1n_tmp + n * lastc;
-        for (jy = im1n_tmp; n < 0 ? jy >= i5 : jy <= i5; jy += n) {
+        i6 = im1n_tmp + n * lastc;
+        for (jy = im1n_tmp; n < 0 ? jy >= i6 : jy <= i6; jy += n) {
           ix = iv0_tmp - 1;
           c_re = 0.0;
           c_im = 0.0;
-          i6 = (jy + lastv) - 1;
-          for (knt = jy; knt <= i6; knt++) {
+          i7 = (jy + lastv) - 1;
+          for (knt = jy; knt <= i7; knt++) {
             c_re += a_data[knt - 1].re * a_data[ix].re + a_data[knt - 1].im *
               a_data[ix].im;
             c_im += a_data[knt - 1].re * a_data[ix].im - a_data[knt - 1].im *
@@ -331,9 +331,9 @@ void xgehrd(creal_T a_data[], int a_size[2])
             beta1 = work_data[jy].re * c_re + work_data[jy].im * c_im;
             temp_im = work_data[jy].re * c_im - work_data[jy].im * c_re;
             ix = iv0_tmp;
-            i5 = i + 1;
-            i6 = lastv + i;
-            for (im1n_tmp = i5; im1n_tmp <= i6; im1n_tmp++) {
+            i6 = i + 1;
+            i7 = lastv + i;
+            for (im1n_tmp = i6; im1n_tmp <= i7; im1n_tmp++) {
               a_data_im = a_data[ix - 1].re * temp_im + a_data[ix - 1].im *
                 beta1;
               a_data[im1n_tmp - 1].re += a_data[ix - 1].re * beta1 - a_data[ix -

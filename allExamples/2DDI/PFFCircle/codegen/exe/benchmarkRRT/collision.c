@@ -23,9 +23,9 @@
 #include "benchmarkRRT_data.h"
 
 /* Function Definitions */
-void collision(const double parent_data[], double *collision_flag, creal_T *Tf)
+void collision(const double parent[8], double *collision_flag, creal_T *Tf)
 {
-  double dv2[5];
+  double dv4[5];
   creal_T Tf_data[4];
   int Tf_size[1];
   int nx;
@@ -37,31 +37,30 @@ void collision(const double parent_data[], double *collision_flag, creal_T *Tf)
   int i;
   signed char b_tmp_data[4];
   creal_T varargin_1_data[4];
+  creal_T dc3;
   creal_T t[12];
-  creal_T dc1;
   boolean_T SCALEA;
-  double b_state[40];
   double ma;
+  double b_state[40];
   int exitg3;
   double mb;
-  int exitg2;
   boolean_T SCALEB;
-  double Mb;
+  int exitg2;
   double x;
+  double Mb;
   double br;
   double bi;
-  int exitg1;
   double Ma;
-  static const signed char iv2[5] = { 6, 15, 10, 5, 15 };
+  int exitg1;
+  static const signed char iv3[5] = { 6, 15, 10, 5, 15 };
 
-  static const signed char iv3[5] = { 6, 14, 11, 15, 5 };
+  static const signed char iv4[5] = { 6, 14, 11, 15, 5 };
 
   *collision_flag = 0.0;
 
   /*      Tf = norm(parent(1 : 4) - node(1 : 4))/0.8; */
-  DI_time(parent_data[0], parent_data[1], parent_data[2], parent_data[3], 18.0,
-          18.0, 0.0, 0.0, dv2);
-  roots(dv2, Tf_data, Tf_size);
+  DI_time(parent[0], parent[1], parent[2], parent[3], 18.0, 18.0, 0.0, 0.0, dv4);
+  roots(dv4, Tf_data, Tf_size);
   nx = Tf_size[0];
   for (k = 0; k < nx; k++) {
     x_data[k] = Tf_data[k].im;
@@ -115,8 +114,8 @@ void collision(const double parent_data[], double *collision_flag, creal_T *Tf)
 
   *Tf = varargin_1_data[0];
   for (k = 2; k <= trueCount; k++) {
-    dc1 = varargin_1_data[k - 1];
-    if (rtIsNaN(dc1.re) || rtIsNaN(varargin_1_data[k - 1].im)) {
+    dc3 = varargin_1_data[k - 1];
+    if (rtIsNaN(dc3.re) || rtIsNaN(varargin_1_data[k - 1].im)) {
       SCALEA = false;
     } else if (rtIsNaN(Tf->re) || rtIsNaN(Tf->im)) {
       SCALEA = true;
@@ -221,14 +220,16 @@ void collision(const double parent_data[], double *collision_flag, creal_T *Tf)
     }
 
     if (SCALEA) {
-      *Tf = dc1;
+      *Tf = dc3;
     }
   }
 
+  /* fprintf("DI_time(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f)\n",parent(1), parent(2), parent(3), parent(4), node(1), node(2), node(3), node(4)); */
+  /* fprintf("root = %.2f\n",Tf); */
   linspace(*Tf, t);
   for (i = 0; i < 10; i++) {
-    DI_state(t[i + 1], *Tf, parent_data[0], parent_data[1], parent_data[2],
-             parent_data[3], *(double (*)[4])&b_state[i << 2]);
+    DI_state(t[i + 1], *Tf, parent[0], parent[1], parent[2], parent[3], 18.0,
+             18.0, 0.0, 0.0, *(double (*)[4])&b_state[i << 2]);
   }
 
   nx = 0;
@@ -260,10 +261,10 @@ void collision(const double parent_data[], double *collision_flag, creal_T *Tf)
           exitg1 = 0;
           if (i < 5) {
             k = nx << 2;
-            bi = b_state[k] - (double)iv2[i];
+            bi = b_state[k] - (double)iv3[i];
             bi *= bi;
             Mb = bi;
-            bi = b_state[1 + k] - (double)iv3[i];
+            bi = b_state[1 + k] - (double)iv4[i];
             bi *= bi;
             if (Mb + bi < (dv0[i] + 0.1) * (dv0[i] + 0.1)) {
               /*  (norm([p(1);p(2)]-[world.cx(i); world.cy(i)])<=1*world.radius(i)) */

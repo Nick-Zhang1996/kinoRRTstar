@@ -3,14 +3,14 @@
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
  *
- * RRTstar3D.h
+ * collisionFreeVelKnowTf.h
  *
- * Code generation for function 'RRTstar3D'
+ * Code generation for function 'collisionFreeVelKnowTf'
  *
  */
 
-#ifndef RRTSTAR3D_H
-#define RRTSTAR3D_H
+#ifndef COLLISIONFREEVELKNOWTF_H
+#define COLLISIONFREEVELKNOWTF_H
 
 /* Include files */
 #include <stddef.h>
@@ -19,9 +19,9 @@
 #include "benchmarkRRT_types.h"
 
 /* Function Declarations */
-extern void extendTree(const emxArray_real_T *tree, double GChild[16000000],
-  emxArray_real_T *new_tree, double *flag);
+extern void collisionFreeVelKnowTf(const double parent_data[], const double
+  node[4], const creal_T *Tf, double *collision_flag, double xf[4]);
 
 #endif
 
-/* End of code generation (RRTstar3D.h) */
+/* End of code generation (collisionFreeVelKnowTf.h) */

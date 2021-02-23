@@ -14,7 +14,10 @@ benchmarkRRT_rtwutil.obj
 benchmarkRRT_terminate.obj
 collision.obj
 collisionFreeVel.obj
+collisionFreeVelKnowTf.obj
+collisionKnowTf.obj
 eml_rand_mt19937ar_stateful.obj
+findMinCost.obj
 linspace.obj
 main.obj
 norm.obj
@@ -25,6 +28,8 @@ rtGetInf.obj
 rtGetNaN.obj
 rt_nonfinite.obj
 segment_cost.obj
+segment_costFreeVel.obj
+sqr_eucl_dist.obj
 sqrt.obj
 xdlapy3.obj
 xgehrd.obj

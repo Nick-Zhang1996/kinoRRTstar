@@ -1,0 +1,20 @@
+>> benchmarkRRT
+Elapsed time is 0.755320 seconds.
+nodes: 400, min cost 33.204 
+Elapsed time is 3.824946 seconds.
+nodes: 1000, min cost 20.999 
+Elapsed time is 14.576432 seconds.
+nodes: 2000, min cost 20.218 
+Elapsed time is 32.149507 seconds.
+nodes: 3000, min cost 19.088 
+Elapsed time is 56.397466 seconds.
+nodes: 4000, min cost 18.971 
+Elapsed time is 56.410510 seconds.
+
+Code generation successful (with warnings): View report
+nodes: 400, min cost 33.768  
+nodes: 1000, min cost 23.432  
+nodes: 2000, min cost 19.944  
+nodes: 3000, min cost 19.159  
+nodes: 4000, min cost 18.781  
+total took 7628597 us 

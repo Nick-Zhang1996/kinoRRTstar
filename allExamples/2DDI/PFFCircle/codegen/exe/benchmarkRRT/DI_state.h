@@ -20,7 +20,8 @@
 
 /* Function Declarations */
 extern void DI_state(const creal_T t, const creal_T t_s, double x01, double x02,
-                     double x03, double x04, double states[4]);
+                     double x03, double x04, double x11, double x12, double x13,
+                     double x14, double states[4]);
 
 #endif
 

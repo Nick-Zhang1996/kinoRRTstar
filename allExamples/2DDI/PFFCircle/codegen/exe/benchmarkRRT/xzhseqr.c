@@ -25,7 +25,7 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
   int info;
   int n;
   int ldh;
-  int i7;
+  int i8;
   int j;
   int i;
   double SMLNUM;
@@ -59,8 +59,8 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
   ldh = h_size[0];
   info = 0;
   if (1 != h_size[0]) {
-    i7 = h_size[0];
-    for (j = 0; j <= i7 - 4; j++) {
+    i8 = h_size[0];
+    for (j = 0; j <= i8 - 4; j++) {
       h_data[2].re = 0.0;
       h_data[2].im = 0.0;
       h_data[3].re = 0.0;
@@ -68,14 +68,14 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
     }
 
     if (1 <= n - 2) {
-      i7 = (n + h_size[0] * (n - 3)) - 1;
-      h_data[i7].re = 0.0;
-      h_data[i7].im = 0.0;
+      i8 = (n + h_size[0] * (n - 3)) - 1;
+      h_data[i8].re = 0.0;
+      h_data[i8].im = 0.0;
     }
 
     for (i = 2; i <= n; i++) {
-      i7 = (i + h_size[0] * (i - 2)) - 1;
-      if (h_data[i7].im != 0.0) {
+      i8 = (i + h_size[0] * (i - 2)) - 1;
+      if (h_data[i8].im != 0.0) {
         tst = h_data[(i + h_size[0] * (i - 2)) - 1].re;
         ab = h_data[(i + h_size[0] * (i - 2)) - 1].im;
         bb = fabs(h_data[(i + h_size[0] * (i - 2)) - 1].re) + fabs(h_data[(i +
@@ -103,13 +103,13 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
           sc.im = -sc.im / bb;
         }
 
-        h_data[i7].re = rt_hypotd_snf(h_data[(i + h_size[0] * (i - 2)) - 1].re,
+        h_data[i8].re = rt_hypotd_snf(h_data[(i + h_size[0] * (i - 2)) - 1].re,
           h_data[(i + h_size[0] * (i - 2)) - 1].im);
-        h_data[i7].im = 0.0;
+        h_data[i8].im = 0.0;
         ix0_tmp = (i - 1) * ldh;
         ix0 = i + ix0_tmp;
-        i7 = ix0 + ldh * (n - i);
-        for (k = ix0; ldh < 0 ? k >= i7 : k <= i7; k += ldh) {
+        i8 = ix0 + ldh * (n - i);
+        for (k = ix0; ldh < 0 ? k >= i8 : k <= i8; k += ldh) {
           ab = h_data[k - 1].re;
           tst = h_data[k - 1].im;
           h_data[k - 1].re = sc.re * ab - sc.im * tst;
@@ -123,8 +123,8 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
           u1 = n;
         }
 
-        i7 = ix0_tmp + u1;
-        for (k = ix0; k <= i7; k++) {
+        i8 = ix0_tmp + u1;
+        for (k = ix0; k <= i8; k++) {
           ab = h_data[k - 1].re;
           tst = h_data[k - 1].im;
           h_data[k - 1].re = sc.re * ab - sc.im * tst;
@@ -145,15 +145,15 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
         k = i;
         exitg3 = false;
         while ((!exitg3) && (k + 1 > L + 2)) {
-          i7 = k + h_size[0] * (k - 1);
-          ab = fabs(h_data[i7].re);
+          i8 = k + h_size[0] * (k - 1);
+          ab = fabs(h_data[i8].re);
           ba = ab + fabs(h_data[k + h_size[0] * (k - 1)].im);
           if (ba <= SMLNUM) {
             exitg3 = true;
           } else {
             u1 = k + h_size[0] * k;
             bb = fabs(h_data[u1].re) + fabs(h_data[k + h_size[0] * k].im);
-            tst = (fabs(h_data[i7 - 1].re) + fabs(h_data[(k + h_size[0] * (k - 1))
+            tst = (fabs(h_data[i8 - 1].re) + fabs(h_data[(k + h_size[0] * (k - 1))
                     - 1].im)) + bb;
             if (tst == 0.0) {
               if (k - 1 >= 1) {
@@ -434,12 +434,12 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
             }
 
             if (b_k + 2 < i + 1) {
-              i7 = b_k + 1;
+              i8 = b_k + 1;
             } else {
-              i7 = i;
+              i8 = i;
             }
 
-            for (j = 0; j <= i7; j++) {
+            for (j = 0; j <= i8; j++) {
               ix0_tmp = j + h_size[0] * (b_k - 1);
               u1 = j + h_size[0] * b_k;
               x2.re = (sc.re * h_data[ix0_tmp].re - sc.im * h_data[j + h_size[0]
@@ -484,8 +484,8 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
                 if (j != m + 1) {
                   if (n > j) {
                     ix0 = j + j * ldh;
-                    i7 = ix0 + ldh * ((n - j) - 1);
-                    for (u1 = ix0; ldh < 0 ? u1 >= i7 : u1 <= i7; u1 += ldh) {
+                    i8 = ix0 + ldh * ((n - j) - 1);
+                    for (u1 = ix0; ldh < 0 ? u1 >= i8 : u1 <= i8; u1 += ldh) {
                       ab = h_data[u1 - 1].re;
                       tst = h_data[u1 - 1].im;
                       h_data[u1 - 1].re = t_re * ab - ba * tst;
@@ -495,8 +495,8 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
 
                   ix0_tmp = (j - 1) * ldh;
                   ix0 = ix0_tmp + 1;
-                  i7 = (ix0_tmp + j) - 1;
-                  for (u1 = ix0; u1 <= i7; u1++) {
+                  i8 = (ix0_tmp + j) - 1;
+                  for (u1 = ix0; u1 <= i8; u1++) {
                     ab = h_data[u1 - 1].re;
                     tst = h_data[u1 - 1].im;
                     h_data[u1 - 1].re = t_re * ab - -ba * tst;
@@ -527,8 +527,8 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
 
             if (n > i + 1) {
               ix0 = (i + (i + 1) * ldh) + 1;
-              i7 = ix0 + ldh * ((n - i) - 2);
-              for (k = ix0; ldh < 0 ? k >= i7 : k <= i7; k += ldh) {
+              i8 = ix0 + ldh * ((n - i) - 2);
+              for (k = ix0; ldh < 0 ? k >= i8 : k <= i8; k += ldh) {
                 ab = h_data[k - 1].re;
                 tst = h_data[k - 1].im;
                 h_data[k - 1].re = t_re * ab - -ba * tst;
@@ -538,8 +538,8 @@ int eml_zlahqr(creal_T h_data[], int h_size[2])
 
             ix0_tmp = i * ldh;
             ix0 = ix0_tmp + 1;
-            i7 = ix0_tmp + i;
-            for (k = ix0; k <= i7; k++) {
+            i8 = ix0_tmp + i;
+            for (k = ix0; k <= i8; k++) {
               ab = h_data[k - 1].re;
               tst = h_data[k - 1].im;
               h_data[k - 1].re = t_re * ab - ba * tst;

@@ -19,8 +19,10 @@
 #include "benchmarkRRT_types.h"
 
 /* Function Declarations */
-extern void segment_cost(const double from_node_data[], double *cost, creal_T
-  *Tf);
+extern void b_segment_cost(const double from_node_data[], double *cost, creal_T *
+  Tf);
+extern void segment_cost(const double from_node[4], const double to_point[8],
+  double *cost, creal_T *Tf);
 
 #endif
 

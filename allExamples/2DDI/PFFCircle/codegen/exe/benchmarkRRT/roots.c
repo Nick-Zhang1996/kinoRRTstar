@@ -34,7 +34,7 @@ void roots(const double c[5], creal_T r_data[], int r_size[1])
   creal_T a_data[16];
   int m;
   double ctmp[5];
-  int i2;
+  int i1;
   boolean_T p;
   creal_T eiga_data[4];
   int eiga_size[1];
@@ -93,17 +93,17 @@ void roots(const double c[5], creal_T r_data[], int r_size[1])
       memset(&a_data[0], 0, (unsigned int)(companDim * companDim * (int)sizeof
               (creal_T)));
       for (m = 0; m <= companDim - 2; m++) {
-        i2 = companDim * m;
-        a_data[i2].re = -ctmp[m];
-        a_data[i2].im = 0.0;
-        i2 = (m + i2) + 1;
-        a_data[i2].re = 1.0;
-        a_data[i2].im = 0.0;
+        i1 = companDim * m;
+        a_data[i1].re = -ctmp[m];
+        a_data[i1].im = 0.0;
+        i1 = (m + i1) + 1;
+        a_data[i1].re = 1.0;
+        a_data[i1].im = 0.0;
       }
 
-      i2 = companDim * (companDim - 1);
-      a_data[i2].re = -ctmp[companDim - 1];
-      a_data[i2].im = 0.0;
+      i1 = companDim * (companDim - 1);
+      a_data[i1].re = -ctmp[companDim - 1];
+      a_data[i1].im = 0.0;
       for (m = 0; m <= nTrailingZeros; m++) {
         r_data[m].re = 0.0;
         r_data[m].im = 0.0;
@@ -114,9 +114,9 @@ void roots(const double c[5], creal_T r_data[], int r_size[1])
           eiga_data[0].re = rtNaN;
           eiga_data[0].im = 0.0;
         } else {
-          for (i2 = 0; i2 < companDim; i2++) {
-            eiga_data[i2].re = rtNaN;
-            eiga_data[i2].im = 0.0;
+          for (i1 = 0; i1 < companDim; i1++) {
+            eiga_data[i1].re = rtNaN;
+            eiga_data[i1].im = 0.0;
           }
         }
       } else if (companDim == 1) {
@@ -153,9 +153,9 @@ void roots(const double c[5], creal_T r_data[], int r_size[1])
           if (anyNonFinite(a_data, a_size)) {
             a_size[0] = (signed char)companDim;
             k1 = (signed char)companDim * (signed char)companDim;
-            for (i2 = 0; i2 < k1; i2++) {
-              a_data[i2].re = rtNaN;
-              a_data[i2].im = 0.0;
+            for (i1 = 0; i1 < k1; i1++) {
+              a_data[i1].re = rtNaN;
+              a_data[i1].im = 0.0;
             }
 
             m = (signed char)companDim;
@@ -169,9 +169,9 @@ void roots(const double c[5], creal_T r_data[], int r_size[1])
 
               for (j = 0; j < jend; j++) {
                 for (k1 = nTrailingZeros; k1 <= m; k1++) {
-                  i2 = (k1 + (signed char)companDim * j) - 1;
-                  a_data[i2].re = 0.0;
-                  a_data[i2].im = 0.0;
+                  i1 = (k1 + (signed char)companDim * j) - 1;
+                  a_data[i1].re = 0.0;
+                  a_data[i1].im = 0.0;
                 }
 
                 nTrailingZeros++;
@@ -196,62 +196,62 @@ void roots(const double c[5], creal_T r_data[], int r_size[1])
           xzgeev(a_data, a_size, &k1, eiga_data, eiga_size, beta1_data,
                  beta1_size);
           k1 = eiga_size[0];
-          for (i2 = 0; i2 < k1; i2++) {
-            eiga_data_re = eiga_data[i2].re;
-            if (beta1_data[i2].im == 0.0) {
-              if (eiga_data[i2].im == 0.0) {
-                eiga_data[i2].re /= beta1_data[i2].re;
-                eiga_data[i2].im = 0.0;
-              } else if (eiga_data[i2].re == 0.0) {
-                eiga_data[i2].re = 0.0;
-                eiga_data[i2].im /= beta1_data[i2].re;
+          for (i1 = 0; i1 < k1; i1++) {
+            eiga_data_re = eiga_data[i1].re;
+            if (beta1_data[i1].im == 0.0) {
+              if (eiga_data[i1].im == 0.0) {
+                eiga_data[i1].re /= beta1_data[i1].re;
+                eiga_data[i1].im = 0.0;
+              } else if (eiga_data[i1].re == 0.0) {
+                eiga_data[i1].re = 0.0;
+                eiga_data[i1].im /= beta1_data[i1].re;
               } else {
-                eiga_data[i2].re /= beta1_data[i2].re;
-                eiga_data[i2].im /= beta1_data[i2].re;
+                eiga_data[i1].re /= beta1_data[i1].re;
+                eiga_data[i1].im /= beta1_data[i1].re;
               }
-            } else if (beta1_data[i2].re == 0.0) {
-              if (eiga_data[i2].re == 0.0) {
-                eiga_data[i2].re = eiga_data[i2].im / beta1_data[i2].im;
-                eiga_data[i2].im = 0.0;
-              } else if (eiga_data[i2].im == 0.0) {
-                eiga_data[i2].re = 0.0;
-                eiga_data[i2].im = -(eiga_data_re / beta1_data[i2].im);
+            } else if (beta1_data[i1].re == 0.0) {
+              if (eiga_data[i1].re == 0.0) {
+                eiga_data[i1].re = eiga_data[i1].im / beta1_data[i1].im;
+                eiga_data[i1].im = 0.0;
+              } else if (eiga_data[i1].im == 0.0) {
+                eiga_data[i1].re = 0.0;
+                eiga_data[i1].im = -(eiga_data_re / beta1_data[i1].im);
               } else {
-                eiga_data[i2].re = eiga_data[i2].im / beta1_data[i2].im;
-                eiga_data[i2].im = -(eiga_data_re / beta1_data[i2].im);
+                eiga_data[i1].re = eiga_data[i1].im / beta1_data[i1].im;
+                eiga_data[i1].im = -(eiga_data_re / beta1_data[i1].im);
               }
             } else {
-              brm = fabs(beta1_data[i2].re);
-              bim = fabs(beta1_data[i2].im);
+              brm = fabs(beta1_data[i1].re);
+              bim = fabs(beta1_data[i1].im);
               if (brm > bim) {
-                bim = beta1_data[i2].im / beta1_data[i2].re;
-                d = beta1_data[i2].re + bim * beta1_data[i2].im;
-                eiga_data[i2].re = (eiga_data[i2].re + bim * eiga_data[i2].im) /
+                bim = beta1_data[i1].im / beta1_data[i1].re;
+                d = beta1_data[i1].re + bim * beta1_data[i1].im;
+                eiga_data[i1].re = (eiga_data[i1].re + bim * eiga_data[i1].im) /
                   d;
-                eiga_data[i2].im = (eiga_data[i2].im - bim * eiga_data_re) / d;
+                eiga_data[i1].im = (eiga_data[i1].im - bim * eiga_data_re) / d;
               } else if (bim == brm) {
-                if (beta1_data[i2].re > 0.0) {
+                if (beta1_data[i1].re > 0.0) {
                   bim = 0.5;
                 } else {
                   bim = -0.5;
                 }
 
-                if (beta1_data[i2].im > 0.0) {
+                if (beta1_data[i1].im > 0.0) {
                   d = 0.5;
                 } else {
                   d = -0.5;
                 }
 
-                eiga_data[i2].re = (eiga_data[i2].re * bim + eiga_data[i2].im *
+                eiga_data[i1].re = (eiga_data[i1].re * bim + eiga_data[i1].im *
                                     d) / brm;
-                eiga_data[i2].im = (eiga_data[i2].im * bim - eiga_data_re * d) /
+                eiga_data[i1].im = (eiga_data[i1].im * bim - eiga_data_re * d) /
                   brm;
               } else {
-                bim = beta1_data[i2].re / beta1_data[i2].im;
-                d = beta1_data[i2].im + bim * beta1_data[i2].re;
-                eiga_data[i2].re = (bim * eiga_data[i2].re + eiga_data[i2].im) /
+                bim = beta1_data[i1].re / beta1_data[i1].im;
+                d = beta1_data[i1].im + bim * beta1_data[i1].re;
+                eiga_data[i1].re = (bim * eiga_data[i1].re + eiga_data[i1].im) /
                   d;
-                eiga_data[i2].im = (bim * eiga_data[i2].im - eiga_data_re) / d;
+                eiga_data[i1].im = (bim * eiga_data[i1].im - eiga_data_re) / d;
               }
             }
           }

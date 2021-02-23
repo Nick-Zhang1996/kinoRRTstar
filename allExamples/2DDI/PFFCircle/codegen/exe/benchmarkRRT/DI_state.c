@@ -19,7 +19,8 @@
 
 /* Function Definitions */
 void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
-              x03, double x04, double states[4])
+              x03, double x04, double x11, double x12, double x13, double x14,
+              double states[4])
 {
   double a_re_tmp;
   double a_im_tmp;
@@ -40,18 +41,18 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
   double e_y_im;
   double re_tmp;
   double b_re_tmp;
-  double c_re_tmp;
   double im_tmp;
   double b_im_tmp;
-  double c_im_tmp;
   double bim;
   double f_y_re;
-  double d_re_tmp;
-  double d_im_tmp;
+  double c_re_tmp;
+  double c_im_tmp;
   double f_y_im;
   double t_s_re_tmp;
   double t_s_im_tmp;
   double b_t_s_re_tmp;
+  double d_re_tmp;
+  double d_im_tmp;
   double b_t_s_im_tmp;
   double g_y_re;
   double g_y_im;
@@ -308,13 +309,11 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
   }
 
   re_tmp = t_s.re * x03;
-  b_re_tmp = t_s.re * 0.0;
-  c_re_tmp = ((2.0 * x01 - 36.0) + re_tmp) + b_re_tmp;
+  b_re_tmp = ((2.0 * x01 - 2.0 * x11) + re_tmp) + t_s.re * x13;
   im_tmp = t_s.im * x03;
-  b_im_tmp = t_s.im * 0.0;
-  c_im_tmp = im_tmp + b_im_tmp;
-  r = y_re * c_re_tmp - y_im * c_im_tmp;
-  y_im = y_re * c_im_tmp + y_im * c_re_tmp;
+  b_im_tmp = im_tmp + t_s.im * x13;
+  r = y_re * b_re_tmp - y_im * b_im_tmp;
+  y_im = y_re * b_im_tmp + y_im * b_re_tmp;
   if (b_y_im == 0.0) {
     if (y_im == 0.0) {
       y_re = r / b_y_re;
@@ -359,10 +358,10 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
 
   a_re = a_re_tmp * a_re_tmp - a_im_tmp * a_im_tmp;
   a_im = a_re_tmp * a_im_tmp + a_im_tmp * a_re_tmp;
-  d_re_tmp = 2.0 * t_s.re;
-  d_im_tmp = 2.0 * t_s.im;
-  y_im = ((3.0 * x01 - 54.0) + re_tmp) + d_re_tmp * 0.0;
-  re_tmp = im_tmp + d_im_tmp * 0.0;
+  c_re_tmp = 2.0 * t_s.re;
+  c_im_tmp = 2.0 * t_s.im;
+  y_im = ((3.0 * x01 - 3.0 * x11) + re_tmp) + c_re_tmp * x13;
+  re_tmp = im_tmp + c_im_tmp * x13;
   r = a_re * y_im - a_im * re_tmp;
   a_im = a_re * re_tmp + a_im * y_im;
   t_s_re_tmp = t_s.re * t_s.re - t_s.im * t_s.im;
@@ -409,13 +408,13 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
     }
   }
 
-  states[0] = ((18.0 + 0.0 * a_re_tmp) + y_re) + a_re;
+  states[0] = ((x11 + x13 * a_re_tmp) + y_re) + a_re;
   re_tmp = t_s.re * x04;
-  b_re_tmp += (2.0 * x02 - 36.0) + re_tmp;
+  d_re_tmp = ((2.0 * x02 - 2.0 * x12) + re_tmp) + t_s.re * x14;
   im_tmp = t_s.im * x04;
-  b_im_tmp += im_tmp;
-  y_re = c_y_re * b_re_tmp - c_y_im * b_im_tmp;
-  y_im = c_y_re * b_im_tmp + c_y_im * b_re_tmp;
+  d_im_tmp = im_tmp + t_s.im * x14;
+  y_re = c_y_re * d_re_tmp - c_y_im * d_im_tmp;
+  y_im = c_y_re * d_im_tmp + c_y_im * d_re_tmp;
   if (d_y_im == 0.0) {
     if (y_im == 0.0) {
       y_re /= d_y_re;
@@ -460,8 +459,8 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
 
   a_re = a_re_tmp * a_re_tmp - a_im_tmp * a_im_tmp;
   a_im = a_re_tmp * a_im_tmp + a_im_tmp * a_re_tmp;
-  y_im = ((3.0 * x02 - 54.0) + re_tmp) + d_re_tmp * 0.0;
-  re_tmp = im_tmp + d_im_tmp * 0.0;
+  y_im = ((3.0 * x02 - 3.0 * x12) + re_tmp) + c_re_tmp * x14;
+  re_tmp = im_tmp + c_im_tmp * x14;
   r = a_re * y_im - a_im * re_tmp;
   a_im = a_re * re_tmp + a_im * y_im;
   if (t_s_im_tmp == 0.0) {
@@ -506,11 +505,11 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
     }
   }
 
-  states[1] = ((18.0 + 0.0 * a_re_tmp) + y_re) + a_re;
+  states[1] = ((x12 + x14 * a_re_tmp) + y_re) + a_re;
   y_im = 2.0 * a_re_tmp;
   re_tmp = 2.0 * a_im_tmp;
-  r = ((3.0 * x01 - 54.0) + t_s.re * x03) + d_re_tmp * 0.0;
-  b_y_re = t_s.im * x03 + d_im_tmp * 0.0;
+  r = ((3.0 * x01 - 3.0 * x11) + t_s.re * x03) + c_re_tmp * x13;
+  b_y_re = t_s.im * x03 + c_im_tmp * x13;
   b_y_im = y_im * r - re_tmp * b_y_re;
   re_tmp = y_im * b_y_re + re_tmp * r;
   if (t_s_im_tmp == 0.0) {
@@ -557,8 +556,8 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
 
   r = 3.0 * (a_re_tmp * a_re_tmp - a_im_tmp * a_im_tmp);
   re_tmp = 3.0 * (a_re_tmp * a_im_tmp + a_im_tmp * a_re_tmp);
-  b_y_im = r * c_re_tmp - re_tmp * c_im_tmp;
-  re_tmp = r * c_im_tmp + re_tmp * c_re_tmp;
+  b_y_im = r * b_re_tmp - re_tmp * b_im_tmp;
+  re_tmp = r * b_im_tmp + re_tmp * b_re_tmp;
   if (e_y_im == 0.0) {
     if (re_tmp == 0.0) {
       r = b_y_im / e_y_re;
@@ -601,11 +600,11 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
     }
   }
 
-  states[2] = y_im + r;
+  states[2] = (x13 + y_im) + r;
   y_im = 2.0 * a_re_tmp;
   re_tmp = 2.0 * a_im_tmp;
-  r = ((3.0 * x02 - 54.0) + t_s.re * x04) + d_re_tmp * 0.0;
-  b_y_re = t_s.im * x04 + d_im_tmp * 0.0;
+  r = ((3.0 * x02 - 3.0 * x12) + t_s.re * x04) + c_re_tmp * x14;
+  b_y_re = t_s.im * x04 + c_im_tmp * x14;
   b_y_im = y_im * r - re_tmp * b_y_re;
   re_tmp = y_im * b_y_re + re_tmp * r;
   if (t_s_im_tmp == 0.0) {
@@ -652,8 +651,8 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
 
   r = 3.0 * (a_re_tmp * a_re_tmp - a_im_tmp * a_im_tmp);
   re_tmp = 3.0 * (a_re_tmp * a_im_tmp + a_im_tmp * a_re_tmp);
-  b_y_im = r * b_re_tmp - re_tmp * b_im_tmp;
-  re_tmp = r * b_im_tmp + re_tmp * b_re_tmp;
+  b_y_im = r * d_re_tmp - re_tmp * d_im_tmp;
+  re_tmp = r * d_im_tmp + re_tmp * d_re_tmp;
   if (x_im == 0.0) {
     if (re_tmp == 0.0) {
       r = b_y_im / x_re;
@@ -696,7 +695,7 @@ void DI_state(const creal_T t, const creal_T t_s, double x01, double x02, double
     }
   }
 
-  states[3] = y_im + r;
+  states[3] = (x14 + y_im) + r;
 }
 
 /* End of code generation (DI_state.c) */

@@ -21,6 +21,7 @@
 double DI_costFreeVel(const creal_T t_s, double x01, double x02, double x03,
                       double x04, double x11, double x12)
 {
+  double cost;
   double y_re;
   double y_im;
   double ar;
@@ -182,7 +183,11 @@ double DI_costFreeVel(const creal_T t_s, double x01, double x02, double x03,
     }
   }
 
-  return ((t_s.re + re) + b_re) + r;
+  cost = ((t_s.re + re) + b_re) + r;
+
+  /* fprintf("    DI_costFreeVel(%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f)\n",t_s,x01,x02,x03,x04,x11,x12); */
+  /* fprintf("    cost = %.2f\n",cost); */
+  return cost;
 }
 
 /* End of code generation (DI_costFreeVel.c) */

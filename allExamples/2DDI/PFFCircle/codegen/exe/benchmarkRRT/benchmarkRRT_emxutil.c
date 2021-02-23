@@ -16,21 +16,7 @@
 #include "benchmarkRRT.h"
 #include "benchmarkRRT_emxutil.h"
 
-/* Function Declarations */
-static void emxFreeStruct_cell_wrap_2(cell_wrap_2 *pStruct);
-static void emxInitStruct_cell_wrap_2(cell_wrap_2 *pStruct);
-
 /* Function Definitions */
-static void emxFreeStruct_cell_wrap_2(cell_wrap_2 *pStruct)
-{
-  emxFree_real_T(&pStruct->f1);
-}
-
-static void emxInitStruct_cell_wrap_2(cell_wrap_2 *pStruct)
-{
-  emxInit_real_T(&pStruct->f1, 2);
-}
-
 void emxEnsureCapacity_boolean_T(emxArray_boolean_T *emxArray, int oldNumel)
 {
   int newNumel;
@@ -157,12 +143,6 @@ void emxEnsureCapacity_real_T(emxArray_real_T *emxArray, int oldNumel)
   }
 }
 
-void emxFreeMatrix_cell_wrap_2(cell_wrap_2 pMatrix[2])
-{
-  emxFreeStruct_cell_wrap_2(&pMatrix[0]);
-  emxFreeStruct_cell_wrap_2(&pMatrix[1]);
-}
-
 void emxFree_boolean_T(emxArray_boolean_T **pEmxArray)
 {
   if (*pEmxArray != (emxArray_boolean_T *)NULL) {
@@ -201,12 +181,6 @@ void emxFree_real_T(emxArray_real_T **pEmxArray)
     free(*pEmxArray);
     *pEmxArray = (emxArray_real_T *)NULL;
   }
-}
-
-void emxInitMatrix_cell_wrap_2(cell_wrap_2 pMatrix[2])
-{
-  emxInitStruct_cell_wrap_2(&pMatrix[0]);
-  emxInitStruct_cell_wrap_2(&pMatrix[1]);
 }
 
 void emxInit_boolean_T(emxArray_boolean_T **pEmxArray, int numDimensions)

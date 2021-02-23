@@ -3,14 +3,14 @@
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
  *
- * RRTstar3D.h
+ * sqr_eucl_dist.h
  *
- * Code generation for function 'RRTstar3D'
+ * Code generation for function 'sqr_eucl_dist'
  *
  */
 
-#ifndef RRTSTAR3D_H
-#define RRTSTAR3D_H
+#ifndef SQR_EUCL_DIST_H
+#define SQR_EUCL_DIST_H
 
 /* Include files */
 #include <stddef.h>
@@ -19,9 +19,8 @@
 #include "benchmarkRRT_types.h"
 
 /* Function Declarations */
-extern void extendTree(const emxArray_real_T *tree, double GChild[16000000],
-  emxArray_real_T *new_tree, double *flag);
+extern void sqr_eucl_dist(const emxArray_real_T *array, emxArray_real_T *e_dist);
 
 #endif
 
-/* End of code generation (RRTstar3D.h) */
+/* End of code generation (sqr_eucl_dist.h) */

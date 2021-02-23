@@ -3,8 +3,9 @@
 % clear all;
 
 function [retval] = benchmarkRRT()
-
-%tic
+coder.extrinsic('tic');
+coder.extrinsic('toc');
+tic
 num_of_runs = 1;
 run_RRTstar = 1;
 
@@ -13,7 +14,7 @@ dim=2;
 if dim == 2
     stepsize = 4;
     radius = 3;
-    samples = 2000;
+    samples = 4000;
 elseif dim == 3
     stepsize = 3;
     radius = 3;
@@ -48,5 +49,5 @@ for sits = 1:size(stepsize,2)
     
 end
 retval = 0;
-%toc
+toc
 end

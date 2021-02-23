@@ -1,8 +1,7 @@
 
 
 function [its, sizePath] =  RRTstar3D(dim, segmentLength, radius, random_world, show_output, samples) %#codegen
-coder.extrinsic('tic');
-coder.extrinsic('toc');
+
 % firstSol=0;
 
 % Planning in state space
@@ -58,13 +57,13 @@ else
       % its, time, cost
       if flag == 1 && numPaths==0
           min_cost = findMinCost(tree,end_node,dim);
-          toc
+          %toc
           fprintf("nodes: %.0f, min cost %.3f \n",i, min_cost);
       end
       
       if ismember(i, [400,1000,2000,3000,4000])
          min_cost = findMinCost(tree,end_node,dim);
-         toc
+         %toc
          fprintf("nodes: %.0f, min cost %.3f \n",i, min_cost);
       end 
       
@@ -141,7 +140,7 @@ end
 
 function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLength, r, world, flag_chk, dim, numPaths)   % segmentLength: maximum stepsize, r: neighbor radius
   % NOTE
-  %fprintf("sampling node %.0f \n",size(tree,1)+1);
+  fprintf("sampling node %.0f \n",size(tree,1)+1);
   new_node  = [0, 0, 0, 0, 0, 0, 0, 0];
   new_tree = zeros(1,8);
   
@@ -164,13 +163,9 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
     end
 
     % find node that is closest to randomPoint (Eucl. dist. between positions). 
-    %tmp = tree(:, 1 : dim) - randomPoint(1 : dim);
-    tmp_dist = zeros(size(tree,1), dim);
-    for i = 1:size(tree,1)
-      tmp_dist(i,1:dim) = tree(i, 1 : dim) - randomPoint(1 : dim);
-    end
-    %fprintf("  sampled pos: %.1f, %.1f\n",randomPoint(1), randomPoint(2));
-    sqr_dist = sqr_eucl_dist(tmp_dist, dim);
+    tmp = tree(:, 1 : dim) - randomPoint(1 : dim);
+    fprintf("  sampled pos: %.1f, %.1f\n",randomPoint(1), randomPoint(2));
+    sqr_dist = sqr_eucl_dist(tmp, dim);
     [min_dist, idx] = min(sqr_dist);
     min_parent_idx = idx;
     
@@ -193,18 +188,13 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
     if collision_flag == 0  
         
       new_point(dim + 1 : 2 * dim) = real(xf(dim + 1 : 2 * dim));
-      %fprintf("    adjusted pos: %.1f, %.1f\n",new_point(1), new_point(2));
+      fprintf("    adjusted pos: %.1f, %.1f\n",new_point(1), new_point(2));
       
       %print tree
-%       fprintf("    tree =  ");
-%       for k = 1:size(tree,1)
-%         for j = 1:size(tree,2)
-%             fprintf(" %.1f, ",tree(k,j))
-%         end
-%         fprintf("\n");
-%       end
+      fprintf("tree(closest neighbour) =  ");
+      for i = 1
       [min_cost, ~] = cost_npFreeVel(tree(idx,:), new_point, dim, Tf);                 % total cost from root to new_point through its parent tree(idx,:)
-      %fprintf("    base cost from %.0f = %.2f\n",idx, min_cost);
+      fprintf("    base cost from %.0f = %.2f\n",idx, min_cost);
       %fprintf("tree size = %.0f\n",size(tree,1));
       
       % NOTE, broadcast does not translate to C
@@ -228,25 +218,23 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
       ner = gamma * ( log(nun + 1) / nun )^(1 / dim);
       r1 = min(ner, r);   
       
-%       fprintf("    dist to node: ");
+%       fprintf("dist to node: ");
 %       for index = 1:size(dist_sqr,1)
-%           fprintf(" %.1f, ",dist_sqr(index).^0.5);
+%           fprintf(" %.1f, ",dist_sqr(index));
 %       end
 %       fprintf("\n");
       
       near_idx = find(dist_sqr <= r1^2);
-
+      %fprintf("near idx count = %.0f\n",size(near_idx,1));
       
       size_near = size(near_idx, 1);
-      %fprintf("    near idx count = %.0f\n",size(near_idx,1));
       if size_near >= 1          
         for i = 1 : size_near                                                % choose parent node
-            %fprintf("    checking index %.0f\n",near_idx(i));
             if near_idx(i) ~= idx
                 [segcost, Tf] = segment_costFreeVel(tree(near_idx(i), :), new_point, dim);
                 cost_near = tree(near_idx(i), 2 * dim + 2) + segcost;
 
-                %fprintf("    checking %.0f, cost = %.2f + %.2f(seg) = %.2f \n",near_idx(i), tree(near_idx(i), 2 * dim + 2), segcost,cost_near);
+                fprintf("    checking %.0f, cost = %.2f + %.2f(seg) = %.2f \n",near_idx(i), tree(near_idx(i), 2 * dim + 2), segcost,cost_near);
 
                 if cost_near + 0.001 < min_cost
                     [collision_flag, ~, xf] = collisionFreeVelKnowTf(tree(near_idx(i), :), new_point, world, dim, Tf);
@@ -262,7 +250,7 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
       
       new_node = [new_point, 0 , min_cost, min_parent_idx, 0];
    
-      %fprintf("    adding new code %.0f, parent = %.0f, cost = %.2f\n",size(tree,1)+1,min_parent_idx,min_cost);
+      fprintf("    adding new code %.0f, parent = %.0f, cost = %.2f\n",size(tree,1)+1,min_parent_idx,min_cost);
       new_tree = [tree; new_node];
       new_node_idx = size(new_tree, 1);      
       new_tree(min_parent_idx, 2 * dim + 4) = new_tree(min_parent_idx, 2 * dim + 4) + 1;     % ChildNum + 1
@@ -271,12 +259,11 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
       if size_near >= 1                                                  % rewire
         reduced_idx = near_idx;
         for j = 1 : size_near
-            %fprintf("    checking index %.0f\n",reduced_idx(j));
             if reduced_idx(j) ~= min_parent_idx
                 near_cost = new_tree(reduced_idx(j), 2 * dim + 2);
                 [lcost, Tf] = segment_cost(new_point, new_tree(reduced_idx(j), :), dim);
-                rnewcost = min_cost + lcost;
                 %fprintf("checking %.0f, cost = %.2f + %.2f(seg) = %.2f \n",reduced_idx(j), near_cost, rnewcost);
+                rnewcost = min_cost + lcost;
                 if near_cost > rnewcost + 0.001
                     [collision_flag, ~] = collisionKnowTf(new_node, new_tree(reduced_idx(j), :), world, dim, Tf);
                     if collision_flag == 0 

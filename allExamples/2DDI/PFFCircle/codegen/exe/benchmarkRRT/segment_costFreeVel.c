@@ -3,9 +3,9 @@
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
  *
- * collisionFreeVel.c
+ * segment_costFreeVel.c
  *
- * Code generation for function 'collisionFreeVel'
+ * Code generation for function 'segment_costFreeVel'
  *
  */
 
@@ -13,20 +13,18 @@
 #include <math.h>
 #include "rt_nonfinite.h"
 #include "benchmarkRRT.h"
-#include "collisionFreeVel.h"
-#include "DI_stateFreeVel.h"
-#include "linspace.h"
+#include "segment_costFreeVel.h"
+#include "DI_costFreeVel.h"
 #include "DI_cost.h"
 #include "roots.h"
 #include "DI_timeFreeVel.h"
 #include "benchmarkRRT_rtwutil.h"
-#include "benchmarkRRT_data.h"
 
 /* Function Definitions */
-void collisionFreeVel(const double parent_data[], const double node[4], double
-                      *collision_flag, creal_T *Tf, double xf[4])
+void segment_costFreeVel(const double from_node_data[], const double to_point[4],
+  double *cost, creal_T *Tf)
 {
-  double dv1[5];
+  double dv2[5];
   creal_T Tf_data[4];
   int Tf_size[1];
   int nx;
@@ -35,34 +33,23 @@ void collisionFreeVel(const double parent_data[], const double node[4], double
   double y_data[4];
   boolean_T tmp_data[4];
   int trueCount;
-  int i;
+  int partialTrueCount;
   signed char b_tmp_data[4];
   creal_T varargin_1_data[4];
-  creal_T t[12];
-  creal_T dc0;
+  creal_T dc1;
   boolean_T SCALEA;
-  double b_state[40];
   double ma;
-  int exitg3;
   double mb;
   boolean_T SCALEB;
-  int exitg2;
-  double Mb;
   double x;
   double br;
-  double bi;
-  int exitg1;
+  double Mb;
   double Ma;
-  static const signed char iv1[5] = { 6, 15, 10, 5, 15 };
 
-  static const signed char iv2[5] = { 6, 14, 11, 15, 5 };
-
-  *collision_flag = 0.0;
-
-  /*      Tf = norm(parent(1 : 4) - node(1 : 4))/0.8; */
-  DI_timeFreeVel(parent_data[0], parent_data[1], parent_data[2], parent_data[3],
-                 node[0], node[1], dv1);
-  roots(dv1, Tf_data, Tf_size);
+  /*      Tf = norm(from_node(1 : 4) - to_point(1 : 4))/0.8; */
+  DI_timeFreeVel(from_node_data[0], from_node_data[1], from_node_data[2],
+                 from_node_data[3], to_point[0], to_point[1], dv2);
+  roots(dv2, Tf_data, Tf_size);
   nx = Tf_size[0];
   for (k = 0; k < nx; k++) {
     x_data[k] = Tf_data[k].im;
@@ -80,33 +67,33 @@ void collisionFreeVel(const double parent_data[], const double node[4], double
 
   nx = (signed char)Tf_size[0] - 1;
   trueCount = 0;
-  for (i = 0; i <= nx; i++) {
-    if (tmp_data[i]) {
+  for (k = 0; k <= nx; k++) {
+    if (tmp_data[k]) {
       trueCount++;
     }
   }
 
-  k = 0;
-  for (i = 0; i <= nx; i++) {
-    if (tmp_data[i]) {
-      Tf_data[k] = Tf_data[i];
-      k++;
+  partialTrueCount = 0;
+  for (k = 0; k <= nx; k++) {
+    if (tmp_data[k]) {
+      Tf_data[partialTrueCount] = Tf_data[k];
+      partialTrueCount++;
     }
   }
 
   nx = trueCount - 1;
   trueCount = 0;
-  for (i = 0; i <= nx; i++) {
-    if (Tf_data[i].re >= 0.0) {
+  for (k = 0; k <= nx; k++) {
+    if (Tf_data[k].re >= 0.0) {
       trueCount++;
     }
   }
 
-  k = 0;
-  for (i = 0; i <= nx; i++) {
-    if (Tf_data[i].re >= 0.0) {
-      b_tmp_data[k] = (signed char)(i + 1);
-      k++;
+  partialTrueCount = 0;
+  for (k = 0; k <= nx; k++) {
+    if (Tf_data[k].re >= 0.0) {
+      b_tmp_data[partialTrueCount] = (signed char)(k + 1);
+      partialTrueCount++;
     }
   }
 
@@ -116,8 +103,8 @@ void collisionFreeVel(const double parent_data[], const double node[4], double
 
   *Tf = varargin_1_data[0];
   for (k = 2; k <= trueCount; k++) {
-    dc0 = varargin_1_data[k - 1];
-    if (rtIsNaN(dc0.re) || rtIsNaN(varargin_1_data[k - 1].im)) {
+    dc1 = varargin_1_data[k - 1];
+    if (rtIsNaN(dc1.re) || rtIsNaN(varargin_1_data[k - 1].im)) {
       SCALEA = false;
     } else if (rtIsNaN(Tf->re) || rtIsNaN(Tf->im)) {
       SCALEA = true;
@@ -149,7 +136,7 @@ void collisionFreeVel(const double parent_data[], const double node[4], double
 
       if (x == br) {
         Mb = fabs(Tf->im);
-        bi = fabs(varargin_1_data[k - 1].im);
+        br = fabs(varargin_1_data[k - 1].im);
         if (ma > Mb) {
           Ma = ma;
           ma = Mb;
@@ -157,11 +144,11 @@ void collisionFreeVel(const double parent_data[], const double node[4], double
           Ma = Mb;
         }
 
-        if (mb > bi) {
+        if (mb > br) {
           Mb = mb;
-          mb = bi;
+          mb = br;
         } else {
-          Mb = bi;
+          Mb = br;
         }
 
         if (Ma > Mb) {
@@ -191,23 +178,23 @@ void collisionFreeVel(const double parent_data[], const double node[4], double
                              re);
           if (x == br) {
             br = varargin_1_data[k - 1].re;
-            bi = varargin_1_data[k - 1].im;
+            Mb = varargin_1_data[k - 1].im;
             if (x > 0.78539816339744828) {
               if (x > 2.3561944901923448) {
                 x = -Tf->im;
-                br = -bi;
+                br = -Mb;
               } else {
                 x = -Tf->re;
                 br = -br;
               }
             } else if (x > -0.78539816339744828) {
               x = Tf->im;
-              br = bi;
+              br = Mb;
             } else if (x > -2.3561944901923448) {
               x = Tf->re;
             } else {
               x = -Tf->im;
-              br = -bi;
+              br = -Mb;
             }
 
             if (x == br) {
@@ -222,75 +209,12 @@ void collisionFreeVel(const double parent_data[], const double node[4], double
     }
 
     if (SCALEA) {
-      *Tf = dc0;
+      *Tf = dc1;
     }
   }
 
-  linspace(*Tf, t);
-  for (i = 0; i < 10; i++) {
-    DI_stateFreeVel(t[i + 1], *Tf, parent_data[0], parent_data[1], parent_data[2],
-                    parent_data[3], node[0], node[1], *(double (*)[4])&b_state[i
-                    << 2]);
-  }
-
-  DI_stateFreeVel(*Tf, *Tf, parent_data[0], parent_data[1], parent_data[2],
-                  parent_data[3], node[0], node[1], xf);
-  nx = 0;
-  do {
-    exitg3 = 0;
-    if (nx < 10) {
-      i = 0;
-      do {
-        exitg2 = 0;
-        if (i < 2) {
-          Mb = b_state[i + (nx << 2)];
-          if ((Mb > 20.0) || (Mb < 0.0)) {
-            *collision_flag = 1.0;
-            exitg2 = 1;
-          } else {
-            i++;
-          }
-        } else {
-          /*  check each obstacle */
-          i = 0;
-          exitg2 = 2;
-        }
-      } while (exitg2 == 0);
-
-      if (exitg2 == 1) {
-        exitg3 = 1;
-      } else {
-        do {
-          exitg1 = 0;
-          if (i < 5) {
-            k = nx << 2;
-            bi = b_state[k] - (double)iv1[i];
-            bi *= bi;
-            Mb = bi;
-            bi = b_state[1 + k] - (double)iv2[i];
-            bi *= bi;
-            if (Mb + bi < (dv0[i] + 0.1) * (dv0[i] + 0.1)) {
-              /*  (norm([p(1);p(2)]-[world.cx(i); world.cy(i)])<=1*world.radius(i)) */
-              *collision_flag = 1.0;
-              exitg1 = 1;
-            } else {
-              i++;
-            }
-          } else {
-            nx++;
-            exitg1 = 2;
-          }
-        } while (exitg1 == 0);
-
-        if (exitg1 == 1) {
-          exitg3 = 1;
-        }
-      }
-    } else {
-      /* %%%% dim=3 case has not been implemented yet %%%%% */
-      exitg3 = 1;
-    }
-  } while (exitg3 == 0);
+  *cost = DI_costFreeVel(*Tf, from_node_data[0], from_node_data[1],
+    from_node_data[2], from_node_data[3], to_point[0], to_point[1]);
 }
 
-/* End of code generation (collisionFreeVel.c) */
+/* End of code generation (segment_costFreeVel.c) */
