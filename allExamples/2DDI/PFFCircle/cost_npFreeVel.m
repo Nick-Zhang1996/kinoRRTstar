@@ -16,10 +16,8 @@ if dim == 2
     cost = from_node( 2 * dim + 2) + cost;
     
 elseif dim == 3
-    
     cost = DI3d_costFreeVel(Tf, from_node(1), from_node(2), from_node(3), from_node(4), from_node(5), from_node(6), to_point(1), to_point(2), to_point(3));
     cost = from_node( 2 * dim + 2) + cost;
-    
 end
 
 end
