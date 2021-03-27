@@ -34,7 +34,7 @@ show_output = 1;
     if run_RRTstar == 1
 
         for i = 1:num_of_runs
-            fprintf("starting run\n");
+            fprintf
             RRTstar3D(dim, segmentLength, radius, show_output, samples);
         end
 

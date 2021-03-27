@@ -36,9 +36,9 @@ tree = [];
 coder.varsize('tree');
 tree = start_node;
 
-%GChild  = [];
-%coder.varsize('GChild')
-GChild = zeros(samples, samples);
+GChild  = [];
+coder.varsize('GChild')
+% GChild = zeros(400, 500);
 
 % tic
 
@@ -49,9 +49,9 @@ else
   if samples >0
   numPaths = 0;
   for i = 1:samples
-      %fprintf("trying node... \n");
+      fprintf("trying node... \n");
       [tree,GChild,flag] = extendTree(tree,GChild,end_node,segmentLength,radius,world,0,dim,state_dim,numPaths);
-      %fprintf("nodes added");
+      fprintf("nodes added");
       numPaths = numPaths + flag;
 
       if flag == 1 && numPaths==1
@@ -171,7 +171,7 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
     end
 
     % find node that is closest to randomPoint (Eucl. dist. between positions). 
-    %fprintf("find node that is closest to randomPoint \n");
+    fprintf("find node that is closest to randomPoint \n");
     % NOTE
 %     tmp = tree(:, 1 : dim) - randomPoint(1 : dim);
     tmp_dist = zeros(size(tree,1), dim);
@@ -189,7 +189,7 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
     % NOTE
     new_point = [0 0 0 0 0 0 0 0 0];
     % find new_point that is within the range of min_parent_idx in terms of segmentLength (Eucl. dist. between positions).
-    %fprintf("find new_point that is within the range of min_parent_idx in terms of segmentLength (Eucl. dist. between positions)\n");
+    fprintf("find new_point that is within the range of min_parent_idx in terms of segmentLength (Eucl. dist. between positions)\n");
     if min_dist > segmentLength^2
         % generate a new point that is closest to randomPoint, segmentLength away from tree(idx,1:dim)
         new_point(1 : dim) = tree(idx, 1 : dim) + Vect * segmentLength;
@@ -198,12 +198,12 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
     end
 
   % check if the new_point is in collision
-  %fprintf("check if the new_point is in collision\n");
+  fprintf("check if the new_point is in collision\n");
   if collision_point(new_point, world, dim) == 0
       [collision_flag, Tf, xf] = collisionFreeVel(tree(idx, :), new_point, world, dim, state_dim);    % this collision checking includes a steering function and forward simulation
                                                                                                                                          
     if collision_flag == 0  
-      %fprintf("no collision \n");
+      fprintf("no collision \n");
       new_point(dim + 1 : state_dim) = real(xf(dim + 1 : state_dim));
       [min_cost, ~] = cost_npFreeVel(tree(idx,:), new_point, dim, state_dim, Tf);                 % total cost from root to new_point through its parent tree(idx,:)
 
@@ -227,7 +227,7 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
       near_idx = find(dist_sqr <= r1^2);
       
       size_near = size(near_idx, 1);
-      %fprintf("choosing new parent\n")
+      fprintf("choosing new parent\n")
       if size_near >= 1          
         for i = 1 : size_near                                                % choose parent node
             if near_idx(i) ~= idx
@@ -245,15 +245,14 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
         end             
       end
       
-      %fprintf("assembling new node \n");
+      fprintf("assembling new node \n");
       new_node = [new_point, 0 , min_cost, min_parent_idx, 0];
       new_tree = [tree; new_node];
       new_node_idx = size(new_tree, 1);      
       new_tree(min_parent_idx, state_dim + 4) = new_tree(min_parent_idx, state_dim + 4) + 1;     % ChildNum + 1
-      %fprintf("updating GChild \n");
       GChild( min_parent_idx, new_tree(min_parent_idx, state_dim + 4) ) = new_node_idx;        % update GChild matrix
       
-      %fprintf("rewiring \n");
+      fprintf("rewiring \n");
       if size_near >= 1                                                  % rewire
         reduced_idx = near_idx;
         for j = 1 : size_near
@@ -280,7 +279,6 @@ function [new_tree, GChild, flag] = extendTree(tree, GChild, end_node, segmentLe
             end
         end
       end
-      %fprintf("rewiring done \n");
       flag1=1;
     end
     
