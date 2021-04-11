@@ -4,8 +4,10 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <algorithm>
 #include <exception>
-using namespace std::vector;
+#include <vector>
+using std::vector;
 
 class err_NoValidSolution : public std::exception{};
 class err_Unexcepted : public std::exception{};
@@ -13,7 +15,7 @@ class err_Unexcepted : public std::exception{};
 class QuadOptimalControl{
   public:
   const int interior_point_count;
-  float* buffer_interior_states, buffer_interior_pos;
+  float *buffer_interior_states, *buffer_interior_pos;
   // N: no of interior points when evaluating states between initial and final for collision checking
   QuadOptimalControl(const int N) : interior_point_count(N) {
     buffer_interior_states= new float[9*interior_point_count];
@@ -45,23 +47,24 @@ class QuadOptimalControl{
   float falsePosition(vector<float> coeffs, float low_bound, float high_bound, float err=1e-4);
 
   // evaluate polynomial 
-  inline float peval(float x, vector<float> coeffs){
+  inline float peval( vector<float> coeffs, float x){
     float val = 0.0;
     int deg = coeffs.size()-1;
     for (int i=0; i<(deg+1); i++){
       val += coeffs.at(i) * (deg-i);
     }
-    return val
+    return val;
   }
 
     
+  /*
   // optimal control related functions for quadcopter
   // x0i : initial state
   // x1i : final state
   // xi1-9: x,y,z,vx,vy,vz,ax,xy,az
   //
   // given initial and final full state, give cost
-  float cost(t_s, float  float x01, float  float  x02, float  float  x03, float  float  x04, float  float  x05, float  float  x06, float  float  x07, float  float  x08, float  float  x09, float  float  x11, float  float  x12, float  float  x13, float  float  x14, float  float  x15, float  float  x16, float  float  x17, float  float  x18, float  float  x19);
+  float cost(float t_s, float  float x01, float  float  x02, float  float  x03, float  float  x04, float  float  x05, float  float  x06, float  float  x07, float  float  x08, float  float  x09, float  float  x11, float  float  x12, float  float  x13, float  float  x14, float  float  x15, float  float  x16, float  float  x17, float  float  x18, float  float  x19);
 
   //  find cost given partial state (xyz) only
   float costPartialFreeFinalState(t_s, float x01, float x02, float x03, float x04, float x05, float x06, float x07, float x08, float x09, float x11, float x12, float x13);
@@ -85,6 +88,7 @@ class QuadOptimalControl{
   float timePartialFinalState(float float x01, float  x02, float  x03, float  x04, float  x05, float  x06, float  x07, float  x08, float  x09, float  x11, float  x12, float  x13);
 
 
+  */
 };
 
 
