@@ -7,7 +7,12 @@
 #include <algorithm>
 #include <exception>
 #include <vector>
+#include <math.h>
+#include <iostream>
+
+
 using std::vector;
+using std::cout;
 
 class err_NoValidSolution : public std::exception{};
 class err_Unexcepted : public std::exception{};
@@ -51,7 +56,7 @@ class QuadOptimalControl{
     float val = 0.0;
     int deg = coeffs.size()-1;
     for (int i=0; i<(deg+1); i++){
-      val += coeffs.at(i) * (deg-i);
+      val += coeffs.at(i) * pow(x,deg-i);
     }
     return val;
   }

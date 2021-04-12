@@ -12,12 +12,15 @@ float QuadOptimalControl::minPositiveRoot(vector<float> coeffs){
 // find real roots of a polynomial
 vector<float> QuadOptimalControl::roots(vector<float> coeffs){
   int deg = coeffs.size()-1;
+  //cout << "deg = " << deg;
   vector<float> sol;
   if (deg == 1){
     if ( abs(coeffs.front()) < 0.00001 ){
-      return  sol;
+      return sol;
     } else {
+      // FIXME what if front() = 0
       sol.push_back(-coeffs.at(1)/coeffs.front());
+      return sol;
     }
   }
 
@@ -57,7 +60,8 @@ vector<float> QuadOptimalControl::roots(vector<float> coeffs){
     float a_max_abs = std::max(abs(a_max), abs(a_min));
     if (sol_at_left){
       float low_bound = - (a_max_abs / abs(coeffs.front()))*10;
-      sol.insert(sol.begin(),falsePosition(coeffs, low_bound, critical_points.front()));
+      auto temp = falsePosition(coeffs, low_bound, critical_points.front());
+      sol.insert(sol.begin(),temp);
     }
     if (sol_at_right){
       float high_bound = (a_max_abs / abs(coeffs.front()))*10;
@@ -84,6 +88,8 @@ vector<float> QuadOptimalControl::derivative(vector<float> coeffs){
 }
 
 float QuadOptimalControl::falsePosition(vector<float> coeffs, float low_bound, float high_bound, float err){
+  //FIXME inf loop
+  cout << "called ";
   // false position method:
   // draw a line between f(a) and f(b)
   // find intercept with x
