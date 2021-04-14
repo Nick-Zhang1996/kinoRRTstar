@@ -20,11 +20,11 @@ class err_Unexcepted : public std::exception{};
 class QuadOptimalControl{
   public:
   const int interior_point_count;
-  float *buffer_interior_states, *buffer_interior_pos;
+  double *buffer_interior_states, *buffer_interior_pos;
   // N: no of interior points when evaluating states between initial and final for collision checking
   QuadOptimalControl(const int N) : interior_point_count(N) {
-    buffer_interior_states= new float[9*interior_point_count];
-    buffer_interior_pos= new float[3*interior_point_count];
+    buffer_interior_states= new double[9*interior_point_count];
+    buffer_interior_pos= new double[3*interior_point_count];
   }
 
   ~QuadOptimalControl(){
@@ -33,27 +33,27 @@ class QuadOptimalControl{
   }
 
   // following group of functions deals with real root finding for a polynomial
-  // nth degree polynomial is represented as a std::vector<float> with coeffs as elements
+  // nth degree polynomial is represented as a std::vector<double> with coeffs as elements
   // <an, an-1, an-2, ... a0> (size:n+1)
   // an*x^n + an-1 * x*n-1 + ... + a0
   //
   // find the smallest positive real root of a polynomial
-  float minPositiveRoot(vector<float> coeffs);
+  double minPositiveRoot(vector<double> coeffs);
 
   // find real roots of a <deg> degree polynomial 
   // in ascending order
-  vector<float> roots(vector<float> coeffs);
+  vector<double> roots(vector<double> coeffs);
 
   // find derivative of a polynomial
-  vector<float> derivative(vector<float> coeffs);
+  vector<double> derivative(vector<double> coeffs);
 
   // find root of polynomial in interval
   // must contain one and only one root in interval
-  float falsePosition(vector<float> coeffs, float low_bound, float high_bound, float err=1e-4);
+  double falsePosition(vector<double> coeffs, double low_bound, double high_bound, double err=1e-8);
 
   // evaluate polynomial 
-  inline float peval( vector<float> coeffs, float x){
-    float val = 0.0;
+  inline double peval( vector<double> coeffs, double x){
+    double val = 0.0;
     int deg = coeffs.size()-1;
     for (int i=0; i<(deg+1); i++){
       val += coeffs.at(i) * pow(x,deg-i);
@@ -69,28 +69,28 @@ class QuadOptimalControl{
   // xi1-9: x,y,z,vx,vy,vz,ax,xy,az
   //
   // given initial and final full state, give cost
-  float cost(float t_s, float  float x01, float  float  x02, float  float  x03, float  float  x04, float  float  x05, float  float  x06, float  float  x07, float  float  x08, float  float  x09, float  float  x11, float  float  x12, float  float  x13, float  float  x14, float  float  x15, float  float  x16, float  float  x17, float  float  x18, float  float  x19);
+  double cost(double t_s, double  double x01, double  double  x02, double  double  x03, double  double  x04, double  double  x05, double  double  x06, double  double  x07, double  double  x08, double  double  x09, double  double  x11, double  double  x12, double  double  x13, double  double  x14, double  double  x15, double  double  x16, double  double  x17, double  double  x18, double  double  x19);
 
   //  find cost given partial state (xyz) only
-  float costPartialFreeFinalState(t_s, float x01, float x02, float x03, float x04, float x05, float x06, float x07, float x08, float x09, float x11, float x12, float x13);
+  double costPartialFreeFinalState(t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
 
-  // find interior position vector, float  including endpoints
-  // t_s : final time / segment time. initial state @ t=0, float  final state at t = t_s
-  // return: dim (N, float n), float  N being number of interior points
+  // find interior position vector, double  including endpoints
+  // t_s : final time / segment time. initial state @ t=0, double  final state at t = t_s
+  // return: dim (N, double n), double  N being number of interior points
   // Old name
-  //float state(float t_s, float x01, float  x02, float  x03, float  x04, float  x05, float  x06, float  x07, float  x08, float  x09, float  x11, float  x12, float  x13, float  x14, float  x15, float  x16, float  x17, float  x18, float  x19);
-  float* interiorPosition(float t_s, float x01, float  x02, float  x03, float  x04, float  x05, float  x06, float  x07, float  x08, float  x09, float  x11, float  x12, float  x13, float  x14, float  x15, float  x16, float  x17, float  x18, float  x19);
+  //double state(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
+  double* interiorPosition(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
 
   // calculate only xyz
-  //float statePartialFinalState(float t_s, float x01, float x02, float x03, float x04, float x05, float x06, float x07, float x08, float x09, float x11, float x12, float x13);
-  float* interiorPositionPartialFinalState(float t_s, float x01, float x02, float x03, float x04, float x05, float x06, float x07, float x08, float x09, float x11, float x12, float x13);
+  //double statePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
+  double* interiorPositionPartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
   // calculate full state vector
-  //float statePartialFinalStateFull(float t_s, float x01, float x02, float x03, float x04, float x05, float x06, float x07, float x08, float x09, float x11, float x12, float x13);
-  float* interiorStatePartialFinalState(float t_s, float x01, float x02, float x03, float x04, float x05, float x06, float x07, float x08, float x09, float x11, float x12, float x13);
+  //double statePartialFinalStateFull(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
+  double* interiorStatePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
 
   // find time to go from initial to final state
-  float time(float x01, float  x02, float  x03, float  x04, float  x05, float  x06, float  x07, float  x08, float  x09, float  x11, float  x12, float  x13, float  x14, float  x15, float  x16, float  x17, float  x18, float  x19);
-  float timePartialFinalState(float float x01, float  x02, float  x03, float  x04, float  x05, float  x06, float  x07, float  x08, float  x09, float  x11, float  x12, float  x13);
+  double time(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
+  double timePartialFinalState(double double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13);
 
 
   */
