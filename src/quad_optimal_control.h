@@ -62,17 +62,16 @@ class QuadOptimalControl{
   }
 
     
-  /*
   // optimal control related functions for quadcopter
   // x0i : initial state
   // x1i : final state
   // xi1-9: x,y,z,vx,vy,vz,ax,xy,az
   //
   // given initial and final full state, give cost
-  double cost(double t_s, double  double x01, double  double  x02, double  double  x03, double  double  x04, double  double  x05, double  double  x06, double  double  x07, double  double  x08, double  double  x09, double  double  x11, double  double  x12, double  double  x13, double  double  x14, double  double  x15, double  double  x16, double  double  x17, double  double  x18, double  double  x19);
+  double cost(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
 
   //  find cost given partial state (xyz) only
-  double costPartialFreeFinalState(t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
+  double costPartialFreeFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
 
   // find interior position vector, double  including endpoints
   // t_s : final time / segment time. initial state @ t=0, double  final state at t = t_s
@@ -89,11 +88,11 @@ class QuadOptimalControl{
   double* interiorStatePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
 
   // find time to go from initial to final state
+  // this requires solving a polynomial
   double time(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
-  double timePartialFinalState(double double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13);
+  double timePartialFinalState(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13);
 
 
-  */
 };
 
 
