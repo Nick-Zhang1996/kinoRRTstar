@@ -93,15 +93,18 @@ double QuadOptimalControl::falsePosition(vector<double> coeffs, double low_bound
   // find intercept with x
   // use x as new bound
   assert (high_bound > low_bound);
+  //terminal condition 1
   if (high_bound - low_bound < err){ return 0.5*(high_bound + low_bound); }
+
   double fa = peval( coeffs, low_bound);
   double fb = peval( coeffs, high_bound);
   assert (fa>0 != fb>0);
   double intercept = (-fa) * (high_bound - low_bound) / (fb - fa) + low_bound;
-  // terminal condition
-  if ( abs(peval( coeffs, intercept)) < err ) { return intercept; }
+  double f_intercept = peval( coeffs, intercept);
+  // terminal condition 2
+  if ( abs(f_intercept) < err ) { return intercept; }
 
-  if (intercept > 0 == low_bound > 0){
+  if (f_intercept > 0 == fa > 0){
     return falsePosition(coeffs, intercept, high_bound);
   } else {
     return falsePosition(coeffs,  low_bound, intercept);
@@ -123,8 +126,8 @@ double QuadOptimalControl::costPartialFreeFinalState(double t_s, double x01, dou
 
 double* QuadOptimalControl::interiorPosition(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19){
   // prepare time vector
-  double t = 0.0;
-  double t_step = t_s/(interior_point_count-1);
+  double t_step = t_s/(interior_point_count+1);
+  double t = t_step;
   for (int i=0;i<interior_point_count;i++){
     *(buffer_interior_pos + i * 3 + 0) = x11 + x14*(t - t_s) + (x17*pow( (t - t_s),2))/2 - (pow( (t - t_s),5)*(12*x01 - 12*x11 + 6*t_s*x04 + 6*t_s*x14 + pow(t_s,2)*x07 - pow(t_s,2)*x17))/(2*pow(t_s,5)) - (pow( (t - t_s),3)*(20*x01 - 20*x11 + 8*t_s*x04 + 12*t_s*x14 + pow(t_s,2)*x07 - 3*pow(t_s,2)*x17))/(2*pow(t_s,3)) - (pow( (t - t_s),4)*(30*x01 - 30*x11 + 14*t_s*x04 + 16*t_s*x14 + 2*pow(t_s,2)*x07 - 3*pow(t_s,2)*x17))/(2*pow(t_s,4));
     *(buffer_interior_pos + i * 3 + 1) = x12 + x15*(t - t_s) + (x18*pow( (t - t_s),2))/2 - (pow( (t - t_s),5)*(12*x02 - 12*x12 + 6*t_s*x05 + 6*t_s*x15 + pow(t_s,2)*x08 - pow(t_s,2)*x18))/(2*pow(t_s,5)) - (pow( (t - t_s),3)*(20*x02 - 20*x12 + 8*t_s*x05 + 12*t_s*x15 + pow(t_s,2)*x08 - 3*pow(t_s,2)*x18))/(2*pow(t_s,3)) - (pow( (t - t_s),4)*(30*x02 - 30*x12 + 14*t_s*x05 + 16*t_s*x15 + 2*pow(t_s,2)*x08 - 3*pow(t_s,2)*x18))/(2*pow(t_s,4));
@@ -137,8 +140,8 @@ double* QuadOptimalControl::interiorPosition(double t_s, double x01, double  x02
 
 double* QuadOptimalControl::interiorPositionPartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13){
   // prepare time vector
-  double t = 0.0;
-  double t_step = t_s/(interior_point_count-1);
+  double t_step = t_s/(interior_point_count+1);
+  double t = t_step;
   for (int i=0;i<interior_point_count;i++){
     *(buffer_interior_pos + i * 3 + 0) = x01 + t*x04 + (pow(t,2)*x07)/2 + (625*pow(t,3)*x01)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*x01)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (15*pow(t,4)*x01)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (3*pow(t,5)*x01)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (625*pow(t,3)*x11)/(500*pow(t_s,3) + 9*pow(t_s,2)) + (15*pow(t,3)*x11)/(500*pow(t_s,4) + 9*pow(t_s,3)) - (15*pow(t,4)*x11)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (3*pow(t,5)*x11)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (1875*pow(t,3)*t_s*x01)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (625*pow(t,3)*t_s*x04)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*t_s*x04)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (1875*pow(t,4)*t_s*x01)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (15*pow(t,4)*t_s*x04)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (375*pow(t,5)*t_s*x01)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (3*pow(t,5)*t_s*x04)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) + (1875*pow(t,3)*t_s*x11)/(500*pow(t_s,4) + 9*pow(t_s,3)) - (1875*pow(t,4)*t_s*x11)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (375*pow(t,5)*t_s*x11)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (1875*pow(t,3)*pow(t_s,2)*x04)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (125*pow(t,3)*pow(t_s,2)*x07)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*pow(t_s,2)*x07)/(2*(500*pow(t_s,4) + 9*pow(t_s,3))) + (1875*pow(t,4)*pow(t_s,2)*x04)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (625*pow(t,3)*pow(t_s,3)*x07)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (15*pow(t,4)*pow(t_s,2)*x07)/(4*(500*pow(t_s,5) + 9*pow(t_s,4))) - (375*pow(t,5)*pow(t_s,2)*x04)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) + (625*pow(t,4)*pow(t_s,3)*x07)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (3*pow(t,5)*pow(t_s,2)*x07)/(4*(500*pow(t_s,6) + 9*pow(t_s,5))) - (125*pow(t,5)*pow(t_s,3)*x07)/(2*(500*pow(t_s,6) + 9*pow(t_s,5)));
     *(buffer_interior_pos + i * 3 + 1) =  x02 + t*x05 + (pow(t,2)*x08)/2 + (625*pow(t,3)*x02)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*x02)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (15*pow(t,4)*x02)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (3*pow(t,5)*x02)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (625*pow(t,3)*x12)/(500*pow(t_s,3) + 9*pow(t_s,2)) + (15*pow(t,3)*x12)/(500*pow(t_s,4) + 9*pow(t_s,3)) - (15*pow(t,4)*x12)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (3*pow(t,5)*x12)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (1875*pow(t,3)*t_s*x02)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (625*pow(t,3)*t_s*x05)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*t_s*x05)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (1875*pow(t,4)*t_s*x02)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (15*pow(t,4)*t_s*x05)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (375*pow(t,5)*t_s*x02)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (3*pow(t,5)*t_s*x05)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) + (1875*pow(t,3)*t_s*x12)/(500*pow(t_s,4) + 9*pow(t_s,3)) - (1875*pow(t,4)*t_s*x12)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (375*pow(t,5)*t_s*x12)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (1875*pow(t,3)*pow(t_s,2)*x05)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (125*pow(t,3)*pow(t_s,2)*x08)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*pow(t_s,2)*x08)/(2*(500*pow(t_s,4) + 9*pow(t_s,3))) + (1875*pow(t,4)*pow(t_s,2)*x05)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (625*pow(t,3)*pow(t_s,3)*x08)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (15*pow(t,4)*pow(t_s,2)*x08)/(4*(500*pow(t_s,5) + 9*pow(t_s,4))) - (375*pow(t,5)*pow(t_s,2)*x05)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) + (625*pow(t,4)*pow(t_s,3)*x08)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (3*pow(t,5)*pow(t_s,2)*x08)/(4*(500*pow(t_s,6) + 9*pow(t_s,5))) - (125*pow(t,5)*pow(t_s,3)*x08)/(2*(500*pow(t_s,6) + 9*pow(t_s,5)));
@@ -152,8 +155,8 @@ double* QuadOptimalControl::interiorPositionPartialFinalState(double t_s, double
 
 double* QuadOptimalControl::interiorStatePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13){
   // prepare time vector
-  double t = 0.0;
-  double t_step = t_s/(interior_point_count-1);
+  double t_step = t_s/(interior_point_count+1);
+  double t = t_step;
   for (int i=0;i<interior_point_count;i++){
     *(buffer_interior_states + i * 9 + 0) = x01 + t*x04 + (pow(t,2)*x07)/2 + (625*pow(t,3)*x01)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*x01)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (15*pow(t,4)*x01)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (3*pow(t,5)*x01)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (625*pow(t,3)*x11)/(500*pow(t_s,3) + 9*pow(t_s,2)) + (15*pow(t,3)*x11)/(500*pow(t_s,4) + 9*pow(t_s,3)) - (15*pow(t,4)*x11)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (3*pow(t,5)*x11)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (1875*pow(t,3)*t_s*x01)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (625*pow(t,3)*t_s*x04)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*t_s*x04)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (1875*pow(t,4)*t_s*x01)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (15*pow(t,4)*t_s*x04)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (375*pow(t,5)*t_s*x01)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (3*pow(t,5)*t_s*x04)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) + (1875*pow(t,3)*t_s*x11)/(500*pow(t_s,4) + 9*pow(t_s,3)) - (1875*pow(t,4)*t_s*x11)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (375*pow(t,5)*t_s*x11)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (1875*pow(t,3)*pow(t_s,2)*x04)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (125*pow(t,3)*pow(t_s,2)*x07)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*pow(t_s,2)*x07)/(2*(500*pow(t_s,4) + 9*pow(t_s,3))) + (1875*pow(t,4)*pow(t_s,2)*x04)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (625*pow(t,3)*pow(t_s,3)*x07)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (15*pow(t,4)*pow(t_s,2)*x07)/(4*(500*pow(t_s,5) + 9*pow(t_s,4))) - (375*pow(t,5)*pow(t_s,2)*x04)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) + (625*pow(t,4)*pow(t_s,3)*x07)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (3*pow(t,5)*pow(t_s,2)*x07)/(4*(500*pow(t_s,6) + 9*pow(t_s,5))) - (125*pow(t,5)*pow(t_s,3)*x07)/(2*(500*pow(t_s,6) + 9*pow(t_s,5)));
     *(buffer_interior_states + i * 9 + 1) =  x02 + t*x05 + (pow(t,2)*x08)/2 + (625*pow(t,3)*x02)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*x02)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (15*pow(t,4)*x02)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (3*pow(t,5)*x02)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (625*pow(t,3)*x12)/(500*pow(t_s,3) + 9*pow(t_s,2)) + (15*pow(t,3)*x12)/(500*pow(t_s,4) + 9*pow(t_s,3)) - (15*pow(t,4)*x12)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (3*pow(t,5)*x12)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (1875*pow(t,3)*t_s*x02)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (625*pow(t,3)*t_s*x05)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*t_s*x05)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (1875*pow(t,4)*t_s*x02)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (15*pow(t,4)*t_s*x05)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (375*pow(t,5)*t_s*x02)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (3*pow(t,5)*t_s*x05)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) + (1875*pow(t,3)*t_s*x12)/(500*pow(t_s,4) + 9*pow(t_s,3)) - (1875*pow(t,4)*t_s*x12)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) + (375*pow(t,5)*t_s*x12)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) - (1875*pow(t,3)*pow(t_s,2)*x05)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (125*pow(t,3)*pow(t_s,2)*x08)/(500*pow(t_s,3) + 9*pow(t_s,2)) - (15*pow(t,3)*pow(t_s,2)*x08)/(2*(500*pow(t_s,4) + 9*pow(t_s,3))) + (1875*pow(t,4)*pow(t_s,2)*x05)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (625*pow(t,3)*pow(t_s,3)*x08)/(500*pow(t_s,4) + 9*pow(t_s,3)) + (15*pow(t,4)*pow(t_s,2)*x08)/(4*(500*pow(t_s,5) + 9*pow(t_s,4))) - (375*pow(t,5)*pow(t_s,2)*x05)/(2*(500*pow(t_s,6) + 9*pow(t_s,5))) + (625*pow(t,4)*pow(t_s,3)*x08)/(2*(500*pow(t_s,5) + 9*pow(t_s,4))) - (3*pow(t,5)*pow(t_s,2)*x08)/(4*(500*pow(t_s,6) + 9*pow(t_s,5))) - (125*pow(t,5)*pow(t_s,3)*x08)/(2*(500*pow(t_s,6) + 9*pow(t_s,5)));

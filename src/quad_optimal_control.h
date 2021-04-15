@@ -49,7 +49,7 @@ class QuadOptimalControl{
 
   // find root of polynomial in interval
   // must contain one and only one root in interval
-  double falsePosition(vector<double> coeffs, double low_bound, double high_bound, double err=1e-8);
+  double falsePosition(vector<double> coeffs, double low_bound, double high_bound, double err=1e-4);
 
   // evaluate polynomial 
   inline double peval( vector<double> coeffs, double x){
@@ -92,6 +92,15 @@ class QuadOptimalControl{
   double time(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
   double timePartialFinalState(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13);
 
+
+  // test scripts
+  void test_cost();
+  void test_costPartialFreeFinalState();
+  void test_interiorPosition();
+  void test_interiorPositionPartialFinalState();
+  void test_interiorStatePartialFinalState();
+  void test_time();
+  void test_timePartialFinalState();
 
 };
 

@@ -3,6 +3,7 @@
 int main(){
   QuadOptimalControl oc(10);
   // peval
+  /*
   auto val = oc.peval(vector<double>{1, -2, 1}, 4);
   std::cout << val << "\n"; // expect 9
 
@@ -35,4 +36,20 @@ int main(){
 
   val = oc.minPositiveRoot(vector<double>{1, -4, 3});
   std::cout << val << "\n"; // expect 1
+
+  oc.test_cost();
+  std::cout << "cost() passed test \n";
+
+  oc.test_costPartialFreeFinalState();
+  std::cout << "costPartialFreeFinalState() passed test \n";
+
+  oc.test_interiorPosition();
+  std::cout << "interiorPosition() passed test \n";
+
+  oc.test_costPartialFreeFinalState();
+  std::cout << "test_costPartialFreeFinalState() passed test \n";
+  */
+
+  oc.test_time();
+  std::cout << "test_time() passed test \n";
 }
