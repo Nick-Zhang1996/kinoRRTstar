@@ -1,4 +1,4 @@
-#include "quad_optimal_control.h"
+#include "quad_oc_tests.h"
 
 void QuadOptimalControl::test_cost(){
   double var;

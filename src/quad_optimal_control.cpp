@@ -2,9 +2,28 @@
 
 // find the smallest positive real root of a polynomial
 double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
-  auto real_roots = roots(coeffs);
-  for (auto i=real_roots.begin(); i!=real_roots.end(); i++){
-    if (*i > 0.0){ return *i; }
+  // input ordering is highest order coeff first
+  // converting it to lowest order coeff first for Eigen
+  std::reverse(coeffs.begin(), coeffs.end());
+  int deg = coeffs.size()-1;
+  Eigen::VectorXd poly(deg+1);
+
+  for (int i=0; i<=deg; i++){
+    poly(i) = coeffs[i];
+  }
+  Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
+
+  solver.compute(poly);
+  const Eigen::PolynomialSolver<double, Eigen::Dynamic>::RootsType &r = solver.roots();
+  double res = std::numeric_limits<double>::max();
+  for (int i=0; i<r.rows(); i++){
+    if ( abs(r(i,0).imag()) < 0.0001 && r(i,0).real() > 0.0 && r(i,0).real()<res ){
+      res = r(i,0).real();
+    }
+  }
+
+  if (res > 0.0){
+    return res;
   }
   throw err_NoValidSolution();
 }
@@ -19,7 +38,7 @@ vector<double> QuadOptimalControl::roots(vector<double> coeffs){
       return sol;
     } else {
       // FIXME what if front() = 0
-      sol.push_back(-coeffs.at(1)/coeffs.front());
+      sol.push_back(-coeffs[1]/coeffs.front());
       return sol;
     }
   }
@@ -80,7 +99,7 @@ vector<double> QuadOptimalControl::derivative(vector<double> coeffs){
 
   vector<double> derivative_polynomial;
   for (int i=0; i<deg; i++){
-    derivative_polynomial.push_back( (deg-i)*coeffs.at(i) );
+    derivative_polynomial.push_back( (deg-i)*coeffs[i] );
   }
 
   return derivative_polynomial;

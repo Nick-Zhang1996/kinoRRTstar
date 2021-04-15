@@ -1,5 +1,4 @@
-#include "quad_optimal_control.h"
-
+#include "test_quad_optimal_control.h"
 int main(){
   QuadOptimalControl oc(10);
   // peval

@@ -9,6 +9,8 @@
 #include <vector>
 #include <math.h>
 #include <iostream>
+#include <limits>
+#include <unsupported/Eigen/Polynomials>
 
 
 using std::vector;
@@ -42,6 +44,7 @@ class QuadOptimalControl{
 
   // find real roots of a <deg> degree polynomial 
   // in ascending order
+  // OBSOLETE
   vector<double> roots(vector<double> coeffs);
 
   // find derivative of a polynomial
@@ -56,7 +59,7 @@ class QuadOptimalControl{
     double val = 0.0;
     int deg = coeffs.size()-1;
     for (int i=0; i<(deg+1); i++){
-      val += coeffs.at(i) * pow(x,deg-i);
+      val += coeffs[i] * pow(x,deg-i);
     }
     return val;
   }
