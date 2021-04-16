@@ -2,7 +2,6 @@
 int main(){
   QuadOptimalControl oc(10);
   // peval
-  /*
   auto val = oc.peval(vector<double>{1, -2, 1}, 4);
   std::cout << val << "\n"; // expect 9
 
@@ -47,8 +46,10 @@ int main(){
 
   oc.test_costPartialFreeFinalState();
   std::cout << "test_costPartialFreeFinalState() passed test \n";
-  */
 
   oc.test_time();
   std::cout << "test_time() passed test \n";
+
+  oc.test_timePartialFinalState();
+  std::cout << "test_timePartialFinalState() passed test \n";
 }

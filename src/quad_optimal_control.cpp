@@ -16,6 +16,7 @@ double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
   solver.compute(poly);
   const Eigen::PolynomialSolver<double, Eigen::Dynamic>::RootsType &r = solver.roots();
   double res = std::numeric_limits<double>::max();
+
   for (int i=0; i<r.rows(); i++){
     if ( abs(r(i,0).imag()) < 0.0001 && r(i,0).real() > 0.0 && r(i,0).real()<res ){
       res = r(i,0).real();
@@ -201,5 +202,6 @@ double QuadOptimalControl::time(double x01, double  x02, double  x03, double  x0
 
 double QuadOptimalControl::timePartialFinalState(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13){
     vector<double> coeffs{250000000, 9000000, - 300000*pow(x07,2) - 300000*pow(x08,2) - 300000*pow(x09,2) + 81000, - 9000*pow(x07,2) - 3000000*x04*x07 - 9000*pow(x08,2) - 3000000*x05*x08 - 9000*pow(x09,2) - 3000000*x06*x09, 4500000*x07*x11 - 4500000*x02*x08 - 81000*x04*x07 - 4500000*x03*x09 - 81000*x05*x08 - 81000*x06*x09 - 4500000*x01*x07 + 4500000*x08*x12 + 4500000*x09*x13 - 6750000*pow(x04,2) - 6750000*pow(x05,2) - 6750000*pow(x06,2) - 81*pow(x07,2) - 81*pow(x08,2) - 81*pow(x09,2), 18000000*x04*x11 - 18000000*x02*x05 - 126000*x01*x07 - 18000000*x03*x06 - 126000*x02*x08 - 648*x04*x07 - 126000*x03*x09 - 648*x05*x08 - 18000000*x01*x04 - 648*x06*x09 + 18000000*x05*x12 + 126000*x07*x11 + 18000000*x06*x13 + 126000*x08*x12 + 126000*x09*x13 - 153000*pow(x04,2) - 153000*pow(x05,2) - 153000*pow(x06,2), - 11250000*pow(x01,2) - 423000*x01*x04 + 22500000*x01*x11 - 972*x07*x01 - 11250000*pow(x02,2) - 423000*x02*x05 + 22500000*x02*x12 - 972*x08*x02 - 11250000*pow(x03,2) - 423000*x03*x06 + 22500000*x03*x13 - 972*x09*x03 - 972*pow(x04,2) + 423000*x04*x11 - 972*pow(x05,2) + 423000*x05*x12 - 972*pow(x06,2) + 423000*x06*x13 - 11250000*pow(x11,2) + 972*x07*x11 - 11250000*pow(x12,2) + 972*x08*x12 - 11250000*pow(x13,2) + 972*x09*x13, - 270000*pow(x01,2) + 540000*x01*x11 - 2592*x04*x01 - 270000*pow(x02,2) + 540000*x02*x12 - 2592*x05*x02 - 270000*pow(x03,2) + 540000*x03*x13 - 2592*x06*x03 - 270000*pow(x11,2) + 2592*x04*x11 - 270000*pow(x12,2) + 2592*x05*x12 - 270000*pow(x13,2) + 2592*x06*x13, - 1620*pow(x01,2) + 3240*x01*x11 - 1620*pow(x02,2) + 3240*x02*x12 - 1620*pow(x03,2) + 3240*x03*x13 - 1620*pow(x11,2) - 1620*pow(x12,2) - 1620*pow(x13,2)};
+  return minPositiveRoot(coeffs);
 }
 
