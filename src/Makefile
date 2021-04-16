@@ -12,7 +12,7 @@ test_quad_optimal_control: test_quad_optimal_control.o quad_optimal_control.o qu
 
 eigen_test: eigen.o
 	$(CC) -o $@ $^ $(CFLAGS)
-test_tree: test_tree.o
+test_tree: test_tree.o tree.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
 clean: 
