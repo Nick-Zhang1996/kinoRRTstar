@@ -29,6 +29,7 @@ double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
   throw err_NoValidSolution();
 }
 
+/*
 // find real roots of a polynomial
 vector<double> QuadOptimalControl::roots(vector<double> coeffs){
   int deg = coeffs.size()-1;
@@ -132,6 +133,7 @@ double QuadOptimalControl::falsePosition(vector<double> coeffs, double low_bound
   throw err_Unexcepted();
 }
 
+*/
 
 
 double QuadOptimalControl::cost(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19){

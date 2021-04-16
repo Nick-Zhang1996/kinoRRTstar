@@ -1,8 +1,10 @@
 #include "test_quad_optimal_control.h"
 int main(){
   QuadOptimalControl oc(10);
+  double val;
+  /*
   // peval
-  auto val = oc.peval(vector<double>{1, -2, 1}, 4);
+  val = oc.peval(vector<double>{1, -2, 1}, 4);
   std::cout << val << "\n"; // expect 9
 
   val = oc.peval(vector<double>{1, 1, 0, 0}, 2);
@@ -31,6 +33,7 @@ int main(){
     std::cout << *i << ",";
   }
   std::cout << "\n"; // expect 0, 2
+  */
 
   val = oc.minPositiveRoot(vector<double>{1, -4, 3});
   std::cout << val << "\n"; // expect 1

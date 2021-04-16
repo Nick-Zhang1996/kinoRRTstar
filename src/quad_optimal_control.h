@@ -45,16 +45,17 @@ class QuadOptimalControl{
   // find real roots of a <deg> degree polynomial 
   // in ascending order
   // OBSOLETE
-  vector<double> roots(vector<double> coeffs);
+  //vector<double> roots(vector<double> coeffs);
 
   // find derivative of a polynomial
-  vector<double> derivative(vector<double> coeffs);
+  //vector<double> derivative(vector<double> coeffs);
 
   // find root of polynomial in interval
   // must contain one and only one root in interval
-  double falsePosition(vector<double> coeffs, double low_bound, double high_bound, double err=1e-4);
+  //double falsePosition(vector<double> coeffs, double low_bound, double high_bound, double err=1e-4);
 
   // evaluate polynomial 
+  /*
   inline double peval( vector<double> coeffs, double x){
     double val = 0.0;
     int deg = coeffs.size()-1;
@@ -63,6 +64,7 @@ class QuadOptimalControl{
     }
     return val;
   }
+  */
 
     
   // optimal control related functions for quadcopter
