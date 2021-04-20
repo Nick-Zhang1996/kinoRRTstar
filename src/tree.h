@@ -2,8 +2,8 @@
 //
 #ifndef TREE_H
 #define TREE_H
-#include <list>
 #include <iostream>
+#include <list>
 #include <vector>
 #include <limits>
 #include <assert.h>
@@ -16,12 +16,13 @@ using std::sqrt;
 // represent one node
 struct Node {
     double x,y,z,vx,vy,vz,ax,ay,az;
-    list<Node*> p_children;
-    Node* p_parent;
+    list<int> id_children;
+    int id_parent;
     // cost from start
     double cost;
     // connected to end-goal
     bool is_end;
+    // may not be necessary
     int id;
 };
 class err_cant_find_child : public std::exception{};
@@ -35,7 +36,7 @@ class Tree{
     // euclidean distance
     inline double dist(Node& a, Node& b){return sqrt(sqr(a.x-b.x)+sqr(a.y-b.y)+sqr(a.z-b.z));}
     // nodes that connect to goal
-    vector<Node*> end_nodes;
+    list<int> id_end_nodes;
     int n_solutions = 0;
 
   public:
@@ -44,16 +45,29 @@ class Tree{
     int getNodeCount(){ return n_nodes; }
 
     void addNode(Node& new_node, Node& parent);
-    list<Node*>& getChildrenP(Node& node);
-    void transferChild(Node& child, Node& new_parent);
+    void addNode(Node& new_node, int id_parent);
+
+    list<int>& getChildrenId(Node& node);
+    list<int>& getChildrenId(int id_node);
+
+    void transferChild(int id_child, int id_new_parent);
+
     bool isEnd(Node& node);
+    bool isEnd(int id_node);
+
     // get neighbour list within radius
-    list<Node*> getNeighbour(Node& node, double radius);
-    Node& getParent(Node& node){ return *node.p_parent; }
+    list<int> getNeighbourId(Node& node, double radius);
+    list<int> getNeighbourId(int id_node, double radius);
 
     // get closest node
-    Node& getClosest(Node& node);
+    int getClosestId(int id_node);
+    Node& getClosest(int id_node);
+
     void updateCost(Node& node, double cost_delta);
+    void updateCost(int id_node, double cost_delta);
+
+    Node& node(int id){ return tree[id]; }
+
     void printInfo();
 };
 

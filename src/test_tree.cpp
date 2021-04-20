@@ -15,64 +15,66 @@ int main(){
   node1.x = 1;
   node1.cost = 1.0;
   node1.is_end = false;
-  tree.addNode(node1, root_node);
+  tree.addNode(node1, 0);
   tree.printInfo();
 
   Node node2;
   node2.x = 2;
   node2.cost = 2.0;
   node2.is_end = false;
-  tree.addNode(node2, node1);
+  tree.addNode(node2, 1);
   tree.printInfo();
 
   Node node3;
   node3.x = 3;
   node3.cost = 3.0;
   node3.is_end = true;
-  tree.addNode(tree.getParent(node2), node1);
+  tree.addNode(node3, tree.node(2).id_parent);
   tree.printInfo();
 
 
   // 0->1 , 1->2,3
-  auto children = tree.getChildrenP(node1);
+  auto children = tree.getChildrenId(1);
   for (auto i=children.begin(); i!=children.end(); i++){
-    cout << (*i)->x << ", ";
+    cout << *i << ", ";
   }
   cout << "\n";
   // expect 2,3
 
-  auto neighbour = tree.getNeighbour(node2,1.4);
+  auto neighbour = tree.getNeighbourId(2,1.4);
   for (auto i=neighbour.begin(); i!=neighbour.end(); i++){
-    cout << (*i)->x << ", ";
+    cout << *i << ", ";
   }
   cout << "\n";
   // expect 1,3
 
-  auto closest = tree.getClosest(node3);
+  auto closest = tree.getClosest(3);
   cout << closest.x << "\n";
   // expect 2
   
 
   tree.updateCost(node1,1.0);
-  cout << node3.cost << "\n";
+  cout << tree.node(3).cost << "\n";
   // expect 4.0
-  cout << node2.cost << "\n";
+  cout << tree.node(2).cost << "\n";
   // expect 3.0
-  cout << root_node.cost << "\n";
+  cout << tree.node(0).cost << "\n";
   // expect 0.0
   //
-  tree.transferChild(node3, root_node);
-  children = tree.getChildrenP(root_node);
-  for (auto i=children.begin(); i!=children.end(); i++){
-    cout << (*i)->x << ", ";
+  tree.transferChild(3, 0);
+  // 0->1,3  1->2
+  auto children2 = tree.getChildrenId(root_node);
+  for (auto i=children2.begin(); i!=children2.end(); i++){
+    cout << tree.node(*i).id << ", ";
   }
   cout << "\n";
   // expect 1,3
-  cout << node3.p_parent->x << "\n";
+  //
+  cout << tree.node(3).id_parent << "\n";
   // expect 0
-  children = tree.getChildrenP(node1);
-  for (auto i=children.begin(); i!=children.end(); i++){
-    cout << (*i)->x << ", ";
+  auto children3 = tree.getChildrenId(1);
+  for (auto i=children3.begin(); i!=children3.end(); i++){
+    cout << (*i) << ", ";
   }
   cout << "\n";
   // expect 2
