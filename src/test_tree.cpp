@@ -9,24 +9,28 @@ int main(){
   root_node.is_end = false;
 
   Tree tree(root_node);
+  tree.printInfo();
 
   Node node1;
   node1.x = 1;
   node1.cost = 1.0;
   node1.is_end = false;
   tree.addNode(node1, root_node);
+  tree.printInfo();
 
   Node node2;
   node2.x = 2;
   node2.cost = 2.0;
   node2.is_end = false;
   tree.addNode(node2, node1);
+  tree.printInfo();
 
   Node node3;
   node3.x = 3;
   node3.cost = 3.0;
   node3.is_end = true;
   tree.addNode(tree.getParent(node2), node1);
+  tree.printInfo();
 
 
   // 0->1 , 1->2,3

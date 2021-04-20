@@ -3,10 +3,12 @@
 #ifndef TREE_H
 #define TREE_H
 #include <list>
+#include <iostream>
 #include <vector>
 #include <limits>
 #include <assert.h>
 #include <math.h>
+using std::cout;
 using std::list;
 using std::vector;
 using std::sqrt;
@@ -20,6 +22,7 @@ struct Node {
     double cost;
     // connected to end-goal
     bool is_end;
+    int id;
 };
 class err_cant_find_child : public std::exception{};
 
@@ -51,6 +54,7 @@ class Tree{
     // get closest node
     Node& getClosest(Node& node);
     void updateCost(Node& node, double cost_delta);
+    void printInfo();
 };
 
 

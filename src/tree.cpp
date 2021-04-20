@@ -7,10 +7,12 @@ Tree::Tree(Node& root){
 }
 
 void Tree::addNode(Node& new_node, Node& parent){
-  tree.push_back(new_node);
+  new_node.id = n_nodes;
   new_node.p_parent = &parent;
-  // new_node is copied into tree, need pointer to the one in tree
+  tree.push_back(new_node);
+  // new_node is copied into tree, need pointer to the new copied one in tree
   parent.p_children.push_back(&tree.back());
+  n_nodes++;
 }
 
 list<Node*>& Tree::getChildrenP(Node& node){
@@ -19,6 +21,7 @@ list<Node*>& Tree::getChildrenP(Node& node){
 }
 
 void Tree::transferChild(Node& child, Node& new_parent){
+  assert (child.id != 0);
   bool flag_found_old_children = false;
   for (auto pp_old_children = child.p_parent->p_children.begin();pp_old_children!=child.p_parent->p_children.end();pp_old_children++){
     if ((*pp_old_children) == &child){
@@ -65,4 +68,27 @@ void Tree::updateCost(Node& node, double cost_delta){
   for (auto child=node.p_children.begin(); child!=node.p_children.end(); child++){
     updateCost(**child,cost_delta);
   }
+}
+
+void Tree::printInfo(){
+  int node_id = 0;
+  for (auto node=tree.begin(); node!=tree.end(); node++){
+    cout << "node_id : " << node_id << "\n";
+    if (node->id == 0){
+      cout << "root node \n";
+    } else {
+      cout << "parent_id : " << node->p_parent->id << "\n";
+    }
+    cout << "children: ";
+    for (auto child=node->p_children.begin(); child!=node->p_children.end(); child++){
+      cout << (*child)->id << ", ";
+    }
+    cout << "\n \n";
+    node_id++;
+  }
+  cout << " ---------------- \n";
+
+
+  
+
 }
