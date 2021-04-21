@@ -61,6 +61,7 @@ list<int> Tree::getNeighbourId(int id_node, double radius){
   Node& node = tree[id_node];
   list<int> res;
   for (auto i=tree.begin(); i!=tree.end(); i++){
+    if (i->id == id_node){ continue; }
     if (dist(node,*i) < radius){
       res.push_back(i->id);
     }
@@ -78,6 +79,7 @@ int Tree::getClosestId(int id_node){
   int min_node_id= -1;
   Node& node = tree[id_node];
   for (auto i=tree.begin(); i!=tree.end(); i++){
+    if (i->id == id_node){ continue; }
     if (dist(node,*i) < min_dist){
       min_dist = dist(node,*i);
       min_node_id = i->id;

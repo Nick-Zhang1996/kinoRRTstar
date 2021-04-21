@@ -78,9 +78,5 @@ int main(){
   }
   cout << "\n";
   // expect 2
-    
-
-
-
 
 }
