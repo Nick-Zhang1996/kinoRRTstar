@@ -5,7 +5,9 @@
 #include <iostream>
 #include <list>
 #include <iterator>
-using namespace std;
+#include "tree.h"
+
+using std::list
 
 struct Point {
   float x,y,z;
@@ -35,6 +37,7 @@ class Box : public Body {
 
 class World {
   private:
+    int interior_point_n;
     float x,y,z;
     list <Body*> obstacles;
 
@@ -50,12 +53,20 @@ class World {
     // check collision
     // check if point is in collision with registered obstacle
     // return: Trus if no collision
-    bool checkNoCollision( Point point){
+    bool checkNoCollision( Point& point){
       for(list <Body*>::iterator it = obstacles.begin(); it != obstacles.end(); it++){
         if ( (*it)->isInside(point) ){ return false; }
       }
       return true;
     }
+    bool checkNoCollision( Node& node){
+      Point point = {node.x, node.y, node.z};
+      return checkNoCollision( point );
+    }
+
+    void setInteriorPointCount(int val){ interior_point_n = val; }
+    // TODO
+    bool checkNoPathCollision(double* pos_buffer);
 
 };
 

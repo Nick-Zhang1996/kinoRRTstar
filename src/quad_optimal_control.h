@@ -11,6 +11,7 @@
 #include <iostream>
 #include <limits>
 #include <unsupported/Eigen/Polynomials>
+#include "tree.h"
 
 
 using std::vector;
@@ -74,9 +75,11 @@ class QuadOptimalControl{
   //
   // given initial and final full state, give cost
   double cost(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
+  double cost(double t_s, Node& node_i, Node& node_f){ return cost(t_s, node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz, node_f.ax, node_f.ay, node_f.az);}
 
   //  find cost given partial state (xyz) only
   double costPartialFreeFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
+  double costPartialFreeFinalState(double t_s, Node& node_i, Node& node_f){ return costPartialFreeFinalState(t_s, node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
 
   // find interior position vector, double  including endpoints
   // t_s : final time / segment time. initial state @ t=0, double  final state at t = t_s
@@ -84,18 +87,28 @@ class QuadOptimalControl{
   // Old name
   //double state(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
   double* interiorPosition(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
+  double* interiorPosition(double t_s, Node& node_i, Node& node_f){ return interiorPosition(t_s, node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz, node_f.ax, node_f.ay, node_f.az);}
 
   // calculate only xyz
   //double statePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
   double* interiorPositionPartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
+  double* interiorPositionPartialFinalState(double t_s, Node& node_i, Node& node_f){ return interiorPositionPartialFinalState(t_s, node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
   // calculate full state vector
   //double statePartialFinalStateFull(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
   double* interiorStatePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
+  double* interiorStatePartialFinalState(double t_s, Node& node_i, Node& node_f){ return interiorStatePartialFinalState(t_s, node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
+
+  void setFullStatePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
+  //TODO
+  void setFullStatePartialFinalState(double t_s, Node& node_i, Node& node_f);
 
   // find time to go from initial to final state
   // this requires solving a polynomial
   double time(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
+  double time( Node& node_i, Node& node_f){ return time( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz, node_f.ax, node_f.ay, node_f.az);}
+
   double timePartialFinalState(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13);
+  double timePartialFinalState( Node& node_i, Node& node_f){ return time( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
 
 
   // test scripts

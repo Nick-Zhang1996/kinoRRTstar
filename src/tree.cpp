@@ -16,6 +16,7 @@ void Tree::addNode(Node& new_node, int id_parent){
   tree.push_back(new_node);
   tree[id_parent].id_children.push_back(new_node.id);
   n_nodes++;
+  if (new_node.is_end) { n_solutions++; }
 }
 
 list<int>& Tree::getChildrenId(int id_node){
@@ -48,17 +49,9 @@ void Tree::transferChild(int id_child, int id_new_parent){
 bool Tree::isEnd(int id_node){
   return tree[id_node].is_end;
 }
-bool Tree::isEnd(Node& node){
-  return isEnd(node.id);
-}
 
 // TODO quadtree
 list<int> Tree::getNeighbourId(Node& node, double radius){
-  getNeighbourId(node.id, radius);
-}
-
-list<int> Tree::getNeighbourId(int id_node, double radius){
-  Node& node = tree[id_node];
   list<int> res;
   for (auto i=tree.begin(); i!=tree.end(); i++){
     if (i->id == id_node){ continue; }
@@ -69,15 +62,28 @@ list<int> Tree::getNeighbourId(int id_node, double radius){
   return res;
 }
 
+list<int> Tree::getNeighbourId(int id_node, double radius){
+  Node& node = tree[id_node];
+  return getNeighbourId(node);
+}
+
 Node& Tree::getClosest(int id_node){
   return tree[getClosestId(id_node)];
 
+}
+
+Node& Tree::getClosest(Node& node){
+  return tree[getClosestId(node)];
 }
 
 int Tree::getClosestId(int id_node){
   double min_dist = std::numeric_limits<double>::max();
   int min_node_id= -1;
   Node& node = tree[id_node];
+  return getClosestId(node);
+}
+
+int Tree::getClosestId(Node& node){
   for (auto i=tree.begin(); i!=tree.end(); i++){
     if (i->id == id_node){ continue; }
     if (dist(node,*i) < min_dist){
@@ -87,6 +93,7 @@ int Tree::getClosestId(int id_node){
   }
   assert (min_node_id != -1);
   return min_node_id;
+
 }
 
 void Tree::updateCost(Node& node, double cost_delta){
@@ -117,8 +124,4 @@ void Tree::printInfo(){
     node_id++;
   }
   cout << " ---------------- \n";
-
-
-  
-
 }
