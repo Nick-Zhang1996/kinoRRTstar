@@ -197,6 +197,31 @@ double* QuadOptimalControl::interiorStatePartialFinalState(double t_s, double x0
 }
 
 
+void QuadOptimalControl::setFullStatePartialFinalState(double t_s, Node& node_i, Node& node_f){
+  double x01 = node_i.x;
+  double x02 = node_i.y;
+  double x03 = node_i.z;
+  double x04 = node_i.vx;
+  double x05 = node_i.vy;
+  double x06 = node_i.vz;
+  double x07 = node_i.ax;
+  double x08 = node_i.ay;
+  double x09 = node_i.az;
+  double x11 = node_f.x;
+  double x12 = node_f.y;
+  double x13 = node_f.z;
+
+  double t = t_s;
+  node_f.vx = x04 + t*x07 - ((5*pow(t,2)*(6*pow(t,2)*x01 - 6*pow(t,2)*x11))/4 + (5*pow(t,2)*pow(t_s,3)*(3000*x01 + 36*x04 - 3000*x11 - 3000*t*x04 - 12*t*x07 + 250*pow(t,2)*x07))/4 + (5*pow(t,2)*pow(t_s,2)*(36*x01 - 36*x11 - 3000*t*x01 - 24*t*x04 + 3000*t*x11 + 750*pow(t,2)*x04 + 3*pow(t,2)*x07))/4 + (5*pow(t,2)*pow(t_s,4)*(3000*x04 + 18*x07 - 1000*t*x07))/4 + 1500*pow(t,2)*pow(t_s,5)*x07 + (5*pow(t,2)*t_s*(24*t*x11 - 24*t*x01 + 750*pow(t,2)*x01 + 6*pow(t,2)*x04 - 750*pow(t,2)*x11))/4)/(pow(t_s,5)*(500*t_s + 9));
+  node_f.vy = x05 + t*x08 - ((5*pow(t,2)*(6*pow(t,2)*x02 - 6*pow(t,2)*x12))/4 + (5*pow(t,2)*pow(t_s,3)*(3000*x02 + 36*x05 - 3000*x12 - 3000*t*x05 - 12*t*x08 + 250*pow(t,2)*x08))/4 + (5*pow(t,2)*pow(t_s,2)*(36*x02 - 36*x12 - 3000*t*x02 - 24*t*x05 + 3000*t*x12 + 750*pow(t,2)*x05 + 3*pow(t,2)*x08))/4 + (5*pow(t,2)*pow(t_s,4)*(3000*x05 + 18*x08 - 1000*t*x08))/4 + 1500*pow(t,2)*pow(t_s,5)*x08 + (5*pow(t,2)*t_s*(24*t*x12 - 24*t*x02 + 750*pow(t,2)*x02 + 6*pow(t,2)*x05 - 750*pow(t,2)*x12))/4)/(pow(t_s,5)*(500*t_s + 9));
+  node_f.vz = x06 + t*x09 - ((5*pow(t,2)*(6*pow(t,2)*x03 - 6*pow(t,2)*x13))/4 + (5*pow(t,2)*pow(t_s,3)*(3000*x03 + 36*x06 - 3000*x13 - 3000*t*x06 - 12*t*x09 + 250*pow(t,2)*x09))/4 + (5*pow(t,2)*pow(t_s,2)*(36*x03 - 36*x13 - 3000*t*x03 - 24*t*x06 + 3000*t*x13 + 750*pow(t,2)*x06 + 3*pow(t,2)*x09))/4 + (5*pow(t,2)*pow(t_s,4)*(3000*x06 + 18*x09 - 1000*t*x09))/4 + 1500*pow(t,2)*pow(t_s,5)*x09 + (5*pow(t,2)*t_s*(24*t*x13 - 24*t*x03 + 750*pow(t,2)*x03 + 6*pow(t,2)*x06 - 750*pow(t,2)*x13))/4)/(pow(t_s,5)*(500*t_s + 9));
+
+  node_f.ax = x07 - (3000*t*x07*pow(t_s,5) + 5*t*(1500*x04 + 9*x07 - 750*t*x07)*pow(t_s,4) + 5*t*(1500*x01 + 18*x04 - 1500*x11 - 2250*t*x04 - 9*t*x07 + 250*pow(t,2)*x07)*pow(t_s,3) + 5*t*(18*x01 - 18*x11 - 2250*t*x01 - 18*t*x04 + 2250*t*x11 + 750*pow(t,2)*x04 + 3*pow(t,2)*x07)*pow(t_s,2) + 5*t*(18*t*x11 - 18*t*x01 + 750*pow(t,2)*x01 + 6*pow(t,2)*x04 - 750*pow(t,2)*x11)*t_s + 5*t*(6*pow(t,2)*x01 - 6*pow(t,2)*x11))/(pow(t_s,5)*(500*t_s + 9));
+  node_f.ay = x08 - (3000*t*x08*pow(t_s,5) + 5*t*(1500*x05 + 9*x08 - 750*t*x08)*pow(t_s,4) + 5*t*(1500*x02 + 18*x05 - 1500*x12 - 2250*t*x05 - 9*t*x08 + 250*pow(t,2)*x08)*pow(t_s,3) + 5*t*(18*x02 - 18*x12 - 2250*t*x02 - 18*t*x05 + 2250*t*x12 + 750*pow(t,2)*x05 + 3*pow(t,2)*x08)*pow(t_s,2) + 5*t*(18*t*x12 - 18*t*x02 + 750*pow(t,2)*x02 + 6*pow(t,2)*x05 - 750*pow(t,2)*x12)*t_s + 5*t*(6*pow(t,2)*x02 - 6*pow(t,2)*x12))/(pow(t_s,5)*(500*t_s + 9));
+  node_f.az= x09 - (3000*t*x09*pow(t_s,5) + 5*t*(1500*x06 + 9*x09 - 750*t*x09)*pow(t_s,4) + 5*t*(1500*x03 + 18*x06 - 1500*x13 - 2250*t*x06 - 9*t*x09 + 250*pow(t,2)*x09)*pow(t_s,3) + 5*t*(18*x03 - 18*x13 - 2250*t*x03 - 18*t*x06 + 2250*t*x13 + 750*pow(t,2)*x06 + 3*pow(t,2)*x09)*pow(t_s,2) + 5*t*(18*t*x13 - 18*t*x03 + 750*pow(t,2)*x03 + 6*pow(t,2)*x06 - 750*pow(t,2)*x13)*t_s + 5*t*(6*pow(t,2)*x03 - 6*pow(t,2)*x13))/(pow(t_s,5)*(500*t_s + 9));
+
+}
+
 double QuadOptimalControl::time(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19){
   vector<double> coeffs{1, 0, (3*x07*x17)/2500 + (3*x08*x18)/2500 + (3*x09*x19)/2500 - (9*pow(x07,2))/5000 - (9*pow(x08,2))/5000 - (9*pow(x09,2))/5000 - (9*pow(x17,2))/5000 - (9*pow(x18,2))/5000 - (9*pow(x19,2))/5000, (12*x04*x17)/625 - (18*x05*x08)/625 - (18*x06*x09)/625 - (18*x04*x07)/625 - (12*x07*x14)/625 + (12*x05*x18)/625 - (12*x08*x15)/625 + (12*x06*x19)/625 - (12*x09*x16)/625 + (18*x14*x17)/625 + (18*x15*x18)/625 + (18*x16*x19)/625, (9*x01*x17)/125 - (9*x02*x08)/125 - (9*x03*x09)/125 - (9*x01*x07)/125 - (126*x04*x14)/625 + (9*x07*x11)/125 + (9*x02*x18)/125 - (126*x05*x15)/625 + (9*x08*x12)/125 + (9*x03*x19)/125 - (126*x06*x16)/625 + (9*x09*x13)/125 - (9*x11*x17)/125 - (9*x12*x18)/125 - (9*x13*x19)/125 - (72*pow(x04,2))/625 - (72*pow(x05,2))/625 - (72*pow(x06,2))/625 - (72*pow(x14,2))/625 - (72*pow(x15,2))/625 - (72*pow(x16,2))/625, (72*x04*x11)/125 - (72*x02*x05)/125 - (72*x03*x06)/125 - (72*x01*x14)/125 - (72*x01*x04)/125 - (72*x02*x15)/125 + (72*x05*x12)/125 - (72*x03*x16)/125 + (72*x06*x13)/125 + (72*x11*x14)/125 + (72*x12*x15)/125 + (72*x13*x16)/125, (36*x01*x11)/25 + (36*x02*x12)/25 + (36*x03*x13)/25 - (18*pow(x01,2))/25 - (18*pow(x02,2))/25 - (18*pow(x03,2))/25 - (18*pow(x11,2))/25 - (18*pow(x12,2))/25 - (18*pow(x13,2))/25};
   return minPositiveRoot(coeffs);

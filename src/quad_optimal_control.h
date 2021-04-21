@@ -11,6 +11,7 @@
 #include <iostream>
 #include <limits>
 #include <unsupported/Eigen/Polynomials>
+#include "common.h"
 #include "tree.h"
 
 
@@ -98,8 +99,8 @@ class QuadOptimalControl{
   double* interiorStatePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
   double* interiorStatePartialFinalState(double t_s, Node& node_i, Node& node_f){ return interiorStatePartialFinalState(t_s, node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
 
-  void setFullStatePartialFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06, double x07, double x08, double x09, double x11, double x12, double x13);
-  //TODO
+  // leave v and a free in node_f, solve optimal control problem and fill in 
+  // v and a for node_f
   void setFullStatePartialFinalState(double t_s, Node& node_i, Node& node_f);
 
   // find time to go from initial to final state
@@ -108,7 +109,7 @@ class QuadOptimalControl{
   double time( Node& node_i, Node& node_f){ return time( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz, node_f.ax, node_f.ay, node_f.az);}
 
   double timePartialFinalState(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13);
-  double timePartialFinalState( Node& node_i, Node& node_f){ return time( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
+  double timePartialFinalState( Node& node_i, Node& node_f){ return timePartialFinalState( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
 
 
   // test scripts

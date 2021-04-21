@@ -54,7 +54,6 @@ bool Tree::isEnd(int id_node){
 list<int> Tree::getNeighbourId(Node& node, double radius){
   list<int> res;
   for (auto i=tree.begin(); i!=tree.end(); i++){
-    if (i->id == id_node){ continue; }
     if (dist(node,*i) < radius){
       res.push_back(i->id);
     }
@@ -64,7 +63,14 @@ list<int> Tree::getNeighbourId(Node& node, double radius){
 
 list<int> Tree::getNeighbourId(int id_node, double radius){
   Node& node = tree[id_node];
-  return getNeighbourId(node);
+  list<int> res;
+  for (auto i=tree.begin(); i!=tree.end(); i++){
+    if (i->id == id_node){ continue; }
+    if (dist(node,*i) < radius){
+      res.push_back(i->id);
+    }
+  }
+  return res;
 }
 
 Node& Tree::getClosest(int id_node){
@@ -78,14 +84,23 @@ Node& Tree::getClosest(Node& node){
 
 int Tree::getClosestId(int id_node){
   double min_dist = std::numeric_limits<double>::max();
-  int min_node_id= -1;
+  int min_node_id = -1;
   Node& node = tree[id_node];
-  return getClosestId(node);
+  for (auto i=tree.begin(); i!=tree.end(); i++){
+    if (i->id == id_node){ continue; }
+    if (dist(node,*i) < min_dist){
+      min_dist = dist(node,*i);
+      min_node_id = i->id;
+    }
+  }
+  assert (min_node_id != -1);
+  return min_node_id;
 }
 
 int Tree::getClosestId(Node& node){
+  double min_dist = std::numeric_limits<double>::max();
+  int min_node_id = -1;
   for (auto i=tree.begin(); i!=tree.end(); i++){
-    if (i->id == id_node){ continue; }
     if (dist(node,*i) < min_dist){
       min_dist = dist(node,*i);
       min_node_id = i->id;

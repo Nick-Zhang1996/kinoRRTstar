@@ -8,24 +8,10 @@
 #include <limits>
 #include <assert.h>
 #include <math.h>
-using std::cout;
-using std::list;
-using std::vector;
+
+#include "common.h"
 using std::sqrt;
 
-// represent one node
-struct Node {
-    double x,y,z,vx,vy,vz,ax,ay,az;
-    list<int> id_children;
-    int id_parent;
-    // cost from start
-    double cost;
-    // connected to end-goal
-    bool is_end;
-    // may not be necessary
-    int id;
-    Node():is_end(false){};
-};
 class err_cant_find_child : public std::exception{};
 
 class Tree{
@@ -33,7 +19,6 @@ class Tree{
     // node count
     int n_nodes = 0;
     vector<Node> tree;
-    QuadOptimalControl oc;
     inline double sqr(double x){return x*x;};
     // euclidean distance
     inline double dist(Node& a, Node& b){return sqrt(sqr(a.x-b.x)+sqr(a.y-b.y)+sqr(a.z-b.z));}
