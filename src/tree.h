@@ -31,8 +31,9 @@ class Tree{
     int getSolutionCount(){ return n_solutions; }
     int getNodeCount(){ return n_nodes; }
 
-    void addNode(Node& new_node, Node& parent);
-    void addNode(Node& new_node, int id_parent);
+    // add node to tree, return id
+    int addNode(Node& new_node, Node& parent);
+    int addNode(Node& new_node, int id_parent);
 
     list<int>& getChildrenId(Node& node); 
     list<int>& getChildrenId(int id_node);

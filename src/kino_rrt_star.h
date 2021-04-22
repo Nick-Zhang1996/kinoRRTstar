@@ -9,6 +9,7 @@
 #include <cstdlib>
 #include <ctime>
 #include "quad_optimal_control.h"
+#include <limits>
 using std::cout;
 using std::rand;
 
@@ -20,6 +21,8 @@ class KinoRrtStar{
     int target_node_count;
     World world;
     QuadOptimalControl oc;
+    double overall_lowest_cost;
+    int overall_lowest_cost_id;
   public:
     KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int interior_point_count );
     // n_nodes: number of nodes to add to tree, if 0 then stop after first solution
@@ -29,6 +32,7 @@ class KinoRrtStar{
     void buildTreeTillNodeCount();
     void buildTreeTillFirstSolution();
     void sampleNode();
+    void showResult();
 
     // generate a random point in world, only x,y,z are concerned
     // TODO test

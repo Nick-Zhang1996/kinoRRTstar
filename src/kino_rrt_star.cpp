@@ -7,6 +7,7 @@ KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node
     target_node_count(in_target_node_count),
     oc(interior_point_count),
     world(in_world) {
+    overall_lowest_cost = std::numeric_limits<double>::max();
     std::srand(std::time(nullptr)); // use current time as seed for random generator
     world.setInteriorPointCount(interior_point_count);
     cout << "Using only position coordinate for start/end \n";
@@ -22,6 +23,27 @@ void KinoRrtStar::run(){
 
   if (tree.getSolutionCount() > 0){
     cout << "found " << tree.getSolutionCount() << " solutions \n";
+    showResult();
+  } else {
+    cout << "no results find with " << target_node_count << "nodes \n";
+  }
+
+
+}
+
+void KinoRrtStar::showResult(){
+  int this_node_id = overall_lowest_cost_id;
+  assert (tree.node(this_node_id).is_end);
+
+  while (this_node_id != 0){
+    Node& node = tree.node(this_node_id);
+    cout << "id: " << node.id;
+    cout << " x: " << node.x;
+    cout << " y: " << node.y;
+    cout << " z: " << node.z;
+    cout << " cost: " << node.cost;
+    cout << "\n";
+    this_node_id = node.id_parent;
   }
 
 }
@@ -37,6 +59,9 @@ void KinoRrtStar::buildTreeTillNodeCount(){
   //
   while (tree.getNodeCount() < target_node_count ){
     sampleNode();
+    if (tree.getNodeCount() % 1000 == 0){
+      cout << tree.getNodeCount() << "\n";
+    }
   }
 
 }
@@ -50,6 +75,7 @@ void KinoRrtStar::sampleNode(){
   // NOTE in place operation
   // TODO calculate radius properly
   double radius = getNeighnourRadius();
+  // sets x,y,z
   moveToVicinity(new_node, closest_node, radius);
 
   //   check node collision
@@ -77,18 +103,26 @@ void KinoRrtStar::sampleNode(){
   }
 
   // TODO set full state in new_node
+  // sets vxyz and axyz
   oc.setFullStatePartialFinalState(t, tree.node(id_best_parent), new_node);
+  new_node.cost = lowest_cost;
   
   // check if new node is close to finish
   if (connectToGoal(new_node)){
     new_node.is_end = true;
     // solution count will be updated when node is added in tree
+    if (new_node.cost < overall_lowest_cost){
+      overall_lowest_cost = new_node.cost;
+      overall_lowest_cost_id = tree.getNodeCount();
+      cout << "cost: " << overall_lowest_cost << "\n";
+    }
   }
   // add to tree
+  // sets id_parent, id
   tree.addNode(new_node,id_best_parent);
 
-  //
   // rewire
+  list<int> id_neighnour = tree.getNeighbourId(new_node, radius);
   // can new node be a parent to neighbour nodes?
   
   // If yes then update cost of neighbour's children
@@ -108,14 +142,16 @@ void KinoRrtStar::moveToVicinity(Node& node, Node& target, double radius){
   double ori_dist = dist(node, target);
   if ( ori_dist < radius ) { return; }
   double scale = radius / ori_dist;
-  node.x += (target.x - node.x) * scale;
-  node.y += (target.y - node.y) * scale;
-  node.z += (target.z - node.z) * scale;
+  node.x = target.x + (node.x - target.x) * scale;
+  node.y = target.y + (node.y - target.y) * scale;
+  node.z = target.z + (node.z - target.z) * scale;
   assert ( dist(node,target) < radius + 0.0001 );
   return;
 }
 
 bool KinoRrtStar::connectToGoal(Node& node){
+  //TODO handle this properly
+  if (dist(node, end_node) > 1.0){ return false; }
   // find traj
   double t = oc.timePartialFinalState(node, end_node);
   double* interior_pos = oc.interiorPositionPartialFinalState(t, node, end_node);

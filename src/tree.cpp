@@ -6,10 +6,10 @@ Tree::Tree(Node& root){
   n_nodes++;
 }
 
-void Tree::addNode(Node& new_node, Node& parent){
-  addNode(new_node, parent.id);
+int Tree::addNode(Node& new_node, Node& parent){
+  return addNode(new_node, parent.id);
 }
-void Tree::addNode(Node& new_node, int id_parent){
+int Tree::addNode(Node& new_node, int id_parent){
   assert (id_parent < n_nodes);
   new_node.id = n_nodes;
   new_node.id_parent = id_parent;
@@ -17,6 +17,7 @@ void Tree::addNode(Node& new_node, int id_parent){
   tree[id_parent].id_children.push_back(new_node.id);
   n_nodes++;
   if (new_node.is_end) { n_solutions++; }
+  return new_node.id;
 }
 
 list<int>& Tree::getChildrenId(int id_node){
