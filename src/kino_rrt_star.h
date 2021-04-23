@@ -10,8 +10,11 @@
 #include <ctime>
 #include "quad_optimal_control.h"
 #include <limits>
+#include <math.h>
+#include <algorithm>
 using std::cout;
 using std::rand;
+using std::min;
 
 class KinoRrtStar{
   private:
@@ -23,6 +26,7 @@ class KinoRrtStar{
     QuadOptimalControl oc;
     double overall_lowest_cost;
     int overall_lowest_cost_id;
+    int rewire_count;
   public:
     KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int interior_point_count );
     // n_nodes: number of nodes to add to tree, if 0 then stop after first solution
@@ -41,7 +45,7 @@ class KinoRrtStar{
     // TODO test
     void moveToVicinity(Node& node, Node& target, double radius);
     bool connectToGoal(Node& node);
-    double getNeighnourRadius(){ return 0.5; };
+    double getNeighnourRadius();
 
     double sqr(double a) { return a*a; }
     double dist(Node& a, Node& b) { return sqrt(sqr(a.x-b.x) + sqr(a.y-b.y) + sqr(a.z-b.z)); }

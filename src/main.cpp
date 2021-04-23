@@ -22,7 +22,7 @@ int main(){
   world.addObstacle(obs3);
   world.addObstacle(obs4);
 
-  KinoRrtStar rrt(world, start_node, goal_node, 6000, 10);
+  KinoRrtStar rrt(world, start_node, goal_node, 600, 10);
   rrt.run();
   cout << "program complete\n";
 

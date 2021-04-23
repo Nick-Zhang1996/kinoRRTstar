@@ -6,7 +6,8 @@ KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node
     end_node(in_end_node),
     target_node_count(in_target_node_count),
     oc(interior_point_count),
-    world(in_world) {
+    world(in_world),
+    rewire_count(0) {
     overall_lowest_cost = std::numeric_limits<double>::max();
     std::srand(std::time(nullptr)); // use current time as seed for random generator
     world.setInteriorPointCount(interior_point_count);
@@ -45,6 +46,7 @@ void KinoRrtStar::showResult(){
     cout << "\n";
     this_node_id = node.id_parent;
   }
+  cout << "rewire: " << rewire_count << "\n";
 
 }
 
@@ -71,10 +73,9 @@ void KinoRrtStar::sampleNode(){
   Node new_node = getRandomNode();
 
   Node& closest_node = tree.getClosest(new_node);
+  double radius = getNeighnourRadius();
   // move to closest existing node
   // NOTE in place operation
-  // TODO calculate radius properly
-  double radius = getNeighnourRadius();
   // sets x,y,z
   moveToVicinity(new_node, closest_node, radius);
 
@@ -102,8 +103,10 @@ void KinoRrtStar::sampleNode(){
     }
   }
 
-  // TODO set full state in new_node
-  // sets vxyz and axyz
+  // up to now only x,y,z in new_node is used
+  // now we know the final parent
+  // set full state in new_node
+  // this sets vxyz and axyz
   oc.setFullStatePartialFinalState(t, tree.node(id_best_parent), new_node);
   new_node.cost = lowest_cost;
   
@@ -119,13 +122,27 @@ void KinoRrtStar::sampleNode(){
   }
   // add to tree
   // sets id_parent, id
-  tree.addNode(new_node,id_best_parent);
+  int id_new_node = tree.addNode(new_node,id_best_parent);
+
 
   // rewire
-  list<int> id_neighnour = tree.getNeighbourId(new_node, radius);
+  list<int> id_neighbour = tree.getNeighbourId(id_new_node, radius);
   // can new node be a parent to neighbour nodes?
+  for (auto i=id_neighbour.begin(); i!=id_neighbour.end(); i++){
+    double new_t = oc.time(new_node, tree.node(*i));
+    double new_cost = new_node.cost + oc.cost(new_t, new_node, tree.node(*i));
+    // If yes then let new_node be new parent
+    // and update cost of neighbour and its descendents
+    if (new_cost > tree.node(*i).cost){ continue; }
+    double* interior_pos = oc.interiorPosition(new_t, new_node, tree.node(*i));
+    //   check traj collision
+    if (!world.checkNoPathCollision(interior_pos)){ continue; }
+    tree.transferChild(*i, id_new_node);
+    tree.updateCost(*i, new_cost - tree.node(*i).cost);
+    //cout << "rewiring... \n";
+    rewire_count++;
+  }
   
-  // If yes then update cost of neighbour's children
 
 }
 
@@ -161,5 +178,13 @@ bool KinoRrtStar::connectToGoal(Node& node){
   } else {
     return false;
   }
+}
+
+// per original implementation from MATLAB
+double KinoRrtStar::getNeighnourRadius(){
+  double nun = (double) tree.getNodeCount();
+  double ner = 40.0 * pow( ( log(nun + 1) / nun ), 1.0/3.0 );
+  return min(ner,4.0);
+
 }
 
