@@ -1,7 +1,8 @@
 #include "quad_optimal_control.h"
 
 // find the smallest positive real root of a polynomial
-double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
+/*
+double QuadOptimalControl::minPositiveRootEigen(vector<double> coeffs){
 
 
   // input ordering is highest order coeff first
@@ -35,10 +36,74 @@ double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
   if (res > 0.0){
     return res;
   }
-  throw err_NoValidSolution();
+  throw err_NoSolution();
+
+}
+*/
+
+// highest order coeff first
+// very very sketch, don't ask don't tell shhhh.....
+double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
+  auto start = std::chrono::system_clock::now();
+
+  bool sign_left = peval(coeffs, 0.0) > 0;
+  double step = 0.1;
+  double max_range = 5.0;
+  double lower_bound = 0.0;
+  double upper_bound = 0.0;
+  double retval;
+
+  bool found_solution_interval = false;
+  while ( upper_bound < max_range ){
+    if (peval(coeffs,upper_bound) > 0 != sign_left){
+      found_solution_interval = true;
+      break;
+    } else { 
+      lower_bound = upper_bound;
+    }
+    upper_bound += step;
+  }
+
+  if (!found_solution_interval){ throw new err_NoSolution; }
+  
+  try{
+    retval = bisect(coeffs, lower_bound, upper_bound);
+  } catch (err_TooManyIteration) {
+    throw new err_NoSolution;
+  }
+
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = end-start;
+  total_time += elapsed_seconds.count();
+  total_count++;
+
+  return retval;
 
 }
 
+// low = left = a
+// high = right = b
+double QuadOptimalControl::bisect( vector<double> coeffs, double low, double high){
+  assert (high> low);
+  bool sign_a = peval( coeffs, low) > 0;
+  bool sign_b = peval( coeffs, high) > 0;
+
+  assert (sign_a != sign_b);
+
+  int loop_count = 0;
+  while (high-low > 1e-3){
+    double mid = (low+high)/2.0;
+    if (peval( coeffs, mid) > 0 == sign_a) { low = mid; }
+    else { high = mid; }
+    loop_count++;
+    if (loop_count > 100){ 
+      cout << "bisect: max iter exceeded \n";
+      throw new err_TooManyIteration; 
+    }
+  }
+  return (high+low)/2.0;
+
+}
 /*
 // find real roots of a polynomial
 vector<double> QuadOptimalControl::roots(vector<double> coeffs){

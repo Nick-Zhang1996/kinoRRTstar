@@ -130,18 +130,20 @@ void KinoRrtStar::sampleNode(){
   list<int> id_neighbour = tree.getNeighbourId(id_new_node, radius);
   // can new node be a parent to neighbour nodes?
   for (auto i=id_neighbour.begin(); i!=id_neighbour.end(); i++){
-    double new_t = oc.time(new_node, tree.node(*i));
-    double new_cost = new_node.cost + oc.cost(new_t, new_node, tree.node(*i));
-    // If yes then let new_node be new parent
-    // and update cost of neighbour and its descendents
-    if (new_cost > tree.node(*i).cost){ continue; }
-    double* interior_pos = oc.interiorPosition(new_t, new_node, tree.node(*i));
-    //   check traj collision
-    if (!world.checkNoPathCollision(interior_pos)){ continue; }
-    tree.transferChild(*i, id_new_node);
-    tree.updateCost(*i, new_cost - tree.node(*i).cost);
-    //cout << "rewiring... \n";
-    rewire_count++;
+    try {
+      double new_t = oc.time(new_node, tree.node(*i));
+      double new_cost = new_node.cost + oc.cost(new_t, new_node, tree.node(*i));
+      // If yes then let new_node be new parent
+      // and update cost of neighbour and its descendents
+      if (new_cost > tree.node(*i).cost){ continue; }
+      double* interior_pos = oc.interiorPosition(new_t, new_node, tree.node(*i));
+      //   check traj collision
+      if (!world.checkNoPathCollision(interior_pos)){ continue; }
+      tree.transferChild(*i, id_new_node);
+      tree.updateCost(*i, new_cost - tree.node(*i).cost);
+      //cout << "rewiring... \n";
+      rewire_count++;
+    } catch (err_NoSolution){ continue; }
   }
   
 

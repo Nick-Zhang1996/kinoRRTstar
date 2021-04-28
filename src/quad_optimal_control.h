@@ -10,7 +10,7 @@
 #include <math.h>
 #include <iostream>
 #include <limits>
-#include <unsupported/Eigen/Polynomials>
+//#include <unsupported/Eigen/Polynomials>
 #include <chrono>
 #include <ctime>    
 #include "common.h"
@@ -20,8 +20,9 @@
 using std::vector;
 using std::cout;
 
-class err_NoValidSolution : public std::exception{};
+class err_NoSolution: public std::exception{};
 class err_Unexcepted : public std::exception{};
+class err_TooManyIteration : public std::exception{};
 
 class QuadOptimalControl{
   private:
@@ -57,6 +58,9 @@ class QuadOptimalControl{
   //
   // find the smallest positive real root of a polynomial
   double minPositiveRoot(vector<double> coeffs);
+  //double minPositiveRootEigen(vector<double> coeffs);
+  // find root of polynomial coeff in low, high
+  double bisect( vector<double> coeffs, double low, double high);
 
   // find real roots of a <deg> degree polynomial 
   // in ascending order
@@ -71,7 +75,6 @@ class QuadOptimalControl{
   //double falsePosition(vector<double> coeffs, double low_bound, double high_bound, double err=1e-4);
 
   // evaluate polynomial 
-  /*
   inline double peval( vector<double> coeffs, double x){
     double val = 0.0;
     int deg = coeffs.size()-1;
@@ -80,7 +83,6 @@ class QuadOptimalControl{
     }
     return val;
   }
-  */
 
     
   // optimal control related functions for quadcopter
