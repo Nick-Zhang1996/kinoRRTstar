@@ -2,6 +2,8 @@
 
 // find the smallest positive real root of a polynomial
 double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
+
+
   // input ordering is highest order coeff first
   // converting it to lowest order coeff first for Eigen
   std::reverse(coeffs.begin(), coeffs.end());
@@ -13,7 +15,9 @@ double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
   }
   Eigen::PolynomialSolver<double, Eigen::Dynamic> solver;
 
+  auto start = std::chrono::system_clock::now();
   solver.compute(poly);
+  auto end = std::chrono::system_clock::now();
   const Eigen::PolynomialSolver<double, Eigen::Dynamic>::RootsType &r = solver.roots();
   double res = std::numeric_limits<double>::max();
 
@@ -23,10 +27,16 @@ double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
     }
   }
 
+
+  std::chrono::duration<double> elapsed_seconds = end-start;
+  total_time += elapsed_seconds.count();
+  total_count++;
+
   if (res > 0.0){
     return res;
   }
   throw err_NoValidSolution();
+
 }
 
 /*

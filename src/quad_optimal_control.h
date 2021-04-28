@@ -11,6 +11,8 @@
 #include <iostream>
 #include <limits>
 #include <unsupported/Eigen/Polynomials>
+#include <chrono>
+#include <ctime>    
 #include "common.h"
 #include "tree.h"
 
@@ -22,11 +24,17 @@ class err_NoValidSolution : public std::exception{};
 class err_Unexcepted : public std::exception{};
 
 class QuadOptimalControl{
+  private:
+    double total_time;
+    int total_count;
   public:
   const int interior_point_count;
   double *buffer_interior_states, *buffer_interior_pos;
   // N: no of interior points when evaluating states between initial and final for collision checking
-  QuadOptimalControl(const int N) : interior_point_count(N) {
+  QuadOptimalControl(const int N) : 
+    interior_point_count(N),
+    total_time(0.0),
+    total_count(0) {
     buffer_interior_states= new double[9*interior_point_count];
     buffer_interior_pos= new double[3*interior_point_count];
   }
@@ -34,6 +42,12 @@ class QuadOptimalControl{
   ~QuadOptimalControl(){
     delete[] buffer_interior_states;
     delete[] buffer_interior_pos;
+  }
+
+  void printTotalTime(){
+    cout << "total time in roots " << total_time << "sec \n";
+    cout << "total count " << total_count << "\n";
+    cout << "avg time " << total_time/total_count << "\n";
   }
 
   // following group of functions deals with real root finding for a polynomial

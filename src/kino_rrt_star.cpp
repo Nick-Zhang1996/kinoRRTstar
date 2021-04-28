@@ -29,6 +29,7 @@ void KinoRrtStar::run(){
     cout << "no results find with " << target_node_count << "nodes \n";
   }
 
+  oc.printTotalTime();
 
 }
 
@@ -61,7 +62,7 @@ void KinoRrtStar::buildTreeTillNodeCount(){
   //
   while (tree.getNodeCount() < target_node_count ){
     sampleNode();
-    if (tree.getNodeCount() % 1000 == 0){
+    if (tree.getNodeCount() % 100 == 0){
       cout << tree.getNodeCount() << "\n";
     }
   }
@@ -168,7 +169,7 @@ void KinoRrtStar::moveToVicinity(Node& node, Node& target, double radius){
 
 bool KinoRrtStar::connectToGoal(Node& node){
   //TODO handle this properly
-  if (dist(node, end_node) > 1.0){ return false; }
+  if (dist(node, end_node) > getNeighnourRadius()){ return false; }
   // find traj
   double t = oc.timePartialFinalState(node, end_node);
   double* interior_pos = oc.interiorPositionPartialFinalState(t, node, end_node);
