@@ -7,7 +7,9 @@ KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node
     target_node_count(in_target_node_count),
     oc(interior_point_count),
     world(in_world),
-    rewire_count(0) {
+    rewire_count(0),
+    neighbour_total_count(0),
+    neighbour_count(0) {
     overall_lowest_cost = std::numeric_limits<double>::max();
     std::srand(std::time(nullptr)); // use current time as seed for random generator
     world.setInteriorPointCount(interior_point_count);
@@ -93,6 +95,8 @@ void KinoRrtStar::sampleNode(){
   int id_best_parent = closest_node.id;
   double lowest_cost = closest_node.cost + oc.costPartialFreeFinalState(t, closest_node, new_node);
   
+  neighbour_total_count += id_parent_candidates.size();
+  neighbour_count += 1;
   for (auto i=id_parent_candidates.begin(); i!=id_parent_candidates.end(); i++){
     Node& candidate_node = tree.node(*i);
     double this_t = oc.timePartialFinalState(candidate_node, new_node);
@@ -119,6 +123,9 @@ void KinoRrtStar::sampleNode(){
       overall_lowest_cost = new_node.cost;
       overall_lowest_cost_id = tree.getNodeCount();
       cout << "cost: " << overall_lowest_cost << "\n";
+      cout << "avg neighbor count: " << (double) neighbour_total_count / neighbour_count << "\n";
+      neighbour_total_count = 0;
+      neighbour_count = 0;
     }
   }
   // add to tree

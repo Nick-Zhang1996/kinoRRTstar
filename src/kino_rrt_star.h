@@ -27,6 +27,8 @@ class KinoRrtStar{
     double overall_lowest_cost;
     int overall_lowest_cost_id;
     int rewire_count;
+    int neighbour_total_count;
+    int neighbour_count;
   public:
     KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int interior_point_count );
     // n_nodes: number of nodes to add to tree, if 0 then stop after first solution
