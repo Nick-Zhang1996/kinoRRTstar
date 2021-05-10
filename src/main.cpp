@@ -3,7 +3,6 @@
 #include "tree.h"
 #include "world.h"
 #include "kino_rrt_star.h"
-#include "quad_optimal_control.h"
 
 int main(){
   World world(20,10,10);

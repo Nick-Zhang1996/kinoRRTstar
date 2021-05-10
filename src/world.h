@@ -31,6 +31,7 @@ class World {
       }
       return true;
     }
+
     bool checkNoCollision( Node& node){
       Point point = {node.x, node.y, node.z};
       return checkNoCollision( point );

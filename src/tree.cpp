@@ -1,7 +1,7 @@
 #include "tree.h"
 
 Tree::Tree(Node& root){
-  // is this valid?
+  root.id = 0;
   tree.push_back(root);
   n_nodes++;
 }
@@ -95,19 +95,23 @@ int Tree::getClosestId(int id_node){
     }
   }
   assert (min_node_id != -1);
+  assert (min_node_id < n_nodes);
   return min_node_id;
 }
 
 int Tree::getClosestId(Node& node){
   double min_dist = std::numeric_limits<double>::max();
   int min_node_id = -1;
+
   for (auto i=tree.begin(); i!=tree.end(); i++){
     if (dist(node,*i) < min_dist){
       min_dist = dist(node,*i);
       min_node_id = i->id;
     }
   }
+
   assert (min_node_id != -1);
+  assert (min_node_id < n_nodes);
   return min_node_id;
 
 }

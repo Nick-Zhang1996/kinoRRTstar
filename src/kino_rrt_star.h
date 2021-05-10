@@ -26,9 +26,13 @@ class KinoRrtStar{
     QuadOptimalControl oc;
     double overall_lowest_cost;
     int overall_lowest_cost_id;
+    int interior_point_count;
     int rewire_count;
+    Waypoint waypoint;
+    list<Waypoint>::iterator waypoints_iter;
+    list<Waypoint> waypoints;
   public:
-    KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int interior_point_count );
+    KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int in_interior_point_count );
     // n_nodes: number of nodes to add to tree, if 0 then stop after first solution
     void buildTree(int n_nodes);
     bool sampleSpace();
@@ -37,6 +41,15 @@ class KinoRrtStar{
     void buildTreeTillFirstSolution();
     void sampleNode();
     void showResult();
+
+    // prepare waypoints for optimal solution, including interior points
+    // return number of waypoints
+    int prepareSolution();
+    // after prepareSolution() is called
+    // repeatedly call this function to get all waypoints
+    // this function should be called <number of waypoints> times
+    // if called afterwards, Waypoint.valid will be false;
+    Waypoint getNextWaypoint();
 
     // generate a random point in world, only x,y,z are concerned
     // TODO test

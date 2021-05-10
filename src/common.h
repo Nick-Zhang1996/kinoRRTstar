@@ -7,6 +7,13 @@
 using std::list;
 using std::vector;
 using std::cout;
+using std::endl;
+
+struct Waypoint {
+    double x,y,z,vx,vy,vz,ax,ay,az;
+    bool valid;
+};
+
 // represent one node
 struct Node {
     double x,y,z,vx,vy,vz,ax,ay,az;
