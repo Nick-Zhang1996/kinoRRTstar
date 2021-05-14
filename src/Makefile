@@ -2,7 +2,7 @@ CC=g++
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 #CFLAGS=-I. -I$(ROOT_DIR)/../eigen -lm -g -pg
-CFLAGS=-I. -lm -g -pg
+CFLAGS=-I. -lm 
 DEPS = common.h
 
 main: main.o tree.o world.o quad_optimal_control.o kino_rrt_star.o
