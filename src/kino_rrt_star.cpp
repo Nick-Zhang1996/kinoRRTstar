@@ -55,6 +55,7 @@ void KinoRrtStar::showResult(){
 
 void KinoRrtStar::buildTreeTillFirstSolution(){
   while (tree.getSolutionCount() == 0 && tree.getNodeCount() < 10000) {
+    cout << "sample" << endl;
     sampleNode();
   }
 }
@@ -63,6 +64,7 @@ void KinoRrtStar::buildTreeTillNodeCount(){
   // keep sampling node until terminal condition is met
   //
   while (tree.getNodeCount() < target_node_count ){
+    cout << "sample" << endl;
     sampleNode();
     if (tree.getNodeCount() % 100 == 0){
       cout << tree.getNodeCount() << "\n";

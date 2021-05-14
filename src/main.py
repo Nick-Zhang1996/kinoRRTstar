@@ -15,12 +15,14 @@ start_node = Node(2,2,2)
 goal_node = Node(18, 8, 8)
 
 rrt = KinoRrtStar(world, start_node, goal_node, 600, 10)
+
 try:
     rrt.run()
 except (RuntimeError):
     print("error")
 print("rrt run finished")
 
+'''
 waypoint_n = rrt.prepareSolution()
 
 waypoints = []
@@ -30,3 +32,4 @@ for i in range(waypoint_n):
     waypoints.append( (p.x,p.y,p.z) )
 
 print(waypoints)
+'''

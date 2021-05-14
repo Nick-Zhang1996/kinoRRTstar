@@ -1,7 +1,7 @@
 CC=g++
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
-CFLAGS=-I. -lm -g -pg -fpic
+CFLAGS=-I. -lm -fpic
 DEPS = common.h
 
 INCLUDE_PYTHON=/usr/include/python3.6
