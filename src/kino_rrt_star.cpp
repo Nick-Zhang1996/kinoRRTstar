@@ -195,6 +195,7 @@ double KinoRrtStar::getNeighnourRadius(){
 
 }
 
+/*
 int KinoRrtStar::prepareSolution(){
   int this_node_id = overall_lowest_cost_id;
   assert (tree.node(this_node_id).is_end);
@@ -245,3 +246,4 @@ Waypoint KinoRrtStar::getNextWaypoint(){
   return waypoint;
 }
 
+*/
