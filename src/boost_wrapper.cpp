@@ -6,7 +6,14 @@
 using namespace boost::python;
 BOOST_PYTHON_MODULE(kinoRRT){
 
-  class_<Box>("Box", init<double, double, double, double, double, double>());
+  class_<Box>("Box", init<double, double, double, double, double, double>())
+    .def_readonly("x_l", &Box::x_l)
+    .def_readonly("x_h", &Box::x_h)
+    .def_readonly("y_l", &Box::y_l)
+    .def_readonly("y_h", &Box::y_h)
+    .def_readonly("z_l", &Box::z_l)
+    .def_readonly("z_h", &Box::z_h)
+    ;
 
   class_<Node>("Node",init<double, double, double>());
 
