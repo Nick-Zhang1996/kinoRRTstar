@@ -5,10 +5,11 @@ KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node
     start_node(in_start_node),
     end_node(in_end_node),
     target_node_count(in_target_node_count),
-    oc(interior_point_count),
     world(in_world),
-    rewire_count(0),
-    interior_point_count(in_interior_point_count){
+    oc(in_interior_point_count),
+    interior_point_count(in_interior_point_count),
+    rewire_count(0)
+{
     overall_lowest_cost = std::numeric_limits<double>::max();
     std::srand(std::time(nullptr)); // use current time as seed for random generator
     world.setInteriorPointCount(in_interior_point_count);
@@ -55,7 +56,6 @@ void KinoRrtStar::showResult(){
 
 void KinoRrtStar::buildTreeTillFirstSolution(){
   while (tree.getSolutionCount() == 0 && tree.getNodeCount() < 10000) {
-    cout << "sample" << endl;
     sampleNode();
   }
 }
@@ -64,7 +64,6 @@ void KinoRrtStar::buildTreeTillNodeCount(){
   // keep sampling node until terminal condition is met
   //
   while (tree.getNodeCount() < target_node_count ){
-    cout << "sample" << endl;
     sampleNode();
     if (tree.getNodeCount() % 100 == 0){
       cout << tree.getNodeCount() << "\n";
@@ -77,7 +76,6 @@ void KinoRrtStar::sampleNode(){
   // sample node
   Node new_node = getRandomNode();
 
-  int closest_id  = tree.getClosestId(new_node);
   Node& closest_node = tree.getClosest(new_node);
   double radius = getNeighnourRadius();
   // move to closest existing node

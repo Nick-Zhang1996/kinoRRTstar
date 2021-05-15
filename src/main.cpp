@@ -21,9 +21,17 @@ int main(){
   world.addObstacle(obs3);
   world.addObstacle(obs4);
 
+
   KinoRrtStar rrt(world, start_node, goal_node, 600, 10);
+
+  auto start = std::chrono::system_clock::now();
+
   rrt.run();
-  cout << "program complete\n";
+  
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = end-start;
+
+  cout << "program complete in " << elapsed_seconds.count() << "s" << endl;
 
 
 }

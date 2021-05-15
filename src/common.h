@@ -26,7 +26,7 @@ struct Node {
     // may not be necessary
     int id;
     Node():is_end(false){};
-    Node(double xx, double yy, double zz):is_end(false),x(xx),y(yy),z(zz){};
+    Node(double xx, double yy, double zz):x(xx),y(yy),z(zz),is_end(false){};
 };
 
 struct Point {
