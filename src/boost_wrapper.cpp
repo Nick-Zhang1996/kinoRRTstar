@@ -27,6 +27,9 @@ BOOST_PYTHON_MODULE(kinoRRT){
   class_<World>("World", init<double, double, double>())
     .def("addObstacle", &World::addObstacle)
     .def("setInteriorPointCount", &World::setInteriorPointCount)
+    .def_readonly("x", &World::x)
+    .def_readonly("y", &World::y)
+    .def_readonly("z", &World::z)
     ;
 
   class_<KinoRrtStar>("KinoRrtStar",init<World&, Node&, Node&, int, int>())

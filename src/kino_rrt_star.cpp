@@ -32,7 +32,7 @@ void KinoRrtStar::run(){
     cout << "no results find with " << target_node_count << "nodes \n";
   }
 
-  //oc.printTotalTime();
+  oc.printTotalTime();
 
 }
 

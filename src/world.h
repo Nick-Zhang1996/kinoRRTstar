@@ -10,10 +10,13 @@
 class World {
   private:
     int interior_point_n;
-    double x,y,z;
     list <Box> obstacles;
 
   public:
+
+    double x,y,z;
+
+
     // constructor with x,y,z dimension 
     World( double dim_x, double dim_y, double dim_z ) : x(dim_x), y(dim_y), z(dim_z) {}
     // add obstacle to world
@@ -43,6 +46,7 @@ class World {
     double getXSize() { return x; }
     double getYSize() { return y; }
     double getZSize() { return z; }
+
    
 
 };
