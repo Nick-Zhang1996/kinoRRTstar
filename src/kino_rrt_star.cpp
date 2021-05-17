@@ -128,6 +128,13 @@ void KinoRrtStar::sampleNode(){
   // sets id_parent, id
   int id_new_node = tree.addNode(new_node,id_best_parent);
 
+  {
+    double t = oc.time(tree.node(id_best_parent), tree.node(id_new_node));
+    double* interior_pos = oc.interiorPosition(t, tree.node(id_best_parent), tree.node(id_new_node));
+    //TODO more error checking here
+    assert (world.checkNoPathCollision(interior_pos));
+  }
+
 
   // rewire
   list<int> id_neighbour = tree.getNeighbourId(id_new_node, radius);
@@ -146,7 +153,7 @@ void KinoRrtStar::sampleNode(){
       tree.updateCost(*i, new_cost - tree.node(*i).cost);
       //cout << "rewiring... \n";
       rewire_count++;
-    } catch (err_NoSolution){ continue; }
+    } catch (err_NoSolution&){ continue; }
   }
   
 
@@ -219,6 +226,7 @@ int KinoRrtStar::prepareSolution(){
       p.y = *(pos_buffer + i*3 + 1);
       p.z = *(pos_buffer + i*3 + 2);
       waypoints.push_back(p);
+      assert (world.checkNoCollision(p.x,p.y,p.z));
     }
 
     this_node_id = late_node.id_parent;

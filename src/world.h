@@ -23,6 +23,11 @@ class World {
     // [obstacle] can be  Box
     int addObstacle( Box& obstacle ) {
       obstacles.push_back(obstacle);
+      cout << "obstacle " << obstacles.size() << endl;
+      cout << " x: " << obstacle.x_l << " - " << obstacle.x_h << endl;
+      cout << " y: " << obstacle.y_l << " - " << obstacle.y_h << endl;
+      cout << " z: " << obstacle.z_l << " - " << obstacle.z_h << endl;
+      
       return 0;
     }
     // check collision
@@ -37,6 +42,11 @@ class World {
 
     bool checkNoCollision( Node& node){
       Point point = {node.x, node.y, node.z};
+      return checkNoCollision( point );
+    }
+    
+    bool checkNoCollision( double x, double y, double z){
+      Point point = {x, y, z};
       return checkNoCollision( point );
     }
 

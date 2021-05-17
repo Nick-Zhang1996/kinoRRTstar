@@ -68,7 +68,7 @@ double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
   
   try{
     retval = bisect(coeffs, lower_bound, upper_bound);
-  } catch (err_TooManyIteration) {
+  } catch (err_TooManyIteration&) {
     throw new err_NoSolution;
   }
 
