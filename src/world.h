@@ -32,8 +32,10 @@ class World {
     }
     // check collision
     // check if point is in collision with registered obstacle
+    // also check if point is outside of world
     // return: Trus if no collision
     bool checkNoCollision( Point& point){
+      if (point.x < 0.0 || point.x > x || point.y < 0.0 || point.y > y ||point.z < 0.0 || point.z > z) { return false; }
       for(list <Box>::iterator it = obstacles.begin(); it != obstacles.end(); it++){
         if ( it->isInside(point) ){ return false; }
       }
