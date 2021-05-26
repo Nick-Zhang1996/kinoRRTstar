@@ -27,9 +27,15 @@ int main(){
   auto start = std::chrono::system_clock::now();
 
   rrt.run();
-  
+  rrt.prepareSolution();
+  while (true){
+    auto p = rrt.getNextWaypoint();
+    if (!p.valid){break;}
+  }
+      
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end-start;
+
 
   cout << "program complete in " << elapsed_seconds.count() << "s" << endl;
 

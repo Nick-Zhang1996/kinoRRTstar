@@ -101,6 +101,10 @@ void KinoRrtStar::sampleNode(){
     double this_t = oc.timePartialFinalState(candidate_node, new_node);
     double cost = candidate_node.cost + oc.costPartialFreeFinalState(this_t, candidate_node, new_node);
     if (cost < lowest_cost){
+      // check for path collision
+      double* interior_pos = oc.interiorPositionPartialFinalState(this_t, candidate_node, new_node);
+      if (!world.checkNoPathCollision(interior_pos)){ continue; }
+      // no collision
       lowest_cost = cost;
       id_best_parent = *i;
       t = this_t;
@@ -127,8 +131,6 @@ void KinoRrtStar::sampleNode(){
   // add to tree
   // sets id_parent, id
   int id_new_node = tree.addNode(new_node,id_best_parent);
-
-
   // rewire
   list<int> id_neighbour = tree.getNeighbourId(id_new_node, radius);
   // can new node be a parent to neighbour nodes?
@@ -146,7 +148,7 @@ void KinoRrtStar::sampleNode(){
       tree.updateCost(*i, new_cost - tree.node(*i).cost);
       //cout << "rewiring... \n";
       rewire_count++;
-    } catch (err_NoSolution){ continue; }
+    } catch (err_NoSolution&){ continue; }
   }
   
 
@@ -219,6 +221,7 @@ int KinoRrtStar::prepareSolution(){
       p.y = *(pos_buffer + i*3 + 1);
       p.z = *(pos_buffer + i*3 + 2);
       waypoints.push_back(p);
+      assert (world.checkNoCollision(p.x,p.y,p.z));
     }
 
     this_node_id = late_node.id_parent;

@@ -46,7 +46,7 @@ waypoints = np.array(waypoints[::-1])
 #print(waypoints)
 
 ax = visual.visualizeWorld(show=False)
-ax.plot(waypoints[:,0], waypoints[:,1], waypoints[:,2],'b*')
+#ax.plot(waypoints[:,0], waypoints[:,1], waypoints[:,2],'b')
 ax.scatter(waypoints[:,0], waypoints[:,1], waypoints[:,2], 'ro')
 plt.show()
 
