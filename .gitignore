@@ -1,0 +1,6 @@
+*.p
+__pycache__/
+*.swp
+*.o
+main
+*.out
