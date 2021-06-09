@@ -16,6 +16,7 @@ from cflib.crazyflie.syncLogger import SyncLogger
 from cflib.crazyflie import Crazyflie
 
 from Optitrack import Optitrack
+from vicon import Vicon
 
 from numeric_velocity import quad_fit_functional
 from PlanarController import planarController,planarControllerExample
@@ -43,15 +44,27 @@ class Planar:
         return
 
 class SingleDrone:
-    def __init__(self,):
-        self.optitrack_freq = 100
+    def __init__(self,visual_tracker='optitrack'):
+        self.visual_tracker = visual_tracker
+        
+        self.visual_tracker_freq = 100
 
         # drone address
         self.uri = 'radio://0/80/2M/E7E7E7E7E7'
 
         # optitrack Id for drone
         # this is the id listed in Motive software
-        self.optitrack_id = 6
+        # or vicon item id
+        if (visual_tracker == 'optitrack'):
+            self.vt = Optitrack(freq = self.optitrack_freq)
+            self.vt_id = 6
+            # Optitrack interface has a dynamically assigned internal Id that differ from global optitrack objet ID
+            # the internal id is used to retrieve state from optitrack instance
+            self.optitrack_internal_id = self.vt.getInternalId(self.optitrack_id)
+        elif (visual_tracker == 'vicon'):
+            self.vt = Vicon(daemon=True)
+            self.vt.getViconUpdate()
+            self.vt_id = vi.getItemID('kino_cf'):
 
         # local new state (from visual tracking) flag
         self.new_state = Event()
@@ -77,7 +90,7 @@ class SingleDrone:
         # another format of log
         self.log_dict = {'thrust':0, 'target_vxy':(0,0)}
 
-        dt = 1.0/self.optitrack_freq
+        dt = 1.0/self.visual_tracker_freq
         self.x_pids = PidController(2,0,0,dt,0,20)
         self.y_pids = PidController(2,0,0,dt,0,20)
         self.z_pids = PidController(2,0,0,dt,0,20)
@@ -97,16 +110,18 @@ class SingleDrone:
         self.xyz_history = []
         self.quad_fit = quad_fit_functional(self.vel_est_n_step, dt)
 
-        self.op = Optitrack(freq = self.optitrack_freq)
-        # Optitrack interface has a dynamically assigned internal Id that differ from global optitrack objet ID
-        # the internal id is used to retrieve state from optitrack instance
-        self.optitrack_internal_id = self.op.getInternalId(self.optitrack_id)
         return
 
     def run(self,):
-        self.child_threads.append(Thread(target=self.optitrackUpdateThread))
-        self.child_threads[-1].start()
-        print_info("starting thread optitrackUpdateThread")
+        if (self.visual_tracker == 'optitrack'):
+            self.child_threads.append(Thread(target=self.optitrackUpdateThread))
+            self.child_threads[-1].start()
+            print_info("starting thread optitrackUpdateThread")
+        elif (self.visual_tracker == 'vicon'):
+            self.child_threads.append(Thread(target=self.viconUpdateThread))
+            self.child_threads[-1].start()
+            print_info("starting thread viconUpdateThread")
+
 
         cflib.crtp.init_drivers(enable_debug_driver=False)
         uri = self.uri
@@ -148,8 +163,8 @@ class SingleDrone:
             p.join()
             print_info("joined ")
 
-        print_info("op.quit()")
-        self.op.quit()
+        print_info("asking visual tracking daemon to quit...")
+        self.vt.quit()
         print_info("success..")
         self.logFilename = "./log.p"
         output = open(self.logFilename,'wb')
@@ -164,23 +179,31 @@ class SingleDrone:
         # update state
         while not self.quit_flag.isSet():
             # wait for optitrack to get new state update
-            ret = self.op.newState.wait(0.1)
+            ret = self.vt.newState.wait(0.1)
             if (not ret):
                 continue
             lock = self.drone_states_lock.acquire(timeout=0.01)
             if lock:
-                self.op.newState.clear()
-                (x,y,z,rx,ry,rz) = state = self.op.getLocalState(self.optitrack_internal_id)
+                self.vt.newState.clear()
+                (x,y,z,rx,ry,rz) = state = self.vt.getLocalState(self.optitrack_internal_id)
                 # TODO verify
-                if (self.op.lost[0].isSet()):
+                if (self.vt.lost[0].isSet()):
                     self.quit_flag.set()
                     print_warning("Lost track of object")
 
                 self.drone_states = state
-                self.drone_vel = self.op.getLocalVelocity(self.optitrack_internal_id)
+                self.drone_vel = self.vt.getLocalVelocity(self.optitrack_internal_id)
                 self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
                 self.new_state.set()
                 self.drone_states_lock.release()
+
+    def viconUpdateThread(self):
+        # update state
+        while not self.quit_flag.isSet():
+            self.drone_states = (x,y,z,rx,ry,rz) = state = vi.getState(self.vt_id)
+            self.drone_vel = self.vt.getVelocity(self.vt_id)
+            self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
+            self.new_state.set()
 
 
 
