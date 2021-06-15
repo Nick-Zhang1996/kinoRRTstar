@@ -14,6 +14,8 @@ class PidController:
         self.__alpha = (2 * np.pi * self.__dt * lpf_cutoff_freq) / (2 * np.pi * self.__dt * lpf_cutoff_freq + 1)
 
     # dxdt: allow user to provide derivative externally, i.e. from a gyro
+    # x0: setpoint
+    # x: measurement
     def control(self, x0, x, dxdt=None, debug=False):
         error = x0 - x
         # Low pass filter: larger lpf freq => error = error; small lpf freq => error = last error.

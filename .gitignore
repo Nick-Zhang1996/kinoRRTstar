@@ -2,3 +2,5 @@
 *.o
 *.swp
 *.p
+__pycache__/
+.cache/

@@ -3,45 +3,36 @@ import matplotlib.pyplot as plt
 import numpy as np
 logFilename = "./log.p"
 output = open(logFilename,'rb')
-log_vec = pickle.load(output)
+data = pickle.load(output)
 output.close()
 
+data = np.array(data)
+print("log length %.1f seconds"%(data.shape[0]/119.88))
 
-x = []
-y = []
-z = []
+x = data[:,0]
+y = data[:,1]
+z = data[:,2]
+rx = data[:,3]
+ry = data[:,4]
+rz = data[:,5]
 
-rx = []
-ry = []
-rz = []
+'''
+vx = data[:,6]
+vy = data[:,7]
+vz = data[:,8]
 
-vx = []
-vy = []
-vz = []
+thrust = data[:,9]
+target_vx = data[:,10]
+target_vy = data[:,11]
+target_vz = data[:,12]
+'''
 
-thrust = []
-
-log_vec = np.array(log_vec)
-for i in range(log_vec.shape[0]):
-    x.append( log_vec[i,:,0])
-    y.append( log_vec[i,:,1])
-    z.append( log_vec[i,:,2])
-
-    rx.append( log_vec[i,:,3])
-    ry.append( log_vec[i,:,4])
-    rz.append( log_vec[i,:,5])
-
-    vx.append( log_vec[i,:,6])
-    vy.append( log_vec[i,:,7])
-    vz.append( log_vec[i,:,8])
-
-    thrust = log_vec[0,:,9]
-
-
-#plt.plot(z)
-#plt.plot(-thrust/200000)
-
-for i in range(log_vec.shape[0]):
-    #plt.plot(x[i],y[i])
-    plt.plot(z[i])
+# Plot 3d.
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+ax.plot(-x, -y, -z, color='r', label='actual')
+ax.set_xlabel('-x')
+ax.set_ylabel('-y')
+ax.set_zlabel('altitude (-z)')
+ax.legend()
 plt.show()

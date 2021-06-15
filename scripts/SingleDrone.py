@@ -44,7 +44,7 @@ class Planar:
         return
 
 class SingleDrone:
-    def __init__(self,visual_tracker='optitrack'):
+    def __init__(self,visual_tracker='vicon'):
         self.visual_tracker = visual_tracker
         
         self.visual_tracker_freq = 100
@@ -56,7 +56,7 @@ class SingleDrone:
         # this is the id listed in Motive software
         # or vicon item id
         if (visual_tracker == 'optitrack'):
-            self.vt = Optitrack(freq = self.optitrack_freq)
+            self.vt = Optitrack(freq = self.visual_tracker_freq)
             self.vt_id = 6
             # Optitrack interface has a dynamically assigned internal Id that differ from global optitrack objet ID
             # the internal id is used to retrieve state from optitrack instance
@@ -64,7 +64,8 @@ class SingleDrone:
         elif (visual_tracker == 'vicon'):
             self.vt = Vicon(daemon=True)
             self.vt.getViconUpdate()
-            self.vt_id = vi.getItemID('kino_cf'):
+            sleep(0.1)
+            self.vt_id = self.vt.getItemID('nick_cf')
 
         # local new state (from visual tracking) flag
         self.new_state = Event()
@@ -159,19 +160,21 @@ class SingleDrone:
     def quit(self,):
         self.quit_flag.set()
         print_info("quit flag set")
+
+        print_info("joining child threads...")
         for p in self.child_threads:
             p.join()
-            print_info("joined ")
+        print_info("all joined ")
 
         print_info("asking visual tracking daemon to quit...")
         self.vt.quit()
         print_info("success..")
         self.logFilename = "./log.p"
         output = open(self.logFilename,'wb')
-        print_info("dumping")
+        print_info("saving log via pickle")
         pickle.dump(self.log_vec,output)
         print_info("success..")
-        print_info("close")
+        print_info("closeing file")
         output.close()
         print_info("success")
 
@@ -193,16 +196,17 @@ class SingleDrone:
 
                 self.drone_states = state
                 self.drone_vel = self.vt.getLocalVelocity(self.optitrack_internal_id)
-                self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
+                #self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
+                self.log_vec.append(self.drone_states)
                 self.new_state.set()
                 self.drone_states_lock.release()
 
     def viconUpdateThread(self):
         # update state
         while not self.quit_flag.isSet():
-            self.drone_states = (x,y,z,rx,ry,rz) = state = vi.getState(self.vt_id)
-            self.drone_vel = self.vt.getVelocity(self.vt_id)
-            self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
+            self.drone_states = (x,y,z,rx,ry,rz) = state = self.vt.getState(self.vt_id)
+            self.drone_vel = (vx,vy,vz) = self.vt.getVelocity(self.vt_id)
+            self.log_vec.append(self.drone_states)
             self.new_state.set()
 
 
@@ -270,6 +274,7 @@ class SingleDrone:
                     #print("unknown command")
 
             # stop everything before returning
+            print_info("sending zero thrust command to CF")
             cf.commander.send_setpoint(0,0,0,0)
             self.log_dict['thrust'] = 0
             sleep(0.1)
@@ -330,7 +335,8 @@ class SingleDrone:
             target_thrust = self.baseThrust - self.vz_pids.control(target_v_local[2], self.drone_vel[2]) * self.thrustScale
             target_thrust = int(np.clip(target_thrust,self.minThrust,0xFFFF))
             target_yawrate_deg_s = 0
-            #cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust)
+            #print_warning(" crazyflie command blocked ")
+            cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust)
             print_info("sending command %.2f %.2f %.2f %d"%(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust))
             self.log_dict['thrust'] = target_thrust
             #print(target_roll_deg,-target_pitch_deg,target_thrust)
@@ -392,4 +398,3 @@ if __name__ == '__main__':
     ins = SingleDrone()
     ins.run()
     print_info("program finish")
-    # why doesn't quit

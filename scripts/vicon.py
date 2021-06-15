@@ -79,7 +79,7 @@ class Vicon:
         # NOTE self.R is the passive rotation matrix
         #self.R = Rotation.from_euler("ZYX",[180,0,0],degrees=True).inv()
         # custome routine is faster
-        self.R = self.eulerZyxToR(0,0,radians(180))
+        self.R = self.eulerZyxToR(radians(90),0,radians(180))
 
         # with world ref frame, where is local frame origin
         self.local_frame_origin_world = np.array([0,0,0])
@@ -309,8 +309,9 @@ if __name__ == '__main__':
     for i in range(vi.obj_count):
         print("ID: "+str(i)+", Name: "+vi.getItemName(i))
 
-    wand_id = vi.getItemID('Wand')
-    print("Wand id "+str(wand_id))
+    name = "nick_cf"
+    item_id = vi.getItemID(name)
+    print(name +str(item_id))
     sleep(1)
     '''
     vi.startRecording("record.p")
@@ -321,7 +322,7 @@ if __name__ == '__main__':
     # debug speed estimation
     while True:
     #for i in range(10):
-        (x,y,z,rx,ry,rz) = vi.getState(wand_id)
+        (x,y,z,rx,ry,rz) = vi.getState(item_id)
         print("%7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f"%(x,y,z,degrees(rx),degrees(ry),degrees(rz)))
         sleep(0.02)
 
