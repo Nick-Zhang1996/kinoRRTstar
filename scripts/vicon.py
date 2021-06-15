@@ -3,13 +3,14 @@
 import socket
 from time import time,sleep
 from struct import unpack
-from math import degrees,radians
+from math import degrees,radians,sin,cos,atan2,asin,acos
 from threading import Lock,Event
-from kalmanFilter import KalmanFilter
+import pickle
 import numpy as np
-from tf import TF
 import threading
+
 from numeric_velocity import quad_fit_functional
+from common import *
 
 
 class Vicon:
@@ -34,6 +35,8 @@ class Vicon:
     def __init__(self,IP=None,PORT=None,daemon=True,enableKF=True):
 
         self.newState = Event()
+        self.vicon_freq = 119.88
+        self.dt = dt = 1.0/self.vicon_freq
 
         if IP is None:
             IP = "0.0.0.0"
@@ -47,52 +50,39 @@ class Vicon:
         self.obj_count = None
         # lock for accessing member variables since they are updated in a separate thread
         self.state_lock = Lock()
-        self.state2d_lock = Lock()
+
+        self.recording_data = []
+        self.recording = Event()
+
         # contains a list of names of tracked objects
         self.obj_names = []
         # a list of state tuples, state tuples take the form: (x,y,z,rx,ry,rz), in meters and radians, respectively
         # note that rx,ry,rz are euler angles in XYZ convention, this is different from the ZYX convention commonly used in aviation
-        self.state_list = []
-        # this is converted 2D state (x,y,heading) in track space
-        self.state2d_list = []
+        self.global_state_list = []
+        self.local_state_list = []
 
         # flag used to stop update daemon thread
         self.quit_thread = False
-
-        # create a TF() object so we can internalize frame transformation
-        # go from 3D vicon space -> 2D track space
-        self.tf = TF()
-        # items related to tf
-        # for upright origin
-        q_t = self.tf.euler2q(0,0,0)
-        self.T = np.hstack([q_t,np.array([-0.0,-0.0,0])])
-
         self.updateCallback = self.doNothing
 
         self.vel_est_n_step = 5
         self.quad_fit = quad_fit_functional(self.vel_est_n_step, dt)
 
-        self.velocity_estimator_ready = False
+        self.velocity_estimator_ready = Event()
         self.local_xyz_historys = []
         self.local_xyz_dots = []
 
-        if enableKF:
-            # temporarily unset enableKF to trick getViconUpdate() to ignore kf before it's inited
-            if not daemon:
-                print("Warning: Kalman Filter is enabled but Vicon Update Daemon is not")
-            self.enableKF = False
-            retval = self.getViconUpdate()
-            self.enableKF = True
-            if retval is None:
-                print("Vicon not ready, can't determine obj count for Kalman Filter")
-                exit(1)
+        # set the relation between Vicon world frame and user defined local frame
+        # describe the rotation needed to rotate the world frame to track frame
+        # in sequence Z, Y, X, each time using intermediate frame axis (intrinsic)
+        # NOTE scipy.spatial.transform.Rotation uses active rotation
+        # NOTE self.R is the passive rotation matrix
+        #self.R = Rotation.from_euler("ZYX",[180,0,0],degrees=True).inv()
+        # custome routine is faster
+        self.R = self.eulerZyxToR(0,0,radians(180))
 
-            self.kf = [KalmanFilter() for i in range(self.obj_count)]
-            #self.kf_state = []
-            for i in range(self.obj_count):
-                (x,y,theta) = self.getState2d(i)
-                self.kf[i].init(x,y,theta)
-                #self.kf_state.append(self.kf.getState())
+        # with world ref frame, where is local frame origin
+        self.local_frame_origin_world = np.array([0,0,0])
 
         if daemon:
             self.thread =  threading.Thread(name="vicon",target=self.viconUpateDaemon)
@@ -113,7 +103,7 @@ class Vicon:
         return
 
     # placeholder for an empty function
-    def doNothing():
+    def doNothing(self):
         pass
 
     # get name of an object given its ID. This can be useful for verifying ID <-> object relationship
@@ -136,13 +126,23 @@ class Vicon:
         finally:
             return obj_id
 
-    # get state by id
+    # get state by id (local frame)
     def getState(self,inquiry_id):
         if inquiry_id>=self.obj_count:
             print("error: invalid id : "+str(inquiry_id))
             return None
         self.state_lock.acquire()
-        retval = self.state_list[inquiry_id]
+        retval = self.local_state_list[inquiry_id]
+        self.state_lock.release()
+        return retval
+
+    # get state by id
+    def getGlobalState(self,inquiry_id):
+        if inquiry_id>=self.obj_count:
+            print("error: invalid id : "+str(inquiry_id))
+            return None
+        self.state_lock.acquire()
+        retval = self.global_state_list[inquiry_id]
         self.state_lock.release()
         return retval
 
@@ -177,100 +177,67 @@ class Vicon:
                 #data = data.encode('ascii')
             else:
                 data = debugData
-            local_obj_names = []
+            obj_names = []
+            global_state_list = []
             local_state_list = []
 
             self.obj_count = itemsInBlock = data[4]
             itemID = data[5] # always 0, not very useful
             itemDataSize = unpack('h',data[6:8])
 
-            if (not self.velocity_estimator_ready):
+            if (not self.velocity_estimator_ready.isSet()):
                 self.local_xyz_historys = [[[0,0,0] for j in range(self.vel_est_n_step)] for i in range(self.obj_count)]
                 self.local_xyz_dots = [[0,0,0] for i in range(self.obj_count)]
+                self.velocity_estimator_ready.set()
 
             for i in range(itemsInBlock):
                 offset = i*75
                 itemName = data[offset+8:offset+32].rstrip(b'\0').decode()
                 # raw data in mm, convert to m
-                x = unpack('d',data[offset+32:offset+40])[0]/1000
-                y = unpack('d',data[offset+40:offset+48])[0]/1000
-                z = unpack('d',data[offset+48:offset+56])[0]/1000
+                x = unpack('d',data[offset+32:offset+40])[0]/1000.0
+                y = unpack('d',data[offset+40:offset+48])[0]/1000.0
+                z = unpack('d',data[offset+48:offset+56])[0]/1000.0
                 # euler angles,rad, rotation order: rx,ry,rz, using intermediate frame
                 rx = unpack('d',data[offset+56:offset+64])[0]
                 ry = unpack('d',data[offset+64:offset+72])[0]
                 rz = unpack('d',data[offset+72:offset+80])[0]
 
-                local_obj_names.append(itemName)
-                local_state_list.append((x,y,z,rx,ry,rz))
+                obj_names.append(itemName)
+                global_state_list.append((x,y,z,rx,ry,rz))
 
-                self.local_xyz_historys[i].append([x,y,z])
+                x_local, y_local, z_local = self.R @ (np.array((x,y,z)) - self.local_frame_origin_world)
+                r = self.eulerZyxToR(rz, ry, rx)
+                local_r = r @ np.linalg.inv(self.R)
+                rx_local, ry_local, rz_local = self.rotationToEulerZyx(local_r)
+                local_state_list.append((x_local, y_local, z_local, rx_local, ry_local, rz_local))
+
+                self.local_xyz_historys[i].append([x_local,y_local,z_local])
                 self.local_xyz_historys[i].pop(0)
 
                 temp_xyz_history = np.array(self.local_xyz_historys[i])
                 x_hist = temp_xyz_history[:,0]
                 y_hist = temp_xyz_history[:,1]
                 z_hist = temp_xyz_history[:,2]
-                vx = self.quad_fit(x_hist)
-                vy = self.quad_fit(y_hist)
-                vz = self.quad_fit(z_hist)
-                self.local_xyz_dots[i] = [vx,vy,vz]
+                vx_local = self.quad_fit(x_hist)
+                vy_local = self.quad_fit(y_hist)
+                vz_local = self.quad_fit(z_hist)
+                self.local_xyz_dots[i] = [vx_local,vy_local,vz_local]
 
-                #print(i,itemName)
-                #print(x,y,z,degrees(rx),degrees(ry),degrees(rz))
             self.state_lock.acquire()
-            self.obj_names = local_obj_names
-            self.state_list = local_state_list
+            self.obj_names = obj_names
+            self.global_state_list = global_state_list
+            self.local_state_list = local_state_list
+            if (self.recording.isSet()):
+                self.recording_data.append(local_state_list)
             self.state_lock.release()
         except socket.timeout:
             return None
 
-        local_state2d_list = []
-        for i in range(self.obj_count):
-            # get body pose in track frame
-            # (x,y,heading)
-            x,y,z,rx,ry,rz = local_state_list[i]
-            # (z_x,z_y,z_theta)
-            (z_x,z_y,z_theta) = self.tf.reframeR(self.T,x,y,z,self.tf.euler2Rxyz(rx,ry,rz))
-            local_state2d_list.append((z_x,z_y,z_theta))
-
-            if self.enableKF:
-                self.kf[i].predict()
-                z = np.matrix([[z_x,z_y,z_theta]]).T
-                self.kf[i].update(z)
-                #self.kf_state[i] = self.kf[i].getState()
-
-        self.state2d_lock.acquire()
-        self.state2d_list = local_state2d_list
-        self.state2d_lock.release()
         # call the callback function 
         self.updateCallback()
 
         self.newState.set()
         return local_state_list
-
-    def getState2d(self,inquiry_id):
-        if inquiry_id>=self.obj_count:
-            return None
-        try:
-            self.state2d_lock.acquire()
-            retval = self.state2d_list[inquiry_id]
-        except IndexError as e:
-            print(str(e))
-            print("obj count "+str(self.obj_count))
-            print("state2d list len "+str(len(self.state2d_list)))
-            print("state list len "+str(len(self.state_list)))
-            exit(0)
-        finally:
-            self.state2d_lock.release()
-            
-        return retval
-
-    # get KF state by id
-    def getKFstate(self,inquiry_id):
-        self.kf[inquiry_id].predict()
-        # (x,dx,-,y,dy,-,theta,dtheta)
-        return self.kf[inquiry_id].getState()
-
 
     def testFreq(self,packets=100):
         # test actual frequency of vicon update, with PACKETS number of state updates
@@ -279,6 +246,47 @@ class Vicon:
             self.getViconUpdate()
         tac = time()
         return packets/(tac-tic)
+
+    def startRecording(self, filename):
+        self.recording_data = []
+        self.recording.set()
+        self.recording_filename = filename
+
+    def stopRecording(self):
+        f = open(self.recording_filename, "wb")
+        pickle.dump(self.recording_data, f)
+        f.close()
+        print_info("recording saved %s"%(self.recording_filename))
+        return
+
+    # r is passive rotation matrix
+    def rotationToEulerZyx(self,r):
+        #r = r.inv().as_matrix()
+        rx = atan2(r[1,2],r[2,2])
+        ry = -asin(r[0,2])
+        rz = atan2(r[0,1],r[0,0])
+        return (rx,ry,rz)
+
+    # get the passive rotation matrix 
+    # that is, x_body = R*x_world
+    def eulerZyxToR(self,rz,ry,rx):
+        R = [ [ cos(ry)*cos(rz), cos(ry)*sin(rz), -sin(ry)],
+              [ sin(rx)*sin(ry)*cos(rz)-cos(rx)*sin(rz), sin(rx)*sin(ry)*sin(rz)+cos(rx)*cos(rz), cos(ry)*sin(rx)],
+              [cos(rx)*sin(ry)*cos(rz)+sin(rx)*sin(rz), cos(rx)*sin(ry)*sin(rz)-sin(rx)*cos(rz), cos(ry)*cos(rx)]]
+        
+        return R
+
+    # get passive rotation matrix
+    def quatToR(self,q1,q2,q3,q0):
+        # q1=qx
+        # q2=qy
+        # q3=qz
+        # q0=q2
+        R = [ [q0**2+q1**2-q2**2-q3**2, 2*q1*q2+2*q0*q3, 2*q1*q3-2*q0*q2],
+              [2*q1*q2-2*q0*q3,  q0**2-q1**2+q2**2-q3**2, 2*q2*q3+2*q0*q1],
+              [2*q1*q3+2*q0*q2,  2*q2*q3-2*q0*q1, q0**2-q1**2-q2**2+q3**2]]
+        
+        return R
 
     # for debug
     def saveFile(self,data,filename):
@@ -304,15 +312,17 @@ if __name__ == '__main__':
     wand_id = vi.getItemID('Wand')
     print("Wand id "+str(wand_id))
     sleep(1)
+    '''
+    vi.startRecording("record.p")
+    input("press enter to stop")
+    vi.stopRecording()
+    '''
 
     # debug speed estimation
-    while False:
+    while True:
     #for i in range(10):
-        (kf_x,dx,_,kf_y,dy,_,theta,dtheta) = vi.getKFstate(wand_id)
         (x,y,z,rx,ry,rz) = vi.getState(wand_id)
-        #print(x,dx,degrees(dtheta))
-        #print(x,y,degrees(rz))
-        print(kf_x-x)
+        print("%7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f"%(x,y,z,degrees(rx),degrees(ry),degrees(rz)))
         sleep(0.02)
 
     vi.stopUpdateDaemon()
