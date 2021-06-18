@@ -4,6 +4,7 @@ import socket
 from time import time,sleep
 from struct import unpack
 from math import degrees,radians,sin,cos,atan2,asin,acos
+from scipy.spatial.transform import Rotation
 from threading import Lock,Event
 import pickle
 import numpy as np
@@ -206,8 +207,11 @@ class Vicon:
                 global_state_list.append((x,y,z,rx,ry,rz))
 
                 x_local, y_local, z_local = self.R @ (np.array((x,y,z)) - self.local_frame_origin_world)
-                r = self.eulerZyxToR(rz, ry, rx)
-                local_r = r @ np.linalg.inv(self.R)
+                # FIXME
+                #r = self.eulerZyxToR(rz, ry, rx)
+                r = Rotation.from_euler("XYZ",[rx,ry,rz],degrees=False).inv()
+
+                local_r = r.as_matrix() @ np.linalg.inv(self.R)
                 rx_local, ry_local, rz_local = self.rotationToEulerZyx(local_r)
                 local_state_list.append((x_local, y_local, z_local, rx_local, ry_local, rz_local))
 
@@ -230,14 +234,14 @@ class Vicon:
             if (self.recording.isSet()):
                 self.recording_data.append(local_state_list)
             self.state_lock.release()
+            # call the callback function 
+            self.updateCallback()
+
+            self.newState.set()
+            return local_state_list
         except socket.timeout:
             return None
 
-        # call the callback function 
-        self.updateCallback()
-
-        self.newState.set()
-        return local_state_list
 
     def testFreq(self,packets=100):
         # test actual frequency of vicon update, with PACKETS number of state updates
@@ -320,7 +324,7 @@ if __name__ == '__main__':
     '''
 
     # debug speed estimation
-    while True:
+    while False:
     #for i in range(10):
         (x,y,z,rx,ry,rz) = vi.getState(item_id)
         print("%7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f"%(x,y,z,degrees(rx),degrees(ry),degrees(rz)))
@@ -329,7 +333,7 @@ if __name__ == '__main__':
     vi.stopUpdateDaemon()
 
     # test freq
-    if False:
+    if True:
         for i in range(3):
             print("Freq = "+str(vi.testFreq())+"Hz")
 

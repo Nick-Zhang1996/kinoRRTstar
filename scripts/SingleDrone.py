@@ -12,7 +12,7 @@ from math import degrees,cos,sin,radians
 
 import cflib
 from cflib.crazyflie.log import LogConfig
-from cflib.crazyflie.syncLogger import SyncLogger
+#from cflib.crazyflie.syncLogger import SyncLogger
 from cflib.crazyflie import Crazyflie
 
 from Optitrack import Optitrack
@@ -20,6 +20,7 @@ from vicon import Vicon
 
 from numeric_velocity import quad_fit_functional
 from PlanarController import planarController,planarControllerExample
+from timeUtil import execution_timer
 
 # command types
 class Vel:
@@ -45,9 +46,9 @@ class Planar:
 
 class SingleDrone:
     def __init__(self,visual_tracker='vicon'):
+        self.p = execution_timer(True)
         self.visual_tracker = visual_tracker
-        
-        self.visual_tracker_freq = 100
+        self.visual_tracker_freq = 120
 
         # drone address
         self.uri = 'radio://0/80/2M/E7E7E7E7E7'
@@ -141,11 +142,11 @@ class SingleDrone:
         print("taking off")
         self.commands.put(Planar(0,0,-0.3))
         self.new_command.set()
-        '''
-        sleep(3.0)
-        self.commands.put(Pos(0.1,0,-0.3))
+        sleep(1.0)
+        self.commands.put(Pos(0.0,0,-0.3))
         self.new_command.set()
 
+        '''
         print("Main Control Starts")
         p = threading.Thread(target=self.controlThread)
         self.child_threads.append(p)
@@ -166,17 +167,12 @@ class SingleDrone:
             p.join()
         print_info("all joined ")
 
-        print_info("asking visual tracking daemon to quit...")
         self.vt.quit()
-        print_info("success..")
         self.logFilename = "./log.p"
         output = open(self.logFilename,'wb')
-        print_info("saving log via pickle")
         pickle.dump(self.log_vec,output)
-        print_info("success..")
-        print_info("closeing file")
         output.close()
-        print_info("success")
+        self.cf.close_link()
 
     def optitrackUpdateThread(self):
         # update state
@@ -197,17 +193,26 @@ class SingleDrone:
                 self.drone_states = state
                 self.drone_vel = self.vt.getLocalVelocity(self.optitrack_internal_id)
                 #self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
-                self.log_vec.append(self.drone_states)
+                log_entry = (time(),) + tuple(np.drone_states)
+                self.log_vec.append(log_entry)
                 self.new_state.set()
                 self.drone_states_lock.release()
 
     def viconUpdateThread(self):
         # update state
         while not self.quit_flag.isSet():
-            self.drone_states = (x,y,z,rx,ry,rz) = state = self.vt.getState(self.vt_id)
-            self.drone_vel = (vx,vy,vz) = self.vt.getVelocity(self.vt_id)
-            self.log_vec.append(self.drone_states)
-            self.new_state.set()
+            ret = self.vt.newState.wait(0.1)
+            if (not ret):
+                continue
+            lock = self.drone_states_lock.acquire(timeout=0.01)
+            if lock:
+                self.vt.newState.clear()
+                self.drone_states = (x,y,z,rx,ry,rz) = state = self.vt.getState(self.vt_id)
+                self.drone_vel = (vx,vy,vz) = self.vt.getVelocity(self.vt_id)
+                #print("%7.3f, %7.3f, %7.3f " %(vx,vy,vz))
+                self.log_vec.append(self.drone_states)
+                self.new_state.set()
+                self.drone_states_lock.release()
 
 
 
@@ -313,13 +318,9 @@ class SingleDrone:
         try:
             target_v_local = r.inv().apply(vel_command).flatten()
             actual_v_local = r.inv().apply(np.array(self.drone_vel).flatten()).flatten()
-            #print("%.2f"%(degrees(rz)))
-           # print("%.2f, %.2f, %.2f"%(degrees(rx),degrees(ry),degrees(rz)))
-
-
+            #print("%.2f, %.2f, %.2f"%(degrees(rx),degrees(ry),degrees(rz)))
             #print("%.2f, %.2f, %.2f"%(actual_v_local[0],actual_v_local[1],actual_v_local[2]))
             #print("%.2f, %.2f, %.2f"%(self.drone_vel[0],self.drone_vel[1],self.drone_vel[2]))
-
 
             # in crazyflie's ref frame roll to right is positive
             # in deg
@@ -378,7 +379,7 @@ class SingleDrone:
             # actuate 
             for i in range(self.drone_count):
                 cmd = Planar(vx=velocity_commands_planar[i][0], vy=velocity_commands_planar[i][1], z=self.target_z_array[i])
-                print(velocity_commands_planar[i][0],velocity_commands_planar[i][1])
+                #print(velocity_commands_planar[i][0],velocity_commands_planar[i][1])
                 self.commands[i].put(cmd)
                 self.new_command[i].set()
             '''
