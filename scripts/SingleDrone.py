@@ -143,15 +143,19 @@ class SingleDrone:
         self.commands.put(Planar(0,0,-0.3))
         self.new_command.set()
         sleep(1.0)
-        self.commands.put(Pos(0.0,0,-0.3))
-        self.new_command.set()
 
-        '''
+        print_info("going to start position")
+        retval = self.getWaypointByTime(0.0)
+        target_x,target_y,target_z = retval
+        cmd = Pos(x=target_x, y=target_y, z=target_z)
+        self.commands.put(cmd)
+        self.new_command.set()
+        sleep(1.0)
+
         print("Main Control Starts")
         p = threading.Thread(target=self.controlThread)
         self.child_threads.append(p)
         self.child_threads[-1].start()
-        '''
 
         input("press Enter to stop")
 
@@ -248,7 +252,7 @@ class SingleDrone:
 
                 ret = self.new_command.wait(0.02)
                 if ret:
-                    print("New command received")
+                    #print("New command received")
                     self.new_command.clear()
                     candidate_command = self.commands.get()
                     if candidate_command is None:
@@ -338,7 +342,7 @@ class SingleDrone:
             target_yawrate_deg_s = 0
             #print_warning(" crazyflie command blocked ")
             cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust)
-            print_info("sending command %.2f %.2f %.2f %d"%(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust))
+            #print_info("sending command %.2f %.2f %.2f %d"%(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust))
             self.log_dict['thrust'] = target_thrust
             #print(target_roll_deg,-target_pitch_deg,target_thrust)
             #print("thrust = %d"%target_thrust)
@@ -353,18 +357,24 @@ class SingleDrone:
             time.sleep(1.0)
         print('Parameters downloaded for', scf.cf.link_uri)
 
+    # return a tuple of (x,y,z), parameterized by time
+    def getWaypointByTime(self,t):
+        # parameters for a circle
+        T = 10.0
+        tf = 10.0
+        # trajectory: sin(2*np.pi/T * t), cos(2*np.pi/T * t), -0.3
+        # start at t=0 -> (0, 1, -0.3)
+        if (t < tf):
+            return (sin(2*np.pi/T * t), cos(2*np.pi/T * t), -0.3)
+        else:
+            return None
+
     # get current vehicle state
     # send to velocity planner
     # call velocity controller
     # update velocity commands
     def controlThread(self,):
-        '''
         t0 = time()
-        # parameters for a circle
-        radius = [0.6,0.3]
-        T = 10.0
-        pi = np.pi
-        '''
 
         while not self.quit_flag.isSet():
             ret = self.new_state.wait(0.1)
@@ -372,26 +382,22 @@ class SingleDrone:
                 continue
             self.new_state.clear()
 
-            reduced_states = [[s[0],s[1]] for s in self.drone_states]
-            # call planar controller (Ahmad's)
-            velocity_commands_planar = self.multiAgentControl(reduced_states)
-
-            # actuate 
-            for i in range(self.drone_count):
-                cmd = Planar(vx=velocity_commands_planar[i][0], vy=velocity_commands_planar[i][1], z=self.target_z_array[i])
-                #print(velocity_commands_planar[i][0],velocity_commands_planar[i][1])
-                self.commands[i].put(cmd)
-                self.new_command[i].set()
-            '''
-            # control a circle
-            ts = time()
-            for i in range(self.drone_count):
-                target_x = radius[i] * cos( 2*pi/T*(ts - t0))
-                target_y = radius[i] * sin( 2*pi/T*(ts - t0))
-                cmd = Pos(x=target_x, y=target_y, z=self.target_z_array[0])
-                self.commands[i].put(cmd)
-                self.new_command[i].set()
-            '''
+            retval = self.getWaypointByTime(time()-t0)
+            if (retval is None):
+                print_info("control sequence complete")
+                # TODO add elegant start
+                cmd = Planar(0,0,-0.1)
+                self.commands.put(cmd)
+                self.new_command.set()
+                sleep(1)
+                self.cf.commander.send_setpoint(0,0,0,0)
+                sleep(0.01)
+                return
+            target_x,target_y,target_z = retval
+            cmd = Pos(x=target_x, y=target_y, z=target_z)
+            self.commands.put(cmd)
+            self.new_command.set()
+            sleep(0.05)
 
 
 

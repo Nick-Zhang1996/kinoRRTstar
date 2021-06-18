@@ -1,0 +1,4 @@
+limit max speed at certain commands
+give a finish state
+manage control thread more elegantly
+land in a different thread1
