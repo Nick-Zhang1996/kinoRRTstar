@@ -8,7 +8,7 @@ def print_ok(*message):
     print('\033[92m', *message, '\033[0m')
 
 def print_warning(*message):
-    print('\033[93m', *message, '\033[0m')
+    print('\033[93m',"[WARNING]: ", *message, '\033[0m')
 
 def print_info(*message):
     print('\033[96m', *message, '\033[0m')

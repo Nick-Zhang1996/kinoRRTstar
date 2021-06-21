@@ -12,13 +12,15 @@ from math import degrees,cos,sin,radians
 
 import cflib
 from cflib.crazyflie.log import LogConfig
-from cflib.crazyflie.syncLogger import SyncLogger
+#from cflib.crazyflie.syncLogger import SyncLogger
 from cflib.crazyflie import Crazyflie
 
 from Optitrack import Optitrack
+from vicon import Vicon
 
 from numeric_velocity import quad_fit_functional
 from PlanarController import planarController,planarControllerExample
+from timeUtil import execution_timer
 
 # command types
 class Vel:
@@ -43,15 +45,28 @@ class Planar:
         return
 
 class SingleDrone:
-    def __init__(self,):
-        self.optitrack_freq = 100
+    def __init__(self,visual_tracker='vicon'):
+        self.p = execution_timer(True)
+        self.visual_tracker = visual_tracker
+        self.visual_tracker_freq = 120
 
         # drone address
         self.uri = 'radio://0/80/2M/E7E7E7E7E7'
 
         # optitrack Id for drone
         # this is the id listed in Motive software
-        self.optitrack_id = 6
+        # or vicon item id
+        if (visual_tracker == 'optitrack'):
+            self.vt = Optitrack(freq = self.visual_tracker_freq)
+            self.vt_id = 6
+            # Optitrack interface has a dynamically assigned internal Id that differ from global optitrack objet ID
+            # the internal id is used to retrieve state from optitrack instance
+            self.optitrack_internal_id = self.vt.getInternalId(self.optitrack_id)
+        elif (visual_tracker == 'vicon'):
+            self.vt = Vicon(daemon=True)
+            self.vt.getViconUpdate()
+            sleep(0.1)
+            self.vt_id = self.vt.getItemID('nick_cf')
 
         # local new state (from visual tracking) flag
         self.new_state = Event()
@@ -77,7 +92,7 @@ class SingleDrone:
         # another format of log
         self.log_dict = {'thrust':0, 'target_vxy':(0,0)}
 
-        dt = 1.0/self.optitrack_freq
+        dt = 1.0/self.visual_tracker_freq
         self.x_pids = PidController(2,0,0,dt,0,20)
         self.y_pids = PidController(2,0,0,dt,0,20)
         self.z_pids = PidController(2,0,0,dt,0,20)
@@ -97,16 +112,18 @@ class SingleDrone:
         self.xyz_history = []
         self.quad_fit = quad_fit_functional(self.vel_est_n_step, dt)
 
-        self.op = Optitrack(freq = self.optitrack_freq)
-        # Optitrack interface has a dynamically assigned internal Id that differ from global optitrack objet ID
-        # the internal id is used to retrieve state from optitrack instance
-        self.optitrack_internal_id = self.op.getInternalId(self.optitrack_id)
         return
 
     def run(self,):
-        self.child_threads.append(Thread(target=self.optitrackUpdateThread))
-        self.child_threads[-1].start()
-        print_info("starting thread optitrackUpdateThread")
+        if (self.visual_tracker == 'optitrack'):
+            self.child_threads.append(Thread(target=self.optitrackUpdateThread))
+            self.child_threads[-1].start()
+            print_info("starting thread optitrackUpdateThread")
+        elif (self.visual_tracker == 'vicon'):
+            self.child_threads.append(Thread(target=self.viconUpdateThread))
+            self.child_threads[-1].start()
+            print_info("starting thread viconUpdateThread")
+
 
         cflib.crtp.init_drivers(enable_debug_driver=False)
         uri = self.uri
@@ -125,16 +142,20 @@ class SingleDrone:
         print("taking off")
         self.commands.put(Planar(0,0,-0.3))
         self.new_command.set()
-        '''
-        sleep(3.0)
-        self.commands.put(Pos(0.1,0,-0.3))
+        sleep(1.0)
+
+        print_info("going to start position")
+        retval = self.getWaypointByTime(0.0)
+        target_x,target_y,target_z = retval
+        cmd = Pos(x=target_x, y=target_y, z=target_z)
+        self.commands.put(cmd)
         self.new_command.set()
+        sleep(1.0)
 
         print("Main Control Starts")
         p = threading.Thread(target=self.controlThread)
         self.child_threads.append(p)
         self.child_threads[-1].start()
-        '''
 
         input("press Enter to stop")
 
@@ -144,41 +165,56 @@ class SingleDrone:
     def quit(self,):
         self.quit_flag.set()
         print_info("quit flag set")
+
+        print_info("joining child threads...")
         for p in self.child_threads:
             p.join()
-            print_info("joined ")
+        print_info("all joined ")
 
-        print_info("op.quit()")
-        self.op.quit()
-        print_info("success..")
+        self.vt.quit()
         self.logFilename = "./log.p"
         output = open(self.logFilename,'wb')
-        print_info("dumping")
         pickle.dump(self.log_vec,output)
-        print_info("success..")
-        print_info("close")
         output.close()
-        print_info("success")
+        self.cf.close_link()
 
     def optitrackUpdateThread(self):
         # update state
         while not self.quit_flag.isSet():
             # wait for optitrack to get new state update
-            ret = self.op.newState.wait(0.1)
+            ret = self.vt.newState.wait(0.1)
             if (not ret):
                 continue
             lock = self.drone_states_lock.acquire(timeout=0.01)
             if lock:
-                self.op.newState.clear()
-                (x,y,z,rx,ry,rz) = state = self.op.getLocalState(self.optitrack_internal_id)
+                self.vt.newState.clear()
+                (x,y,z,rx,ry,rz) = state = self.vt.getLocalState(self.optitrack_internal_id)
                 # TODO verify
-                if (self.op.lost[0].isSet()):
+                if (self.vt.lost[0].isSet()):
                     self.quit_flag.set()
                     print_warning("Lost track of object")
 
                 self.drone_states = state
-                self.drone_vel = self.op.getLocalVelocity(self.optitrack_internal_id)
-                self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
+                self.drone_vel = self.vt.getLocalVelocity(self.optitrack_internal_id)
+                #self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
+                log_entry = (time(),) + tuple(np.drone_states)
+                self.log_vec.append(log_entry)
+                self.new_state.set()
+                self.drone_states_lock.release()
+
+    def viconUpdateThread(self):
+        # update state
+        while not self.quit_flag.isSet():
+            ret = self.vt.newState.wait(0.1)
+            if (not ret):
+                continue
+            lock = self.drone_states_lock.acquire(timeout=0.01)
+            if lock:
+                self.vt.newState.clear()
+                self.drone_states = (x,y,z,rx,ry,rz) = state = self.vt.getState(self.vt_id)
+                self.drone_vel = (vx,vy,vz) = self.vt.getVelocity(self.vt_id)
+                #print("%7.3f, %7.3f, %7.3f " %(vx,vy,vz))
+                self.log_vec.append(self.drone_states)
                 self.new_state.set()
                 self.drone_states_lock.release()
 
@@ -216,7 +252,7 @@ class SingleDrone:
 
                 ret = self.new_command.wait(0.02)
                 if ret:
-                    print("New command received")
+                    #print("New command received")
                     self.new_command.clear()
                     candidate_command = self.commands.get()
                     if candidate_command is None:
@@ -247,6 +283,7 @@ class SingleDrone:
                     #print("unknown command")
 
             # stop everything before returning
+            print_info("sending zero thrust command to CF")
             cf.commander.send_setpoint(0,0,0,0)
             self.log_dict['thrust'] = 0
             sleep(0.1)
@@ -285,13 +322,9 @@ class SingleDrone:
         try:
             target_v_local = r.inv().apply(vel_command).flatten()
             actual_v_local = r.inv().apply(np.array(self.drone_vel).flatten()).flatten()
-            #print("%.2f"%(degrees(rz)))
-           # print("%.2f, %.2f, %.2f"%(degrees(rx),degrees(ry),degrees(rz)))
-
-
+            #print("%.2f, %.2f, %.2f"%(degrees(rx),degrees(ry),degrees(rz)))
             #print("%.2f, %.2f, %.2f"%(actual_v_local[0],actual_v_local[1],actual_v_local[2]))
             #print("%.2f, %.2f, %.2f"%(self.drone_vel[0],self.drone_vel[1],self.drone_vel[2]))
-
 
             # in crazyflie's ref frame roll to right is positive
             # in deg
@@ -307,8 +340,9 @@ class SingleDrone:
             target_thrust = self.baseThrust - self.vz_pids.control(target_v_local[2], self.drone_vel[2]) * self.thrustScale
             target_thrust = int(np.clip(target_thrust,self.minThrust,0xFFFF))
             target_yawrate_deg_s = 0
-            #cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust)
-            print_info("sending command %.2f %.2f %.2f %d"%(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust))
+            #print_warning(" crazyflie command blocked ")
+            cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust)
+            #print_info("sending command %.2f %.2f %.2f %d"%(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust))
             self.log_dict['thrust'] = target_thrust
             #print(target_roll_deg,-target_pitch_deg,target_thrust)
             #print("thrust = %d"%target_thrust)
@@ -323,18 +357,24 @@ class SingleDrone:
             time.sleep(1.0)
         print('Parameters downloaded for', scf.cf.link_uri)
 
+    # return a tuple of (x,y,z), parameterized by time
+    def getWaypointByTime(self,t):
+        # parameters for a circle
+        T = 10.0
+        tf = 10.0
+        # trajectory: sin(2*np.pi/T * t), cos(2*np.pi/T * t), -0.3
+        # start at t=0 -> (0, 1, -0.3)
+        if (t < tf):
+            return (sin(2*np.pi/T * t), cos(2*np.pi/T * t), -0.3)
+        else:
+            return None
+
     # get current vehicle state
     # send to velocity planner
     # call velocity controller
     # update velocity commands
     def controlThread(self,):
-        '''
         t0 = time()
-        # parameters for a circle
-        radius = [0.6,0.3]
-        T = 10.0
-        pi = np.pi
-        '''
 
         while not self.quit_flag.isSet():
             ret = self.new_state.wait(0.1)
@@ -342,26 +382,22 @@ class SingleDrone:
                 continue
             self.new_state.clear()
 
-            reduced_states = [[s[0],s[1]] for s in self.drone_states]
-            # call planar controller (Ahmad's)
-            velocity_commands_planar = self.multiAgentControl(reduced_states)
-
-            # actuate 
-            for i in range(self.drone_count):
-                cmd = Planar(vx=velocity_commands_planar[i][0], vy=velocity_commands_planar[i][1], z=self.target_z_array[i])
-                print(velocity_commands_planar[i][0],velocity_commands_planar[i][1])
-                self.commands[i].put(cmd)
-                self.new_command[i].set()
-            '''
-            # control a circle
-            ts = time()
-            for i in range(self.drone_count):
-                target_x = radius[i] * cos( 2*pi/T*(ts - t0))
-                target_y = radius[i] * sin( 2*pi/T*(ts - t0))
-                cmd = Pos(x=target_x, y=target_y, z=self.target_z_array[0])
-                self.commands[i].put(cmd)
-                self.new_command[i].set()
-            '''
+            retval = self.getWaypointByTime(time()-t0)
+            if (retval is None):
+                print_info("control sequence complete")
+                # TODO add elegant start
+                cmd = Planar(0,0,-0.1)
+                self.commands.put(cmd)
+                self.new_command.set()
+                sleep(1)
+                self.cf.commander.send_setpoint(0,0,0,0)
+                sleep(0.01)
+                return
+            target_x,target_y,target_z = retval
+            cmd = Pos(x=target_x, y=target_y, z=target_z)
+            self.commands.put(cmd)
+            self.new_command.set()
+            sleep(0.05)
 
 
 
@@ -369,4 +405,3 @@ if __name__ == '__main__':
     ins = SingleDrone()
     ins.run()
     print_info("program finish")
-    # why doesn't quit
