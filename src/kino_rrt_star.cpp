@@ -1,22 +1,23 @@
 #include "kino_rrt_star.h"
 
-KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int interior_point_count ) : 
+KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int in_interior_point_count ) : 
     tree(in_start_node),
     start_node(in_start_node),
     end_node(in_end_node),
     target_node_count(in_target_node_count),
-    oc(interior_point_count),
     world(in_world),
-    rewire_count(0),
-    neighbour_total_count(0),
-    neighbour_count(0) {
+    oc(in_interior_point_count),
+    interior_point_count(in_interior_point_count),
+    rewire_count(0)
+{
     overall_lowest_cost = std::numeric_limits<double>::max();
     std::srand(std::time(nullptr)); // use current time as seed for random generator
-    world.setInteriorPointCount(interior_point_count);
+    world.setInteriorPointCount(in_interior_point_count);
     cout << "Using only position coordinate for start/end \n";
 }
 
 void KinoRrtStar::run(){
+  cout << "KinoRrtStar.run()" << endl;
   // build tree
   if (target_node_count <= 0){
     buildTreeTillFirstSolution();
@@ -102,6 +103,10 @@ void KinoRrtStar::sampleNode(){
     double this_t = oc.timePartialFinalState(candidate_node, new_node);
     double cost = candidate_node.cost + oc.costPartialFreeFinalState(this_t, candidate_node, new_node);
     if (cost < lowest_cost){
+      // check for path collision
+      double* interior_pos = oc.interiorPositionPartialFinalState(this_t, candidate_node, new_node);
+      if (!world.checkNoPathCollision(interior_pos)){ continue; }
+      // no collision
       lowest_cost = cost;
       id_best_parent = *i;
       t = this_t;
@@ -131,8 +136,6 @@ void KinoRrtStar::sampleNode(){
   // add to tree
   // sets id_parent, id
   int id_new_node = tree.addNode(new_node,id_best_parent);
-
-
   // rewire
   list<int> id_neighbour = tree.getNeighbourId(id_new_node, radius);
   // can new node be a parent to neighbour nodes?
@@ -150,7 +153,7 @@ void KinoRrtStar::sampleNode(){
       tree.updateCost(*i, new_cost - tree.node(*i).cost);
       //cout << "rewiring... \n";
       rewire_count++;
-    } catch (err_NoSolution){ continue; }
+    } catch (err_NoSolution&){ continue; }
   }
   
 
@@ -177,7 +180,6 @@ void KinoRrtStar::moveToVicinity(Node& node, Node& target, double radius){
 }
 
 bool KinoRrtStar::connectToGoal(Node& node){
-  //TODO handle this properly
   if (dist(node, end_node) > getNeighnourRadius()){ return false; }
   // find traj
   double t = oc.timePartialFinalState(node, end_node);
@@ -196,5 +198,56 @@ double KinoRrtStar::getNeighnourRadius(){
   double ner = 40.0 * pow( ( log(nun + 1) / nun ), 1.0/3.0 );
   return min(ner,4.0);
 
+}
+
+int KinoRrtStar::prepareSolution(){
+  int this_node_id = overall_lowest_cost_id;
+  assert (tree.node(this_node_id).is_end);
+  waypoints.clear();
+  //TODO add goal_node?
+
+  while (this_node_id != 0){
+    Node& late_node = tree.node(this_node_id);
+    Node& early_node = tree.node(late_node.id_parent);
+
+    // add late_node
+    Waypoint p;
+    p.x = late_node.x;
+    p.y = late_node.y;
+    p.z = late_node.z;
+    waypoints.push_back(p);
+
+    double t = oc.timePartialFinalState(early_node, late_node);
+    double* pos_buffer = oc.interiorPosition(t, early_node, late_node);
+    for (int i=0; i<interior_point_count; i++){
+      Waypoint p;
+      // x
+      p.x = *(pos_buffer + i*3 + 0);
+      p.y = *(pos_buffer + i*3 + 1);
+      p.z = *(pos_buffer + i*3 + 2);
+      waypoints.push_back(p);
+      assert (world.checkNoCollision(p.x,p.y,p.z));
+    }
+
+    this_node_id = late_node.id_parent;
+  }
+  // TODO add start_node?
+  waypoints_iter = waypoints.begin();
+  return waypoints.size();
+
+}
+
+Waypoint KinoRrtStar::getNextWaypoint(){
+  if (waypoints_iter == waypoints.end()){
+    waypoint.valid = false;
+  } else {
+    auto retval = *waypoints_iter;
+    waypoint.valid = true;
+    waypoint.x = retval.x;
+    waypoint.y = retval.y;
+    waypoint.z = retval.z;
+    waypoints_iter++;
+  }
+  return waypoint;
 }
 

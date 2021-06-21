@@ -7,6 +7,13 @@
 using std::list;
 using std::vector;
 using std::cout;
+using std::endl;
+
+struct Waypoint {
+    double x,y,z,vx,vy,vz,ax,ay,az;
+    bool valid;
+};
+
 // represent one node
 struct Node {
     double x,y,z,vx,vy,vz,ax,ay,az;
@@ -19,7 +26,7 @@ struct Node {
     // may not be necessary
     int id;
     Node():is_end(false){};
-    Node(double xx, double yy, double zz):is_end(false),x(xx),y(yy),z(zz){};
+    Node(double xx, double yy, double zz):x(xx),y(yy),z(zz),is_end(false){};
 };
 
 struct Point {
@@ -32,10 +39,8 @@ class Body {
 };
 
 class Box : public Body {
-  private:
-    double x_l, x_h, y_l, y_h, z_l, z_h;
   public:
-    Box(double x_l, double x_h, double y_l, double y_h, double z_l, double z_h) :
+    Box(double x_l, double y_l, double z_l, double x_h, double y_h, double z_h) :
       x_l(x_l), x_h(x_h), y_l(y_l), y_h(y_h), z_l(z_l), z_h(z_h) {}
     bool isInside( Point point) const {
       if (x_l < point.x and point.x < x_h
@@ -45,6 +50,7 @@ class Box : public Body {
       } else { return false; }
 
     }
+    double x_l, x_h, y_l, y_h, z_l, z_h;
 
 };
 #endif

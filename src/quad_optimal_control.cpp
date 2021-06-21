@@ -55,7 +55,7 @@ double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
 
   bool found_solution_interval = false;
   while ( upper_bound < max_range ){
-    if (peval(coeffs,upper_bound) > 0 != sign_left){
+    if ( (peval(coeffs,upper_bound) > 0) != sign_left){
       found_solution_interval = true;
       break;
     } else { 
@@ -68,7 +68,7 @@ double QuadOptimalControl::minPositiveRoot(vector<double> coeffs){
   
   try{
     retval = bisect(coeffs, lower_bound, upper_bound);
-  } catch (err_TooManyIteration) {
+  } catch (err_TooManyIteration&) {
     throw new err_NoSolution;
   }
 
@@ -93,7 +93,7 @@ double QuadOptimalControl::bisect( vector<double> coeffs, double low, double hig
   int loop_count = 0;
   while (high-low > 1e-3){
     double mid = (low+high)/2.0;
-    if (peval( coeffs, mid) > 0 == sign_a) { low = mid; }
+    if ( (peval( coeffs, mid) > 0) == sign_a) { low = mid; }
     else { high = mid; }
     loop_count++;
     if (loop_count > 100){ 

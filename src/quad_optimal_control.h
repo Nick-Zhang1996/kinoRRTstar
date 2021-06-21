@@ -33,9 +33,9 @@ class QuadOptimalControl{
   double *buffer_interior_states, *buffer_interior_pos;
   // N: no of interior points when evaluating states between initial and final for collision checking
   QuadOptimalControl(const int N) : 
-    interior_point_count(N),
     total_time(0.0),
-    total_count(0) {
+    total_count(0),
+    interior_point_count(N){
     buffer_interior_states= new double[9*interior_point_count];
     buffer_interior_pos= new double[3*interior_point_count];
   }
