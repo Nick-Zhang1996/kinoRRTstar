@@ -2,6 +2,7 @@
 
 Tree::Tree(Node& root){
   root.id = 0;
+  root.id_parent = -1;
   tree.push_back(root);
   n_nodes++;
 }

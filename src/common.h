@@ -10,6 +10,7 @@ using std::cout;
 using std::endl;
 
 struct Waypoint {
+    double t;
     double x,y,z,vx,vy,vz,ax,ay,az;
     bool valid;
 };

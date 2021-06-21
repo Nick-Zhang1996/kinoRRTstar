@@ -59,6 +59,9 @@ class Tree{
     Node& node(int id){ return tree[id]; }
 
     void printInfo();
+    bool isRoot(Node& node){
+      return node.id_parent == -1;
+    }
 };
 
 

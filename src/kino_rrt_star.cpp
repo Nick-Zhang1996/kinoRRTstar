@@ -203,37 +203,77 @@ double KinoRrtStar::getNeighnourRadius(){
 }
 
 int KinoRrtStar::prepareSolution(){
+
+  // first retrieve the optimal path, this is done in reverse order from goal to start
+  list<int> key_waypoints_reversed;
   int this_node_id = overall_lowest_cost_id;
   assert (tree.node(this_node_id).is_end);
-  waypoints.clear();
-  //TODO add goal_node?
 
+  key_waypoints_reversed.push_back(this_node_id);
   while (this_node_id != 0){
-    Node& late_node = tree.node(this_node_id);
+    Node& node = tree.node(this_node_id);
+    this_node_id = node.id_parent;
+    key_waypoints_reversed.push_back(this_node_id);
+  }
+
+  // now reverse iterate on the key waypoints, adding in interior points
+  double waypoint_t = 0.0;
+  waypoints.clear();
+  // start from second
+  list<int>::reverse_iterator i=key_waypoints_reversed.rbegin();
+  ++i;
+
+  for ( ; i != key_waypoints_reversed.rend(); ++i){
+
+    Node& late_node = tree.node(*i);
     Node& early_node = tree.node(late_node.id_parent);
 
-    // add late_node
+    // add early_node
     Waypoint p;
-    p.x = late_node.x;
-    p.y = late_node.y;
-    p.z = late_node.z;
+    p.t = waypoint_t;
+    p.x = early_node.x;
+    p.y = early_node.y;
+    p.z = early_node.z;
     waypoints.push_back(p);
 
-    double t = oc.timePartialFinalState(early_node, late_node);
-    double* pos_buffer = oc.interiorPosition(t, early_node, late_node);
+    double section_time = oc.timePartialFinalState(early_node, late_node);
+    double* pos_buffer = oc.interiorPosition(section_time, early_node, late_node);
+    double step_time = section_time / (interior_point_count+1);
+
+    waypoint_t += step_time;
     for (int i=0; i<interior_point_count; i++){
       Waypoint p;
-      // x
+      p.t = waypoint_t;
       p.x = *(pos_buffer + i*3 + 0);
       p.y = *(pos_buffer + i*3 + 1);
       p.z = *(pos_buffer + i*3 + 2);
       waypoints.push_back(p);
       assert (world.checkNoCollision(p.x,p.y,p.z));
+      waypoint_t += step_time;
     }
 
-    this_node_id = late_node.id_parent;
+    /*
+    if (tree.isRoot(late_node)){
+      // now add the very last node
+      Waypoint p;
+      p.t = waypoint_t;
+      p.x = late_node.x;
+      p.y = late_node.y;
+      p.z = late_node.z;
+      waypoints.push_back(p);
+    }
+    */
+
   }
-  // TODO add start_node?
+
+  Node& late_node = tree.node(key_waypoints_reversed.front());
+  Waypoint p;
+  p.t = waypoint_t;
+  p.x = late_node.x;
+  p.y = late_node.y;
+  p.z = late_node.z;
+  waypoints.push_back(p);
+
   waypoints_iter = waypoints.begin();
   return waypoints.size();
 
@@ -243,8 +283,10 @@ Waypoint KinoRrtStar::getNextWaypoint(){
   if (waypoints_iter == waypoints.end()){
     waypoint.valid = false;
   } else {
+    // copy to persistent variable so we don't return a local var
     auto retval = *waypoints_iter;
     waypoint.valid = true;
+    waypoint.t = retval.t;
     waypoint.x = retval.x;
     waypoint.y = retval.y;
     waypoint.z = retval.z;

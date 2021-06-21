@@ -18,6 +18,7 @@ BOOST_PYTHON_MODULE(kinoRRT){
   class_<Node>("Node",init<double, double, double>());
 
   class_<Waypoint>("Waypoint")
+    .def_readonly("t", &Waypoint::t)
     .def_readonly("x", &Waypoint::x)
     .def_readonly("y", &Waypoint::y)
     .def_readonly("z", &Waypoint::z)
