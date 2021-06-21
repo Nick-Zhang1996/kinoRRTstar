@@ -65,9 +65,11 @@ void KinoRrtStar::buildTreeTillNodeCount(){
   //
   while (tree.getNodeCount() < target_node_count ){
     sampleNode();
+    /*
     if (tree.getNodeCount() % 100 == 0){
       cout << tree.getNodeCount() << "\n";
     }
+    */
   }
 
 }
@@ -127,8 +129,8 @@ void KinoRrtStar::sampleNode(){
     if (new_node.cost < overall_lowest_cost){
       overall_lowest_cost = new_node.cost;
       overall_lowest_cost_id = tree.getNodeCount();
-      cout << "cost: " << overall_lowest_cost << "\n";
-      cout << "avg neighbor count: " << (double) neighbour_total_count / neighbour_count << "\n";
+      //cout << "cost: " << overall_lowest_cost << "\n";
+      //cout << "avg neighbor count: " << (double) neighbour_total_count / neighbour_count << "\n";
       neighbour_total_count = 0;
       neighbour_count = 0;
     }
