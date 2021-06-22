@@ -203,8 +203,8 @@ double KinoRrtStar::getNeighnourRadius(){
 }
 
 int KinoRrtStar::prepareSolution(){
-
   // first retrieve the optimal path, this is done in reverse order from goal to start
+  // key_waypoints_reversed includes index of lowest cost node connected to end node ... root node(start) 
   list<int> key_waypoints_reversed;
   int this_node_id = overall_lowest_cost_id;
   assert (tree.node(this_node_id).is_end);
@@ -214,7 +214,19 @@ int KinoRrtStar::prepareSolution(){
     Node& node = tree.node(this_node_id);
     this_node_id = node.id_parent;
     key_waypoints_reversed.push_back(this_node_id);
+
   }
+
+
+  /*
+  // checking items in key_waypoints_reversed
+  cout << " showing items in key_waypoints_reversed " << endl;
+  for (auto i=key_waypoints_reversed.begin(); i!=key_waypoints_reversed.end(); i++){
+    Node& node = tree.node(*i);
+    cout << "id: " << *i << " " << node.x << ","  << node.y << "," << node.z << endl;
+  }
+  cout << "done" << endl;
+  */
 
   // now reverse iterate on the key waypoints, adding in interior points
   double waypoint_t = 0.0;
@@ -235,9 +247,12 @@ int KinoRrtStar::prepareSolution(){
     p.y = early_node.y;
     p.z = early_node.z;
     waypoints.push_back(p);
+    // DEBUG
+    //cout << "examining path from node x:" << p.x << ", y:" << p.y << ", z:" << p.z << endl;
+    //cout << "                 to node x:" << late_node.x << ", y:" << late_node.y << ", z:" << late_node.z << endl;
 
     double section_time = oc.timePartialFinalState(early_node, late_node);
-    double* pos_buffer = oc.interiorPosition(section_time, early_node, late_node);
+    double* pos_buffer = oc.interiorPositionPartialFinalState(section_time, early_node, late_node);
     double step_time = section_time / (interior_point_count+1);
 
     waypoint_t += step_time;
@@ -266,12 +281,38 @@ int KinoRrtStar::prepareSolution(){
 
   }
 
-  Node& late_node = tree.node(key_waypoints_reversed.front());
+  // now add in last waypoint to goal_node
+  Node& late_node = end_node;
+  Node& early_node = tree.node(overall_lowest_cost_id);
+
   Waypoint p;
   p.t = waypoint_t;
-  p.x = late_node.x;
-  p.y = late_node.y;
-  p.z = late_node.z;
+  p.x = early_node.x;
+  p.y = early_node.y;
+  p.z = early_node.z;
+  waypoints.push_back(p);
+
+  double section_time = oc.timePartialFinalState(early_node, late_node);
+  double* pos_buffer = oc.interiorPositionPartialFinalState(section_time, early_node, late_node);
+  double step_time = section_time / (interior_point_count+1);
+
+  waypoint_t += step_time;
+  for (int i=0; i<interior_point_count; i++){
+    Waypoint p;
+    p.t = waypoint_t;
+    p.x = *(pos_buffer + i*3 + 0);
+    p.y = *(pos_buffer + i*3 + 1);
+    p.z = *(pos_buffer + i*3 + 2);
+    waypoints.push_back(p);
+    assert (world.checkNoCollision(p.x,p.y,p.z));
+    waypoint_t += step_time;
+  }
+
+  // add in end node (goal)
+  p.t = waypoint_t;
+  p.x = end_node.x;
+  p.y = end_node.y;
+  p.z = end_node.z;
   waypoints.push_back(p);
 
   waypoints_iter = waypoints.begin();

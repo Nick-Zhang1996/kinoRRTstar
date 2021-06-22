@@ -58,33 +58,52 @@ class Main:
         return
 
     def initKinoRrt(self):
+        world = World(-0.1,3, -3,3, -3,0)
+        dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
+        visual = WorldVisualization(dim)
+
+        # create a small window
+        obs1 = Box(1,1.3, -3,-2, -3,0)
+        obs2 = Box(1,1.3, -2,1, -0.7,0)
+        #obs3 = Box(1,1.3, -2,1, -3,-1.5)
+        obs4 = Box(1,1.3, 1,3, -3,0)
+        start_node = Node(0,0,-0.5)
+        goal_node = Node(2.5,2,-0.5)
+
+        '''
         world = World(-10,10,-5,5,-10,0)
         dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
         visual = WorldVisualization(dim)
 
-        obs1 = Box(6-10,0-5,0-10,6+2-10,5-5,10-10)
-        obs2 = Box(6-10,5-5,0-10,6+2-10,5+5-5,5-10)
-        obs3 = Box(12-10,5-5,0-10,12+2-10,5+5-5,10-10)
-        obs4 = Box(12-10,0-5,5-10,12+2-10,5-5,5+5-10)
+        obs1 = Box(-4,-2, -5,0, -10,0)
+        obs2 = Box(-4,-2, 0,5, -10,-5)
+        obs3 = Box(2,4, 0,5, -10,0)
+        obs4 = Box(2,4, -5,0, -5,0)
+        start_node = Node(2-10, 2-5, 2-10)
+        goal_node = Node(18-10, 8-5, 8-10)
+        '''
 
-        obstacles = [obs1, obs2, obs3, obs4]
+
+        #obstacles = [obs1, obs2, obs3, obs4]
+        obstacles = [obs1, obs2, obs4]
         for obstacle in obstacles:
             world.addObstacle(obstacle)
             visual.addObstacle(obstacle)
 
 
-        start_node = Node(2-10, 2-5, 2-10)
-        goal_node = Node(18-10, 8-5, 8-10)
-
+        # TODO check start and goal are in world bobundary
+        print_info("initializing kinoRRT*")
         rrt = KinoRrtStar(world, start_node, goal_node, 600, 10)
 
         try:
-          58         def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwa   t0 = time()
+            print_info("running kinoRRT*")
+            t0 = time()
             rrt.run()
             elapsed = time()-t0
         except (RuntimeError):
-            print("rrt error")
-        print("rrt search finished in " + str(elapsed) +"sec")
+            print_error("rrt error")
+
+        print_info("rrt search finished in " + str(elapsed) +"sec")
 
         waypoint_n = rrt.prepareSolution()
 
@@ -92,16 +111,25 @@ class Main:
         for i in range(waypoint_n):
             p = rrt.getNextWaypoint()
             assert (p.valid)
-            waypoints.append( (p.t, p.x,p.y,p.z) )
+            waypoints.append( (p.t,p.x,p.y,p.z) )
 
+        # list of (t,x,y,z) 
         waypoints = np.array(waypoints)
-        #print("waypoints")
-        #print(waypoints)
+        print("waypoints")
+        print(waypoints)
+        print("start")
+        print(waypoints[0])
+        print("goal")
+        print(waypoints[-1])
 
         ax = visual.visualizeWorld(show=False)
-        ax.plot(waypoints[:,1], waypoints[:,2], waypoints[:,3],'b')
-        ax.scatter(waypoints[:,1], waypoints[:,2], waypoints[:,3], 'ro')
+        ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'b')
+        ax.scatter(-waypoints[:,1], waypoints[:,2], -waypoints[:,3], 'ro')
+        ax.set_xlabel("-x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("-z")
         plt.show()
+
 
         response = input("press q + Enter to abort, Enter to execute")
         if (response == 'q'):

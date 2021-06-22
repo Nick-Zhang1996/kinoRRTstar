@@ -9,6 +9,7 @@ sys.path.append(base_dir)
 from kinoRRT import *
 
 from WorldVisualization import WorldVisualization
+from common import *
 
 
 world = World(-0.1,3, -3,3, -3,0)
@@ -46,16 +47,18 @@ for obstacle in obstacles:
 
 
 # TODO check start and goal are in world bobundary
+print_info("initializing kinoRRT*")
 rrt = KinoRrtStar(world, start_node, goal_node, 600, 10)
 
 try:
+    print_info("running kinoRRT*")
     t0 = time()
     rrt.run()
     elapsed = time()-t0
 except (RuntimeError):
-    print("rrt error")
+    print_error("rrt error")
 
-print("rrt search finished in " + str(elapsed) +"sec")
+print_info("rrt search finished in " + str(elapsed) +"sec")
 
 waypoint_n = rrt.prepareSolution()
 
