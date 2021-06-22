@@ -6,11 +6,11 @@
 
 int main(){
   World world(0,20,0,10,0,10);
-  //x,y,z(low), x,y,z(high)
-  Box obs1(6,0,0,6+2,5,10);
-  Box obs2(6,5,0,6+2,5+5,5);
-  Box obs3(12,5,0,12+2,5+5,10);
-  Box obs4(12,0,5,12+2,5,5+5);
+  // x_l, x_h, y_l,y_h, z_l, z_h
+  Box obs1(6,8, 0,5, 0,10);
+  Box obs2(6,8, 5,10, 0,5);
+  Box obs3(12,14, 5,10, 0,10);
+  Box obs4(12,14, 0,5, 5,10);
 
 
   Node start_node(2,2,2);

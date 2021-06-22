@@ -41,7 +41,8 @@ class Body {
 
 class Box : public Body {
   public:
-    Box(double x_l, double y_l, double z_l, double x_h, double y_h, double z_h) :
+    //Box(double x_l, double y_l, double z_l, double x_h, double y_h, double z_h) :
+    Box(double x_l, double x_h, double y_l, double y_h, double z_l,  double z_h) :
       x_l(x_l), x_h(x_h), y_l(y_l), y_h(y_h), z_l(z_l), z_h(z_h) {}
     bool isInside( Point point) const {
       if (x_l < point.x and point.x < x_h
