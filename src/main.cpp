@@ -5,7 +5,8 @@
 #include "kino_rrt_star.h"
 
 int main(){
-  World world(20,10,10);
+  World world(0,20,0,10,0,10);
+  //x,y,z(low), x,y,z(high)
   Box obs1(6,0,0,6+2,5,10);
   Box obs2(6,5,0,6+2,5+5,5);
   Box obs3(12,5,0,12+2,5+5,10);

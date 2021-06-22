@@ -6,11 +6,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from itertools import product, combinations
 from mpl_toolkits.mplot3d import Axes3D
+from kinoRRT import World
 
-class World:
-    # size: (x,y,z) size of world
-    def __init__(self,size):
-        size = np.array(size,dtype=np.float).flatten()
+class WorldVisualization:
+    # size: ((x_l,x_h),(y_l,y_h),(z_l,z_h)) dimension of world
+    def __init__(self,dim):
+        self.dim = dim = np.array(dim,dtype=np.float)
+        size = np.array(dim[:,1]-dim[:,0]).flatten()
         assert size.shape[0] == 3
         assert np.all(size>0)
         self.size = size
@@ -23,43 +25,14 @@ class World:
     # add obstacle to world
     # each obstacle is rectangular box represented by a 3*2 array
     # obstacle_size : ((x_low_bound, x_high_bound), (y_l, y_h), (z_l,z_h))
-    def addObstacle(self,obstacle_size):
+    def addObstacle(self,obs):
+        obstacle_size = ((obs.x_l, obs.x_h),(obs.y_l, obs.y_h),(obs.z_l, obs.z_h))
         obstacle = np.array(obstacle_size,dtype=np.float)
         assert obstacle.shape == (3,2)
         assert np.all((obstacle[:,1]-obstacle[:,0])>0.0)
         self.obstacles.append(obstacle)
         return
 
-    # given a list-like of (x,y,z), check if any of the coordinates is in collision
-    # or out side of boundary
-    # coord: np.array of size (n,3+), n being number of coordinates in the batch, only first three states are used (x,y,z,...)
-    # NOTE does not check data type and format
-    # return True if no cllision, false if collide
-    def checkNoCollision(self,coord):
-        coord = coord[:,:3]
-        # boundary
-        if (np.any(coord<0.0)):
-            #breakpoint()
-            return False
-        if (np.any(self.size[0] < coord[:,0]) or
-            np.any(self.size[1] < coord[:,1]) or 
-            np.any(self.size[2] < coord[:,2])):
-            #breakpoint()
-            return False
-
-        # check obstacle
-        for obstacle in self.obstacles:
-            x_cond = np.logical_and(coord[:,0] > obstacle[0,0], coord[:,0] < obstacle[0,1])
-            y_cond = np.logical_and(coord[:,1] > obstacle[1,0], coord[:,1] < obstacle[1,1])
-            z_cond = np.logical_and(coord[:,2] > obstacle[2,0], coord[:,2] < obstacle[2,1])
-            cond = np.logical_and(x_cond,y_cond)
-            cond = np.logical_and(cond,z_cond)
-            if np.any(cond):
-                #breakpoint()
-                return False
-                break
-
-        return True
 
     def visualizeWorld(self,show=True):
         def cuboid_data(o, size=(1,1,1)):
@@ -87,7 +60,7 @@ class World:
             if ax !=None:
                 X, Y, Z = cuboid_data( pos, size )
                 #ax.plot_surface(X, Y, Z, rstride=1, cstride=1, **kwargs)
-                ax.plot_wireframe(X, Y, Z, rstride=1, cstride=1,color='tan')
+                ax.plot_wireframe(-X, Y, -Z, rstride=1, cstride=1,color='tan')
 
         fig = plt.figure()
         ax = fig.gca(projection='3d')
@@ -99,46 +72,14 @@ class World:
 
 
         # force plt to plot entire world
-        pos = (0,0,0)
+        pos = self.dim[:,0]
         size = self.size
         X, Y, Z = cuboid_data( pos, size )
         #ax.plot_wireframe(X, Y, Z, rstride=1, cstride=1,color='w')
-        ax.scatter(X, Y, Z,'k')
+        ax.scatter(-X, Y, -Z,'k')
 
         if show:
             plt.show()
         else:
             return ax
-
-
-
-if __name__=="__main__":
-    test_world = World(size=(20,10,10))
-    obs = [[6,8],[0,5],[0,10]]
-    test_world.addObstacle(obs)
-    obs = [[6,8],[5,10],[0,6]]
-    test_world.addObstacle(obs)
-
-    p1 = np.array([[7,4,6]]) # collide
-    p2 = np.array([[5,4,6]])
-    p3 = np.array([[5,8,6]])
-    pnts = np.vstack([p1,p2,p3])
-    # expect False
-    print(test_world.checkNoCollision(pnts))
-    pnts = np.vstack([p1,p2])
-    # expect False
-    print(test_world.checkNoCollision(pnts))
-    pnts = np.vstack([p3,p2])
-    # expect True
-    print(test_world.checkNoCollision(pnts))
-
-    # test plotting
-    test_world.visualizeWorld()
-
-
-
-
-
-
-        
 

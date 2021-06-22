@@ -14,11 +14,12 @@ class World {
 
   public:
 
-    double x,y,z;
+    //x,y,z, low, high
+    double x_l,x_h,y_l,y_h,z_l,z_h;
 
 
     // constructor with x,y,z dimension 
-    World( double dim_x, double dim_y, double dim_z ) : x(dim_x), y(dim_y), z(dim_z) {}
+    World(double dim_x_l, double dim_x_h, double dim_y_l, double dim_y_h, double dim_z_l, double dim_z_h) : x_l(dim_x_l), x_h(dim_x_h), y_l(dim_y_l), y_h(dim_y_h), z_l(dim_z_l), z_h(dim_z_h) {}
     // add obstacle to world
     // [obstacle] can be  Box
     int addObstacle( Box& obstacle ) {
@@ -35,7 +36,7 @@ class World {
     // also check if point is outside of world
     // return: Trus if no collision
     bool checkNoCollision( Point& point){
-      if (point.x < 0.0 || point.x > x || point.y < 0.0 || point.y > y ||point.z < 0.0 || point.z > z) { return false; }
+      if (point.x < x_l || point.x > x_h || point.y < y_l || point.y > y_h ||point.z < z_l || point.z > z_h) { return false; }
       for(list <Box>::iterator it = obstacles.begin(); it != obstacles.end(); it++){
         if ( it->isInside(point) ){ return false; }
       }
@@ -55,11 +56,6 @@ class World {
     void setInteriorPointCount(int val){ interior_point_n = val; }
     // TODO test
     bool checkNoPathCollision(double* pos_buffer);
-    double getXSize() { return x; }
-    double getYSize() { return y; }
-    double getZSize() { return z; }
-
-   
 
 };
 

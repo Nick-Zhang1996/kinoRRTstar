@@ -58,13 +58,14 @@ class Main:
         return
 
     def initKinoRrt(self):
-        world = World(20,10,10)
-        visual = WorldVisualization(size=(world.x,world.y,world.z))
+        world = World(-10,10,-5,5,-10,0)
+        dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
+        visual = WorldVisualization(dim)
 
-        obs1 = Box(6,0,0,6+2,5,10)
-        obs2 = Box(6,5,0,6+2,5+5,5)
-        obs3 = Box(12,5,0,12+2,5+5,10)
-        obs4 = Box(12,0,5,12+2,5,5+5)
+        obs1 = Box(6-10,0-5,0-10,6+2-10,5-5,10-10)
+        obs2 = Box(6-10,5-5,0-10,6+2-10,5+5-5,5-10)
+        obs3 = Box(12-10,5-5,0-10,12+2-10,5+5-5,10-10)
+        obs4 = Box(12-10,0-5,5-10,12+2-10,5-5,5+5-10)
 
         obstacles = [obs1, obs2, obs3, obs4]
         for obstacle in obstacles:
@@ -72,13 +73,13 @@ class Main:
             visual.addObstacle(obstacle)
 
 
-        start_node = Node(2, 2, 2)
-        goal_node = Node(18, 8, 8)
+        start_node = Node(2-10, 2-5, 2-10)
+        goal_node = Node(18-10, 8-5, 8-10)
 
         rrt = KinoRrtStar(world, start_node, goal_node, 600, 10)
 
         try:
-            t0 = time()
+          58         def plotCubeAt(pos=(0,0,0), size=(1,1,1), ax=None,**kwa   t0 = time()
             rrt.run()
             elapsed = time()-t0
         except (RuntimeError):
@@ -91,16 +92,15 @@ class Main:
         for i in range(waypoint_n):
             p = rrt.getNextWaypoint()
             assert (p.valid)
-            waypoints.append( (p.x,p.y,p.z) )
+            waypoints.append( (p.t, p.x,p.y,p.z) )
 
-        # list of (x,y,z) in reverse order
-        waypoints = np.array(waypoints[::-1])
+        waypoints = np.array(waypoints)
         #print("waypoints")
         #print(waypoints)
 
         ax = visual.visualizeWorld(show=False)
-        #ax.plot(waypoints[:,0], waypoints[:,1], waypoints[:,2],'b')
-        ax.scatter(waypoints[:,0], waypoints[:,1], waypoints[:,2], 'ro')
+        ax.plot(waypoints[:,1], waypoints[:,2], waypoints[:,3],'b')
+        ax.scatter(waypoints[:,1], waypoints[:,2], waypoints[:,3], 'ro')
         plt.show()
 
         response = input("press q + Enter to abort, Enter to execute")
@@ -112,6 +112,19 @@ class Main:
         print_ok("Executing trajectory")
 
         # calculate a reasonable speed
+        self.waypoints = waypoints
+        self.processWaypoints()
+
+    # adjust time scale and spacial location
+    def processWaypoints(self):
+        waypoints = self.waypoints
+        # scale time to match velocity to vehicle capabilities
+        # find max speed and scale time respectively
+        diff = np.diff(waypoints, axis=0)
+        v = (diff[:,1]**2+diff[:,1]**2+diff[:,1]**2)**0.5 / diff[:,0]
+        max_v = 0.5
+        scale = np.max(v) /  max_v
+        waypoints[:,0] *= scale
         self.waypoints = waypoints
 
 
@@ -219,7 +232,12 @@ class Main:
         self.child_threads.append(p)
         self.child_threads[-1].start()
 
-        input("press Enter to stop")
+        input("press Enter to land")
+
+        print_info("landing")
+        self.issueCommand(Planar(0,0,-0.2))
+
+        input("press Enter to shutdown")
         self.quit()
         return
 
@@ -278,8 +296,6 @@ class Main:
                 self.log_vec.append(self.drone_states)
                 self.new_state.set()
                 self.drone_states_lock.release()
-
-
 
     def connectedCallback(self, uri):
         self.connect_signal.set()
@@ -420,13 +436,11 @@ class Main:
 
     # return a tuple of (x,y,z), parameterized by time
     def getWaypointByTime(self,t):
-        # parameters for a circle
-        T = 10.0
-        tf = 10.0
-        # trajectory: sin(2*np.pi/T * t), cos(2*np.pi/T * t), -0.3
-        # start at t=0 -> (0, 1, -0.3)
+        tf = self.waypoints[-1,0]
         if (t < tf):
-            return (sin(2*np.pi/T * t), cos(2*np.pi/T * t), -0.3)
+            # find closest waypoint
+            i = np.argmin(np.abs(t - self.waypoints[:,0]))
+            return self.waypoints[i,1:]
         else:
             return None
 
@@ -450,9 +464,6 @@ class Main:
                 cmd = Planar(0,0,-0.1)
                 self.commands.put(cmd)
                 self.new_command.set()
-                sleep(1)
-                self.cf.commander.send_setpoint(0,0,0,0)
-                sleep(0.01)
                 return
             target_x,target_y,target_z = retval
             cmd = Pos(x=target_x, y=target_y, z=target_z)

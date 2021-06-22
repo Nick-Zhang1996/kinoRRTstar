@@ -163,9 +163,9 @@ void KinoRrtStar::sampleNode(){
 
 Node KinoRrtStar::getRandomNode(){
   Node node;
-  node.x = (double)rand()/(RAND_MAX + 1u) * world.getXSize();
-  node.y = (double)rand()/(RAND_MAX + 1u) * world.getYSize();
-  node.z = (double)rand()/(RAND_MAX + 1u) * world.getZSize();
+  node.x = (double)rand()/(RAND_MAX + 1u) * (world.x_h - world.x_l) + world.x_l;
+  node.y = (double)rand()/(RAND_MAX + 1u) * (world.y_h - world.y_l) + world.y_l;
+  node.z = (double)rand()/(RAND_MAX + 1u) * (world.z_h - world.z_l) + world.z_l;
   return node;
 }
 

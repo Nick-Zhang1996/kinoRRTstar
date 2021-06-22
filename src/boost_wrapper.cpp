@@ -25,12 +25,15 @@ BOOST_PYTHON_MODULE(kinoRRT){
     .def_readonly("valid", &Waypoint::valid)
     ;
 
-  class_<World>("World", init<double, double, double>())
+  class_<World>("World", init<double, double, double, double, double, double>())
     .def("addObstacle", &World::addObstacle)
     .def("setInteriorPointCount", &World::setInteriorPointCount)
-    .def_readonly("x", &World::x)
-    .def_readonly("y", &World::y)
-    .def_readonly("z", &World::z)
+    .def_readonly("x_l", &World::x_l)
+    .def_readonly("x_h", &World::x_h)
+    .def_readonly("y_l", &World::y_l)
+    .def_readonly("y_h", &World::y_h)
+    .def_readonly("z_l", &World::z_l)
+    .def_readonly("z_h", &World::z_h)
     ;
 
   class_<KinoRrtStar>("KinoRrtStar",init<World&, Node&, Node&, int, int>())
