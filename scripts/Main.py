@@ -9,6 +9,7 @@ from PidController import PidController
 from scipy.spatial.transform import Rotation
 from common import *
 from math import degrees,cos,sin,radians
+import matplotlib.pyplot as plt
 
 import cflib
 from cflib.crazyflie.log import LogConfig
@@ -49,11 +50,11 @@ class Main:
 
         # NOTE order of initialization may be important
         # Maybe put this in a separate function
+        self.initKinoRrt()
         self.initLog()
         self.initVisualTracking(visual_tracker)
-        self.initControllers()
         self.initCrazyflie()
-        self.initKinoRrt()
+        self.initControllers()
 
         return
 
@@ -68,7 +69,7 @@ class Main:
         #obs3 = Box(1,1.3, -2,1, -3,-1.5)
         obs4 = Box(1,1.3, 1,3, -3,0)
         start_node = Node(0,0,-0.5)
-        goal_node = Node(2.5,2,-0.5)
+        goal_node = Node(2.5,1,-0.5)
 
         '''
         world = World(-10,10,-5,5,-10,0)
@@ -199,6 +200,7 @@ class Main:
         return
 
     def initControllers(self):
+        dt = self.dt
         # indicate whether a new command is available
         self.new_command = Event()
         # commands pipeline

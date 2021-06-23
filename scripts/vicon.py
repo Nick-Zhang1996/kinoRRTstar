@@ -324,7 +324,7 @@ if __name__ == '__main__':
     '''
 
     # debug speed estimation
-    while False:
+    while True:
     #for i in range(10):
         (x,y,z,rx,ry,rz) = vi.getState(item_id)
         print("%7.3f, %7.3f, %7.3f, %7.3f, %7.3f, %7.3f"%(x,y,z,degrees(rx),degrees(ry),degrees(rz)))
@@ -333,7 +333,7 @@ if __name__ == '__main__':
     vi.stopUpdateDaemon()
 
     # test freq
-    if True:
+    if False:
         for i in range(3):
             print("Freq = "+str(vi.testFreq())+"Hz")
 
