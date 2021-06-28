@@ -40,6 +40,7 @@ class Main:
         self.dt = 1.0/self.visual_tracker_freq
         # crazyflie address
         self.uri = 'radio://0/80/2M/E7E7E7E7E7'
+        self.enable_log = Event()
 
         # for simple performance tracking
         self.p = execution_timer(True)
@@ -116,12 +117,6 @@ class Main:
 
         # list of (t,x,y,z) 
         waypoints = np.array(waypoints)
-        print("waypoints")
-        print(waypoints)
-        print("start")
-        print(waypoints[0])
-        print("goal")
-        print(waypoints[-1])
 
         ax = visual.visualizeWorld(show=False)
         ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'b')
@@ -131,6 +126,17 @@ class Main:
         ax.set_zlabel("-z")
         plt.show()
 
+        # calculate a reasonable speed
+        self.waypoints = waypoints
+        self.processWaypoints()
+
+        waypoints = self.waypoints
+        print("waypoints")
+        print(waypoints)
+        print("start")
+        print(waypoints[0])
+        print("goal")
+        print(waypoints[-1])
 
         response = input("press q + Enter to abort, Enter to execute")
         if (response == 'q'):
@@ -140,9 +146,6 @@ class Main:
             return
         print_ok("Executing trajectory")
 
-        # calculate a reasonable speed
-        self.waypoints = waypoints
-        self.processWaypoints()
 
     # adjust time scale and spacial location
     def processWaypoints(self):
@@ -151,8 +154,9 @@ class Main:
         # find max speed and scale time respectively
         diff = np.diff(waypoints, axis=0)
         v = (diff[:,1]**2+diff[:,1]**2+diff[:,1]**2)**0.5 / diff[:,0]
-        max_v = 0.5
+        max_v = 1.0
         scale = np.max(v) /  max_v
+        print("max speed in original waypoint = %.2f m/s"%(np.max(v)))
         waypoints[:,0] *= scale
         self.waypoints = waypoints
 
@@ -255,17 +259,24 @@ class Main:
         target_x,target_y,target_z = retval
         cmd = Pos(x=target_x, y=target_y, z=target_z)
         self.issueCommand(cmd)
-        sleep(3.0)
+        response = input("press Enter to continue, q+enter to quit")
+        if (response == 'q'):
+            print_warning("Aborting...")
+            self.quit()
+            exit(0)
+            return
 
         print("Main Control Starts")
         p = threading.Thread(target=self.controlThread)
         self.child_threads.append(p)
+        self.enable_log.set()
         self.child_threads[-1].start()
 
-        input("press Enter to land")
+        input("press Enter to land (and stop log)")
+        self.enable_log.clear()
 
         print_info("landing")
-        self.issueCommand(Planar(0,0,-0.2))
+        self.issueCommand(Planar(0,0,-0.1))
 
         input("press Enter to shutdown")
         self.quit()
@@ -306,8 +317,9 @@ class Main:
                 self.drone_states = state
                 self.drone_vel = self.vt.getLocalVelocity(self.optitrack_internal_id)
                 #self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
-                log_entry = (time(),) + tuple(np.drone_states)
-                self.log_vec.append(log_entry)
+                if (self.enable_log.is_set()):
+                    log_entry = (time(),) + tuple(np.drone_states)
+                    self.log_vec.append(log_entry)
                 self.new_state.set()
                 self.drone_states_lock.release()
 
@@ -469,8 +481,14 @@ class Main:
         tf = self.waypoints[-1,0]
         if (t < tf):
             # find closest waypoint
-            i = np.argmin(np.abs(t - self.waypoints[:,0]))
-            return self.waypoints[i,1:]
+            #i = np.argmin(np.abs(t - self.waypoints[:,0]))
+
+            # note: t_i-1 < t <= t_i
+            i = np.searchsorted( self.waypoints[:,0],t, side='right')
+            # interpolate between two points
+            alfa = (t - self.waypoints[i-1,0]) - (self.waypoints[i,0] - self.waypoints[i-1,0])
+            interpolated = (1-alfa) * self.waypoints[i-1,1:] + alfa * self.waypoints[i,1:]
+            return interpolated
         else:
             return None
 

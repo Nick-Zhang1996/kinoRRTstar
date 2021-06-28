@@ -2,3 +2,6 @@ limit max speed at certain commands
 give a finish state
 manage control thread more elegantly
 land in a different thread1
+
+
+save actual environment and generated trajectory target(waypoints) for use in analyze.py
