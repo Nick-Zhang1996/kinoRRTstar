@@ -80,7 +80,7 @@ class Vicon:
         # NOTE self.R is the passive rotation matrix
         #self.R = Rotation.from_euler("ZYX",[180,0,0],degrees=True).inv()
         # custome routine is faster
-        self.R = self.eulerZyxToR(radians(90),0,radians(180))
+        self.R = self.eulerZyxToR(0,0,radians(180))
 
         # with world ref frame, where is local frame origin
         self.local_frame_origin_world = np.array([0,0,0])
@@ -151,7 +151,7 @@ class Vicon:
         if inquiry_id>=self.obj_count:
             print("error: invalid id : "+str(inquiry_id))
             return None
-        retval = self.local_xyz_dots[inquiry_id]
+        retval = np.array(self.local_xyz_dots[inquiry_id]).flatten()
         return retval
 
     def viconUpateDaemon(self):

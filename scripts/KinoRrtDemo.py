@@ -16,6 +16,7 @@ world = World(-0.1,3, -3,3, -3,0)
 dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
 visual = WorldVisualization(dim)
 
+'''
 # create a small window
 obs1 = Box(1,1.3, -3,-2, -3,0)
 obs2 = Box(1,1.3, -2,1, -0.7,0)
@@ -23,6 +24,7 @@ obs2 = Box(1,1.3, -2,1, -0.7,0)
 obs4 = Box(1,1.3, 1,3, -3,0)
 start_node = Node(0,0,-0.5)
 goal_node = Node(2.5,2,-0.5)
+#obstacles = [obs1, obs2, obs4]
 
 '''
 world = World(-10,10,-5,5,-10,0)
@@ -35,11 +37,8 @@ obs3 = Box(2,4, 0,5, -10,0)
 obs4 = Box(2,4, -5,0, -5,0)
 start_node = Node(2-10, 2-5, 2-10)
 goal_node = Node(18-10, 8-5, 8-10)
-'''
+obstacles = [obs1, obs2, obs3, obs4]
 
-
-#obstacles = [obs1, obs2, obs3, obs4]
-obstacles = [obs1, obs2, obs4]
 for obstacle in obstacles:
     world.addObstacle(obstacle)
     visual.addObstacle(obstacle)

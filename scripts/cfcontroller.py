@@ -1,0 +1,134 @@
+# simple controller
+import numpy as np
+from PidController import PidController
+from math import radians,degrees
+from common import *
+from scipy.spatial.transform import Rotation as R
+import matplotlib.pyplot as plt
+from time import time
+
+class CFcontroller:
+    def __init__(self,dt):
+        self.kp = 1.0
+        self.kv = 1.0
+        self.dt = dt
+
+        # time scaler
+        self.T = 5
+
+        self.yaw_pid = PidController(2,0,0,dt,0,20)
+
+        # physical properties
+        self.g = g = 9.81
+        self.m = 40e-3
+        self.max_thrust = 62e-3 * g
+
+    def _getTrajectory(self, t, der=0):
+        if (t>self.T or t < 0):
+            return None
+        if (der == 0):
+            return np.array((0,0,-0.3))
+
+        if (der == 1):
+            return np.array((0,0,0))
+
+        if (der == 2):
+            return np.array((0,0,0))
+
+    # get trajectory or it's derivative
+    # 3d veector function parameterized by t
+    def getTrajectory(self, t, der=0):
+        # x = y = -2 (t/T)3 + 3(t/T)2
+        # z = -0.3
+        # dxdt = dydt = -6**2 / (T**3) + 6 * t / (T**2)
+        # xy(0) = 0
+        # xy(T) = 1.0
+
+        if (t>self.T or t < 0):
+            return None
+
+        T = self.T
+        z = -0.3
+        dzdt = 0.0
+        ddzdt = 0.0
+        if (der == 0):
+            x = y = -2 * (t/T)**3 + 3*(t/T)**2
+            return np.array((x,y,z))
+
+        if (der == 1):
+            dxdt = dydt = -6**2 / (T**3) + 6 * t / (T**2)
+            return np.array((dxdt,dydt,dzdt))
+
+        if (der == 2):
+            ddxdt = ddydt = -12 * t / (T**3) + 6/(T**2)
+            return np.array((ddxdt,ddydt,ddzdt))
+
+    # t: time, elapsed since trajectory start
+    # drone_state: (x,y,z,vx,vy,vz, rx,ry,rz) of drone
+    # ddrdt: second derivative of trajectory
+    def control(self, t, drone_state, r_des=None, drdt_des = None, ddrdt_des=None):
+        if (t > self.T):
+            return None
+        (x,y,z,vx,vy,vz,rx,ry,rz) = drone_state
+        r = np.array((x,y,z))
+        drdt = np.array((vx,vy,vz))
+        gravity = np.array((0,0,self.m*self.g))
+        if (r_des is None):
+            r_des = np.array(self.getTrajectory(t, der=0))
+            drdt_des = np.array(self.getTrajectory(t, der=1))
+            ddrdt_des = np.array(self.getTrajectory(t, der=2))
+        ep = r - r_des
+        ev = drdt - drdt_des
+        Fdes = (-self.kp*ep - self.kv*ev)*self.m*self.g - gravity + self.m*ddrdt_des
+
+        # Fdes = R @ [0,0,-T]
+        T_des = np.linalg.norm(Fdes)
+
+        Thrust_vec = np.array([0,0,-1])
+        axis = ( Fdes/np.linalg.norm(Fdes) + Thrust_vec / np.linalg.norm(Thrust_vec))
+        r_vec = axis / np.linalg.norm(axis) * np.pi
+
+
+        r = R.from_rotvec(r_vec)
+
+        yaw_des, pitch_des, roll_des = r.as_euler('ZYX')
+
+        yaw_diff = yaw_des - rz
+        yaw_diff = (yaw_diff + np.pi)%(2*np.pi) - np.pi
+        target_yawrate_deg_s = self.yaw_pid.control(degrees(rz + yaw_diff), degrees(rz))
+        target_roll_deg = degrees(roll_des)
+        target_pitch_deg = degrees(pitch_des)
+        target_thrust_raw = int(T_des / self.max_thrust * 65535)
+        self.debug = [target_roll_deg, target_pitch_deg, degrees(yaw_des)]
+        return (target_roll_deg, target_pitch_deg, target_yawrate_deg_s, target_thrust_raw)
+
+if __name__=="__main__":
+    # examine trajectory
+    main = CFcontroller(0.01)
+    g = 9.81
+
+    rpy_data = []
+    thrust_data = []
+    for t in np.linspace(0,main.T):
+        r = main.getTrajectory(t,der=0)
+        dr = main.getTrajectory(t,der=1)
+        ddr = main.getTrajectory(t,der=2)
+        drone_state = np.hstack([r,dr,np.zeros(3)])
+        ret = main.control(0, drone_state , r,dr,ddr)
+        (target_roll_deg, target_pitch_deg, target_yawrate_deg_s, target_thrust_raw) = ret
+        rpy_data.append(main.debug)
+        thrust_data.append((float(target_thrust_raw)/65536)*main.max_thrust/main.m/main.g)
+
+    rpy_data = np.array(rpy_data)
+    thrust_data = np.array(thrust_data)
+    plt.plot(rpy_data)
+    plt.show()
+
+
+
+
+
+
+
+
+

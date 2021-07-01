@@ -18,13 +18,13 @@ output.close()
 data = np.array(data)
 print("log length %.1f seconds"%(data.shape[0]/119.88))
 
-x = data[:,0]
-y = data[:,1]
-z = data[:,2]
-rx = data[:,3]
-ry = data[:,4]
-rz = data[:,5]
-
+t = data[:,0]
+x = data[:,1]
+y = data[:,2]
+z = data[:,3]
+rx = data[:,4]
+ry = data[:,5]
+rz = data[:,6]
 
 # kinoRRT stuff
 world = World(-0.1,3, -3,3, -3,0)
