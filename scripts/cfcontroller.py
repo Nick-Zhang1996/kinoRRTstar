@@ -104,14 +104,14 @@ class CFcontroller:
         # Fdes = R @ [0,0,-T]
         T_des = np.linalg.norm(Fdes)
 
-        Thrust_vec = np.array([0,0,-1])
-        axis = ( Fdes/np.linalg.norm(Fdes) + Thrust_vec / np.linalg.norm(Thrust_vec))
-        r_vec = axis / np.linalg.norm(axis) * np.pi
-
-
-        r = R.from_rotvec(r_vec)
-
-        yaw_des, pitch_des, roll_des = r.as_euler('ZYX')
+        #Thrust_vec = np.array([0,0,-1])
+        #axis = ( Fdes/np.linalg.norm(Fdes) + Thrust_vec / np.linalg.norm(Thrust_vec))
+        #r_vec = axis / np.linalg.norm(axis) * np.pi
+        #r = R.from_rotvec(r_vec)
+        #yaw_des, pitch_des, roll_des = r.as_euler('ZYX')
+        roll_des = np.arcsin(Fdes[1]/T_des)
+        pitch_des = np.arctan2(Fdes[0], Fdes[2])
+        yaw_des = 0.0
 
         yaw_diff = yaw_des - rz
         yaw_diff = (yaw_diff + np.pi)%(2*np.pi) - np.pi
@@ -172,10 +172,6 @@ if __name__=="__main__":
     print("thrust")
     plt.plot(thrust_data)
     plt.show()
-
-
-
-
 
 
 
