@@ -6,9 +6,11 @@ def getTrajectory(t, der=0):
     T = 10
     R = 1.0
     A = 0.2
-    e = 0.01
-    x = lambda t: np.cos(t/T * 2*np.pi) * (R + A*np.sin(t/T*4* 2*np.pi))
-    y = lambda t: np.sin(t/T * 2*np.pi) * (R + A*np.sin(t/T*4* 2*np.pi))
+    e = 1e-3
+    #x = lambda t: np.cos(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
+    #y = lambda t: np.sin(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
+    x = lambda t: np.cos(t/T * 2*np.pi) * R
+    y = lambda t: np.sin(t/T * 2*np.pi) * R
     z = lambda t: -0.3
 
     if (der == 0):
@@ -27,7 +29,7 @@ def plotDir(loc,direction):
     direction = np.array(direction)
     p0 = loc
     p1 = loc + direction
-    plt.plot( [p0[0],p0[0] + p1[0]], [p1[1],p0[1]+p1[1]] ,'*')
+    plt.plot( [p0[0], p1[0]], [p0[1],p1[1]])
     
 
 
@@ -46,15 +48,29 @@ ddxyz_vec = np.array(ddxyz_vec)
 
 plt.plot(xyz_vec[:,0], xyz_vec[:,1])
 
-index = 20
+index = 500
 loc = (xyz_vec[index,0], xyz_vec[index,1])
 dire = (dxyz_vec[index,0], dxyz_vec[index,1])
 plotDir(loc, dire)
-'''
+
+T = 10
+R = 1.0
+A = 0.2
+e = 1e-3
+
+vel = np.linalg.norm(np.array(dire))
+print(vel / (2*np.pi*R/T))
+
 dire = (ddxyz_vec[index,0], ddxyz_vec[index,1])
 plotDir(loc, dire)
-'''
+acc = np.linalg.norm(np.array(dire))
+print(acc / (4*np.pi**2*R/T/T))
+
+
+plt.axis('equal')
 plt.show()
+
+
 
 
 

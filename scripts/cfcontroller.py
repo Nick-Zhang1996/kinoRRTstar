@@ -14,7 +14,7 @@ class CFcontroller:
         self.dt = dt
 
         # time scaler
-        self.T = 5
+        self.T = 10
 
         self.yaw_pid = PidController(2,0,0,dt,0,20)
 
@@ -22,6 +22,26 @@ class CFcontroller:
         self.g = g = 9.81
         self.m = 40e-3
         self.max_thrust = 62e-3 * g
+
+    def getTrajectory(self, t, der=0):
+        T = self.T
+        R = 1.0
+        A = 0.2
+        e = 1e-3
+        x = lambda t: np.cos(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
+        y = lambda t: np.sin(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
+        z = lambda t: -0.3
+
+        if (der == 0):
+            return np.array((x(t),y(t),z(t)))
+
+        deri = lambda fun,t: (fun(t+e) - fun(t-e))/(2*e)
+        if (der == 1):
+            return np.array((deri(x,t),deri(y,t),deri(z,t)))
+
+        dderi = lambda fun,t: (fun(t+e) -2*fun(t) + fun(t-e))/(e*e)
+        if (der == 2):
+            return np.array((dderi(x,t),dderi(y,t),dderi(z,t)))
 
     def _getTrajectory(self, t, der=0):
         if (t>self.T or t < 0):
@@ -37,7 +57,7 @@ class CFcontroller:
 
     # get trajectory or it's derivative
     # 3d veector function parameterized by t
-    def getTrajectory(self, t, der=0):
+    def __getTrajectory(self, t, der=0):
         # x = y = -2 (t/T)3 + 3(t/T)2
         # z = -0.3
         # dxdt = dydt = -6**2 / (T**3) + 6 * t / (T**2)
@@ -109,10 +129,18 @@ if __name__=="__main__":
 
     rpy_data = []
     thrust_data = []
+    pos_data = []
+    vel_data = []
+    acc_data = []
+
     for t in np.linspace(0,main.T):
         r = main.getTrajectory(t,der=0)
+        pos_data.append(r)
         dr = main.getTrajectory(t,der=1)
+        vel_data.append(dr)
         ddr = main.getTrajectory(t,der=2)
+        acc_data.append(ddr)
+
         drone_state = np.hstack([r,dr,np.zeros(3)])
         ret = main.control(0, drone_state , r,dr,ddr)
         (target_roll_deg, target_pitch_deg, target_yawrate_deg_s, target_thrust_raw) = ret
@@ -121,7 +149,28 @@ if __name__=="__main__":
 
     rpy_data = np.array(rpy_data)
     thrust_data = np.array(thrust_data)
+    pos_data = np.array(pos_data)
+    vel_data = np.array(vel_data)
+    acc_data = np.array(acc_data)
+
+    print("pos")
+    plt.plot(pos_data)
+    plt.show()
+
+    print("vel")
+    plt.plot(vel_data)
+    plt.show()
+
+    print("acc")
+    plt.plot(acc_data)
+    plt.show()
+
+    print("rpy")
     plt.plot(rpy_data)
+    plt.show()
+
+    print("thrust")
+    plt.plot(thrust_data)
     plt.show()
 
 
