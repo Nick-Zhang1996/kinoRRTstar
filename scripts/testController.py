@@ -121,6 +121,7 @@ class Main:
         self.vx_pids = PidController(25,1,1,dt,5,30)
         self.vy_pids = PidController(25,1,1,dt,5,30)
         self.vz_pids = PidController(25,15,1,dt,1,30)
+        self.yaw_pid = PidController(2,0,0,dt,0,20)
 
         # output satuation for position controller
         self.vxy_limit = 1.0
@@ -283,7 +284,7 @@ class Main:
                 (x,y,z,rx,ry,rz) = self.drone_states
                 (vx,vy,vz) = self.drone_vel
 
-                if (z<-0.5):
+                if (z<-0.8):
                     print_warning(" exceeding maximum allowable height ")
                     print_info("switching to safety mode")
                     self.issueCommand(Planar(0,0,-0.1))
@@ -389,7 +390,7 @@ class Main:
         self.requestVelocity(cf,target_v)
         return
 
-    def requestVelocity(self,cf,vel_command):
+    def requestVelocity(self,cf,vel_command, yaw_des = 0.0):
         # convert velocity to vehicle frame
         (x,y,z,rx,ry,rz) = state = self.drone_states
         #print(x,y,z,degrees(rz))
@@ -416,7 +417,13 @@ class Main:
             # NOTE using world frame z velocity
             target_thrust = self.baseThrust - self.vz_pids.control(target_v_local[2], self.drone_vel[2]) * self.thrustScale
             target_thrust = int(np.clip(target_thrust,self.minThrust,0xFFFF))
-            target_yawrate_deg_s = 0
+
+            yaw_diff = yaw_des - rz
+            yaw_diff = (yaw_diff + np.pi)%(2*np.pi) - np.pi
+            target_yawrate_deg_s = self.yaw_pid.control(degrees(rz + yaw_diff), degrees(rz))
+
+
+
             #print_warning(" crazyflie command blocked ")
             cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,target_yawrate_deg_s,target_thrust)
             #print_info("sending command %.2f %.2f %.2f %d"%(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust))

@@ -14,7 +14,9 @@ class CFcontroller:
         self.dt = dt
 
         # time scaler
-        self.T = 10
+        self.T = 8
+        # total experiment time
+        self.Tf = self.T*2
 
         self.yaw_pid = PidController(2,0,0,dt,0,20)
 
@@ -23,6 +25,7 @@ class CFcontroller:
         self.m = 40e-3
         self.max_thrust = 62e-3 * g
 
+    # flower shape
     def getTrajectory(self, t, der=0):
         T = self.T
         R = 1.0
@@ -30,7 +33,7 @@ class CFcontroller:
         e = 1e-3
         x = lambda t: np.cos(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
         y = lambda t: np.sin(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
-        z = lambda t: -0.3
+        z = lambda t: -0.5
 
         if (der == 0):
             return np.array((x(t),y(t),z(t)))
@@ -43,8 +46,9 @@ class CFcontroller:
         if (der == 2):
             return np.array((dderi(x,t),dderi(y,t),dderi(z,t)))
 
+    # zero / stay in place
     def _getTrajectory(self, t, der=0):
-        if (t>self.T or t < 0):
+        if (t>self.Tf or t < 0):
             return None
         if (der == 0):
             return np.array((0,0,-0.3))
@@ -57,6 +61,7 @@ class CFcontroller:
 
     # get trajectory or it's derivative
     # 3d veector function parameterized by t
+    # simple traj
     def __getTrajectory(self, t, der=0):
         # x = y = -2 (t/T)3 + 3(t/T)2
         # z = -0.3
@@ -87,7 +92,7 @@ class CFcontroller:
     # drone_state: (x,y,z,vx,vy,vz, rx,ry,rz) of drone
     # ddrdt: second derivative of trajectory
     def control(self, t, drone_state, r_des=None, drdt_des = None, ddrdt_des=None):
-        if (t > self.T):
+        if (t > self.Tf):
             return None
         (x,y,z,vx,vy,vz,rx,ry,rz) = drone_state
         r = np.array((x,y,z))
@@ -110,7 +115,7 @@ class CFcontroller:
         #r = R.from_rotvec(r_vec)
         #yaw_des, pitch_des, roll_des = r.as_euler('ZYX')
         roll_des = np.arcsin(Fdes[1]/T_des)
-        pitch_des = np.arctan2(Fdes[0], Fdes[2])
+        pitch_des = np.arctan2(-Fdes[0], -Fdes[2])
         yaw_des = 0.0
 
         yaw_diff = yaw_des - rz

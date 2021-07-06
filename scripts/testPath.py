@@ -7,10 +7,8 @@ def getTrajectory(t, der=0):
     R = 1.0
     A = 0.2
     e = 1e-3
-    #x = lambda t: np.cos(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
-    #y = lambda t: np.sin(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
-    x = lambda t: np.cos(t/T * 2*np.pi) * R
-    y = lambda t: np.sin(t/T * 2*np.pi) * R
+    x = lambda t: np.cos(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
+    y = lambda t: np.sin(t/T * 2*np.pi) * (R + A*np.cos(t/T*4* 2*np.pi))
     z = lambda t: -0.3
 
     if (der == 0):
