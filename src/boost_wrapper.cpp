@@ -22,6 +22,12 @@ BOOST_PYTHON_MODULE(kinoRRT){
     .def_readonly("x", &Waypoint::x)
     .def_readonly("y", &Waypoint::y)
     .def_readonly("z", &Waypoint::z)
+    .def_readonly("vx", &Waypoint::vx)
+    .def_readonly("vy", &Waypoint::vy)
+    .def_readonly("vz", &Waypoint::vz)
+    .def_readonly("ax", &Waypoint::ax)
+    .def_readonly("ay", &Waypoint::ay)
+    .def_readonly("az", &Waypoint::az)
     .def_readonly("valid", &Waypoint::valid)
     ;
 
@@ -40,6 +46,9 @@ BOOST_PYTHON_MODULE(kinoRRT){
     .def("run", &KinoRrtStar::run)
     .def("prepareSolution", &KinoRrtStar::prepareSolution)
     .def("getNextWaypoint", &KinoRrtStar::getNextWaypoint)
+    .def("getTrajectoryTime", &KinoRrtStar::getTrajectoryTime)
+    .def("getTrajectory", &KinoRrtStar::getTrajectory)
+    .def_readonly("waypoint", &KinoRrtStar::waypoint)
     ;
 }
 

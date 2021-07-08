@@ -60,7 +60,6 @@ except (RuntimeError):
 print_info("rrt search finished in " + str(elapsed) +"sec")
 
 waypoint_n = rrt.prepareSolution()
-
 waypoints = []
 for i in range(waypoint_n):
     p = rrt.getNextWaypoint()
@@ -69,12 +68,31 @@ for i in range(waypoint_n):
 
 # list of (t,x,y,z) 
 waypoints = np.array(waypoints)
-print("waypoints")
-print(waypoints)
+#print("waypoints")
+#print(waypoints)
 print("start")
 print(waypoints[0])
 print("goal")
 print(waypoints[-1])
+
+# get continuous waypoint
+#print_ok("-------- continuous traj -----")
+traj_t = rrt.getTrajectoryTime()
+tt = np.linspace(0,traj_t)
+continuous_waypoint = []
+for this_t in tt:
+    waypoint = rrt.getTrajectory(this_t)
+    if (not waypoint.valid):
+        print_error("waypoint error")
+        break;
+    continuous_waypoint.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z, waypoint.vx, waypoint.vy, waypoint.vz, waypoint.ax, waypoint.ay, waypoint.az])
+continuous_waypoint = np.array(continuous_waypoint)
+waypoints = continuous_waypoint
+max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
+max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
+print_info("total time : %.1f sec "%(traj_t))
+print_info("max speed : %.1f m/s "%(max_speed))
+print_info("max acc : %.1f m/s "%(max_acc))
 
 # find max speed and scale time respectively
 diff = np.diff(waypoints, axis=0)
@@ -87,8 +105,9 @@ diff = np.diff(waypoints, axis=0)
 new_v = (diff[:,1]**2+diff[:,1]**2+diff[:,1]**2)**0.5 / diff[:,0]
 
 ax = visual.visualizeWorld(show=False)
-ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'b')
+#ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'b')
 ax.scatter(-waypoints[:,1], waypoints[:,2], -waypoints[:,3], 'ro')
+ax.plot(-continuous_waypoint[:,1], continuous_waypoint[:,2], -continuous_waypoint[:,3],'r')
 ax.set_xlabel("-x")
 ax.set_ylabel("y")
 ax.set_zlabel("-z")

@@ -37,8 +37,13 @@ int main(){
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed_seconds = end-start;
 
+  cout << "rrt complete in " << elapsed_seconds.count() << "s" << endl;
 
-  cout << "program complete in " << elapsed_seconds.count() << "s" << endl;
+  // find trajectory to ddebug getTrajectory;
+  double traj_t = rrt.getTrajectoryTime();
+  for (double t=0.0; t<traj_t; t+=0.01){
+    rrt.getTrajectory(t);
+  }
 
 
 }

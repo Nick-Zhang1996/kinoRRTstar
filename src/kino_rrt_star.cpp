@@ -202,7 +202,7 @@ double KinoRrtStar::getNeighnourRadius(){
 
 }
 
-int KinoRrtStar::prepareSolution(){
+int KinoRrtStar::prepareSolutionWithInteriorPoints(){
   // first retrieve the optimal path, this is done in reverse order from goal to start
   // key_waypoints_reversed includes index of lowest cost node connected to end node ... root node(start) 
   list<int> key_waypoints_reversed;
@@ -320,6 +320,59 @@ int KinoRrtStar::prepareSolution(){
 
 }
 
+
+int KinoRrtStar::prepareSolution(){
+  // first retrieve the optimal path, this is done in reverse order from goal to start
+  // key_waypoints_reversed includes index of lowest cost node connected to end node ... root node(start) 
+  list<int> key_waypoints_reversed;
+  int this_node_id = overall_lowest_cost_id;
+  assert (tree.node(this_node_id).is_end);
+
+  key_waypoints_reversed.push_back(this_node_id);
+  while (this_node_id != 0){
+    Node& node = tree.node(this_node_id);
+    this_node_id = node.id_parent;
+    key_waypoints_reversed.push_back(this_node_id);
+  }
+
+  // now reverse iterate on the key waypoints, adding in interior points
+  double waypoint_t = 0.0;
+  waypoints.clear();
+  list<int>::reverse_iterator i=key_waypoints_reversed.rbegin();
+  ++i;
+  for ( ; i != key_waypoints_reversed.rend(); ++i){
+    Node& late_node = tree.node(*i);
+    Node& early_node = tree.node(late_node.id_parent);
+    double section_time = oc.timePartialFinalState(early_node, late_node);
+    // add early_node
+    Waypoint p;
+    p.t = waypoint_t;
+    p = early_node;
+
+    waypoints.push_back(p);
+    waypoint_t += section_time;
+  }
+
+  // now add in last waypoint to goal_node
+  Node& late_node = end_node;
+  Node& early_node = tree.node(overall_lowest_cost_id);
+  double section_time = oc.timePartialFinalState(early_node, late_node);
+
+  Waypoint p;
+  p.t = waypoint_t;
+  p = early_node;
+  waypoints.push_back(p);
+  waypoint_t += section_time;
+
+  // add in end node (goal)
+  p.t = waypoint_t;
+  p = end_node;
+  waypoints.push_back(p);
+
+  waypoints_iter = waypoints.begin();
+  return waypoints.size();
+}
+
 Waypoint KinoRrtStar::getNextWaypoint(){
   if (waypoints_iter == waypoints.end()){
     waypoint.valid = false;
@@ -327,12 +380,76 @@ Waypoint KinoRrtStar::getNextWaypoint(){
     // copy to persistent variable so we don't return a local var
     auto retval = *waypoints_iter;
     waypoint.valid = true;
-    waypoint.t = retval.t;
-    waypoint.x = retval.x;
-    waypoint.y = retval.y;
-    waypoint.z = retval.z;
+    waypoint = retval;
     waypoints_iter++;
   }
   return waypoint;
 }
 
+// this requires prepareSolution to be called
+// get trajectory time
+double KinoRrtStar::getTrajectoryTime(){
+  return waypoints.back().t;
+
+}
+
+// this invalidates Waypoint related functions
+Waypoint KinoRrtStar::getTrajectory(double t){
+  try {
+    Waypoint early_waypoint,late_waypoint;
+    for (auto iter = waypoints.begin(); iter != waypoints.end(); iter++){
+      if ( (*iter).t <= t) {
+        early_waypoint = *iter;
+        continue;
+      }
+      late_waypoint = *(iter);
+      if (iter == waypoints.begin()){
+        // if t < (*iter).t, then late_waypoint = first waypoint and early_waypoint is never set
+        early_waypoint =  *(iter);
+        late_waypoint = *(++iter);
+      }
+      break;
+    }
+
+
+
+    //cout << "assigning late waypoint" << endl;
+    //cout << "done assigning late waypoint" << endl;
+
+    //double section_time = oc.time(early_waypoint, late_waypoint);
+    double section_time = late_waypoint.t - early_waypoint.t;
+    double dt = t - early_waypoint.t;
+    //cout << "dt = " << dt << endl;
+    //cout << "section_t = " << section_time << endl;
+    //cout << " late_waypoint.t = " << late_waypoint.t << endl;
+    //cout << " late-early = " << late_waypoint.t-early_waypoint.t << endl;
+
+    //assert (dt > -0.0001);
+    //assert (dt < section_time-0.0001);
+    //
+    //cout << "early: " << early_waypoint.t << "," << early_waypoint.x << "," << early_waypoint.y << "," << early_waypoint.z << endl;
+    //cout << "late: " << late_waypoint.t << "," << late_waypoint.x << "," << late_waypoint.y << "," << late_waypoint.z << endl;
+    //cout << "state(" << dt << "," << section_time << "," << early_waypoint.x << "," << early_waypoint.y << "," << early_waypoint.z << "," << early_waypoint.vx << "," << early_waypoint.vy << "," << early_waypoint.vz << "," << early_waypoint.ax << "," << early_waypoint.ay << "," << early_waypoint.az << "," << late_waypoint.x << "," << late_waypoint.y << "," << late_waypoint.z << endl;<< "," << late_waypoint.vx << "," << late_waypoint.vy << "," << late_waypoint.vz << endl;<< "," << late_waypoint.ax << "," << late_waypoint.ay << "," << late_waypoint.az << ")" << endl;
+
+
+    oc.state(dt, section_time, early_waypoint, late_waypoint);
+    waypoint.t = t;
+    waypoint.valid = true;
+    waypoint.x = *(oc.buffer_interior_state + 0);
+    waypoint.y = *(oc.buffer_interior_state + 1);
+    waypoint.z = *(oc.buffer_interior_state + 2);
+    waypoint.vx = *(oc.buffer_interior_state + 3);
+    waypoint.vy = *(oc.buffer_interior_state + 4);
+    waypoint.vz = *(oc.buffer_interior_state + 5);
+    waypoint.ax = *(oc.buffer_interior_state + 6);
+    waypoint.ay = *(oc.buffer_interior_state + 7);
+    waypoint.az = *(oc.buffer_interior_state + 8);
+    return waypoint;
+  } catch ( const std::exception &e) {
+    cout << "error: ";
+    cout << e.what() << endl;
+  } 
+
+  return waypoint;
+
+}

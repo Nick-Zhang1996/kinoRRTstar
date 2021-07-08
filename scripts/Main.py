@@ -1,4 +1,4 @@
-# fly multiple drone
+# test controller, fly polynomial trajectory from one point to another
 import threading
 import pickle
 from threading import Event,Thread,Lock
@@ -21,7 +21,6 @@ from vicon import Vicon
 from CommandTypes import *
 
 from numeric_velocity import quad_fit_functional
-from PlanarController import planarController,planarControllerExample
 from timeUtil import execution_timer
 
 import os
@@ -30,6 +29,7 @@ base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../src/')
 sys.path.append(base_dir)
 from kinoRRT import *
 from WorldVisualization import WorldVisualization
+from cfcontroller import CFcontroller
 
 
 class Main:
@@ -52,6 +52,7 @@ class Main:
         # NOTE order of initialization may be important
         # Maybe put this in a separate function
         self.initKinoRrt()
+        self.initExternalController()
         self.initLog()
         self.initVisualTracking(visual_tracker)
         self.initCrazyflie()
@@ -67,7 +68,7 @@ class Main:
         # create a small window
         obs1 = Box(1,1.3, -3,-2, -3,0)
         obs2 = Box(1,1.3, -2,1, -0.7,0)
-        #obs3 = Box(1,1.3, -2,1, -3,-1.5)
+        obs3 = Box(1,1.3, -2,1, -3,-1.5)
         obs4 = Box(1,1.3, 1,3, -3,0)
         start_node = Node(0,0,-0.5)
         goal_node = Node(2.5,1,-0.5)
@@ -95,7 +96,7 @@ class Main:
 
         # TODO check start and goal are in world bobundary
         print_info("initializing kinoRRT*")
-        rrt = KinoRrtStar(world, start_node, goal_node, 600, 10)
+        self.rrt = rrt = KinoRrtStar(world, start_node, goal_node, 600, 10)
 
         try:
             print_info("running kinoRRT*")
@@ -107,32 +108,47 @@ class Main:
 
         print_info("rrt search finished in " + str(elapsed) +"sec")
 
-        waypoint_n = rrt.prepareSolution()
-
-        waypoints = []
+        # sampled nodes
+        critical_waypoint_n = rrt.prepareSolution()
+        critical_waypoints = []
         for i in range(waypoint_n):
             p = rrt.getNextWaypoint()
             assert (p.valid)
-            waypoints.append( (p.t,p.x,p.y,p.z) )
-
+            critical_waypoints.append( (p.t,p.x,p.y,p.z) )
         # list of (t,x,y,z) 
+        critical_waypoints = np.array(critical_waypoints)
+
+        # waypoints, for accurate visualization
+        self.traj_t = traj_t = rrt.getTrajectoryTime()
+        tt = np.linspace(0,traj_t,1000)
+        waypoints = []
+        for this_t in tt:
+            waypoint = rrt.getTrajectory(this_t)
+            waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z])
         waypoints = np.array(waypoints)
 
+        # print out critical information about trajectory
+        max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
+        max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
+        print_info("total time : %.1f sec " %(traj_t))
+        print_info("max speed : %.1f m/s " %(max_speed)
+        print_info("max acc : %.1f m/s " %(max_acc)
+
+        # rrt trajectory may demand unrealistic acceleration and velocity
+        # rescale
+        self.waypoints = waypoints
+        self.processWaypoints()
+        waypoints = self.waypoints
+
+
         ax = visual.visualizeWorld(show=False)
-        ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'b')
-        ax.scatter(-waypoints[:,1], waypoints[:,2], -waypoints[:,3], 'ro')
+        ax.scatter(-critical_waypoints[:,1], critical_waypoints[:,2], -critical_waypoints[:,3], 'ro')
+        ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'r')
         ax.set_xlabel("-x")
         ax.set_ylabel("y")
         ax.set_zlabel("-z")
         plt.show()
 
-        # calculate a reasonable speed
-        self.waypoints = waypoints
-        self.processWaypoints()
-
-        waypoints = self.waypoints
-        print("waypoints")
-        print(waypoints)
         print("start")
         print(waypoints[0])
         print("goal")
@@ -152,19 +168,34 @@ class Main:
 
         print_ok("Executing trajectory")
 
-
     # adjust time scale and spacial location
     def processWaypoints(self):
         waypoints = self.waypoints
         # scale time to match velocity to vehicle capabilities
         # find max speed and scale time respectively
-        diff = np.diff(waypoints, axis=0)
-        v = (diff[:,1]**2+diff[:,1]**2+diff[:,1]**2)**0.5 / diff[:,0]
-        max_v = 1.0
-        scale = np.max(v) /  max_v
-        print("max speed in original waypoint = %.2f m/s"%(np.max(v)))
-        waypoints[:,0] *= scale
+        max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
+        max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
+
+        speed_scale = self.max_speed_limit / max_speed
+        acc_scale = self.max_acc_limit / max_acc
+        self.time_scale = np.min([speed_scale, acc_scale,1.0])
+        print_info("scaling factor = %.1f"%(self.time_scale))
+        waypoints[:,0] /= self.time_scale
+        waypoints[:,4:] *= self.time_scale
+
+        max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
+        max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
+
+        print_info(" after scaling ")
+        print_info("total time : %.1f sec " %(traj_t/self.time_scale))
+        print_info("max speed : %.1f m/s " %(max_speed*self.time_scale)
+        print_info("max acc : %.1f m/s " %(max_acc*self.time_scale)
+
         self.waypoints = waypoints
+
+    def initExternalController(self):
+        self.external_controller_t0 = None
+        self.cfcontroller = CFcontroller(self.dt, self.time_scale, self.rrt)
 
 
     def initLog(self):
@@ -223,6 +254,7 @@ class Main:
         self.vx_pids = PidController(25,1,1,dt,5,30)
         self.vy_pids = PidController(25,1,1,dt,5,30)
         self.vz_pids = PidController(25,15,1,dt,1,30)
+        self.yaw_pid = PidController(2,0,0,dt,0,20)
 
         # output satuation for position controller
         self.vxy_limit = 1.0
@@ -232,10 +264,15 @@ class Main:
         self.minThrust = 20000
         self.thrustScale = 1000.0
 
-        # start controller thread
-        self.child_threads.append(Thread(target=self.crazyflieControl))
+        # start PID controller thread
+        self.external_controller_active = Event()
+        self.child_threads.append(Thread(target=self.pidCrazyflieControl))
         self.child_threads[-1].start()
         print_info("starting thread crazyflieControl")
+
+        self.child_threads.append(Thread(target=self.externalCrazyflieControl))
+        self.child_threads[-1].start()
+        print_info("starting thread ExternalCrazyflieControl")
 
     def initCrazyflie(self):
         cflib.crtp.init_drivers(enable_debug_driver=False)
@@ -257,34 +294,41 @@ class Main:
 
         # guide crazyflie to initial position
         print_info("taking off")
+        (x,y,z,_,_,_) = self.drone_states
+        print_ok(x,y,z)
         self.issueCommand(Planar(0,0,-0.3))
-        sleep(1.0)
-
-        print_info("going to start position")
-        retval = self.getWaypointByTime(0.0)
-        target_x,target_y,target_z = retval
-        cmd = Pos(x=target_x, y=target_y, z=target_z)
-        self.issueCommand(cmd)
-        response = input("press Enter to continue, q+enter to quit")
+        response = input("press Enter to continue(go to start pos), q+enter to quit \n")
         if (response == 'q'):
             print_warning("Aborting...")
             self.quit()
             exit(0)
             return
 
-        print("Main Control Starts")
-        p = threading.Thread(target=self.controlThread)
-        self.child_threads.append(p)
+        print_info("going to start position")
+        retval = self.cfcontroller.getTrajectory(0.0)
+        target_x,target_y,target_z = retval
+        print_ok(retval)
+        cmd = Pos(x=target_x, y=target_y, z=target_z)
+        self.issueCommand(cmd)
+        response = input("press Enter to continue, q+enter to quit \n")
+        if (response == 'q'):
+            print_warning("Aborting...")
+            self.quit()
+            exit(0)
+            return
+
+        print("External Control Starts")
         self.enable_log.set()
-        self.child_threads[-1].start()
+        self.external_controller_t0 = time()
+        self.external_controller_active.set()
 
-        input("press Enter to land (and stop log)")
-        self.enable_log.clear()
-
+        input("press Enter to land (and stop log) \n")
         print_info("landing")
         self.issueCommand(Planar(0,0,-0.1))
+        self.external_controller_active.clear()
+        self.enable_log.clear()
 
-        input("press Enter to shutdown")
+        input("press Enter to shutdown \n")
         self.quit()
         return
 
@@ -324,7 +368,7 @@ class Main:
                 self.drone_vel = self.vt.getLocalVelocity(self.optitrack_internal_id)
                 #self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
                 if (self.enable_log.is_set()):
-                    log_entry = (time(),) + tuple(np.drone_states)
+                    log_entry = (time(),) + tuple(self.drone_states)
                     self.log_vec.append(log_entry)
                 self.new_state.set()
                 self.drone_states_lock.release()
@@ -341,7 +385,9 @@ class Main:
                 self.drone_states = (x,y,z,rx,ry,rz) = state = self.vt.getState(self.vt_id)
                 self.drone_vel = (vx,vy,vz) = self.vt.getVelocity(self.vt_id)
                 #print("%7.3f, %7.3f, %7.3f " %(vx,vy,vz))
-                self.log_vec.append(self.drone_states)
+                if (self.enable_log.is_set()):
+                    log_entry = (time(),) + tuple(self.drone_states)
+                    self.log_vec.append(log_entry)
                 self.new_state.set()
                 self.drone_states_lock.release()
 
@@ -360,7 +406,44 @@ class Main:
             return
 
     # read new command and call requestXXX() functions
-    def crazyflieControl(self):
+    def externalCrazyflieControl(self):
+        try:
+            cf = self.cf
+
+            while not self.quit_flag.isSet():
+                if (not self.external_controller_active.is_set() ):
+                    sleep(0.01)
+                    continue
+                (x,y,z,rx,ry,rz) = self.drone_states
+                (vx,vy,vz) = self.drone_vel
+
+                if (z<-0.8):
+                    print_warning(" exceeding maximum allowable height ")
+                    print_info("switching to safety mode")
+                    self.issueCommand(Planar(0,0,-0.1))
+                    self.external_controller_active.clear()
+                    return
+
+                drone_state = (x,y,z,vx,vy,vz,rx,ry,rz)
+                ret = self.cfcontroller.control(time()-self.external_controller_t0, drone_state)
+                if (ret is None):
+                    print_info("external control finished, yielding control")
+                    self.issueCommand(Planar(0,0,-0.1))
+                    self.external_controller_active.clear()
+                    self.enable_log.clear()
+                else:
+                    (target_roll_deg, target_pitch_deg, target_yawrate_deg_s, target_thrust_raw) = ret
+
+                    target_thrust_raw = int(np.clip(target_thrust_raw,self.minThrust,0xFFFF))
+
+                    cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,target_yawrate_deg_s,target_thrust_raw)
+
+        except Exception as e:
+            print_error("crazyflieControl: "+str(e))
+        return
+
+    # read new command and call requestXXX() functions
+    def pidCrazyflieControl(self):
         try:
             cf = self.cf
             # an empty command must be sent to unlock thrust protection
@@ -369,6 +452,9 @@ class Main:
             command = None
 
             while not self.quit_flag.isSet():
+                if ( self.external_controller_active.is_set() ):
+                    sleep(0.01)
+                    continue
                 # TODO add failsafe
                 s = self.drone_states
                 #print("%.2f, %.2f %.2f ::: %.2f, %.2f %.2f"%(s[0],s[1],s[2],degrees(s[3]),degrees(s[4]),degrees(s[5])))
@@ -437,7 +523,7 @@ class Main:
         self.requestVelocity(cf,target_v)
         return
 
-    def requestVelocity(self,cf,vel_command):
+    def requestVelocity(self,cf,vel_command, yaw_des = 0.0):
         # convert velocity to vehicle frame
         (x,y,z,rx,ry,rz) = state = self.drone_states
         #print(x,y,z,degrees(rz))
@@ -464,9 +550,15 @@ class Main:
             # NOTE using world frame z velocity
             target_thrust = self.baseThrust - self.vz_pids.control(target_v_local[2], self.drone_vel[2]) * self.thrustScale
             target_thrust = int(np.clip(target_thrust,self.minThrust,0xFFFF))
-            target_yawrate_deg_s = 0
+
+            yaw_diff = yaw_des - rz
+            yaw_diff = (yaw_diff + np.pi)%(2*np.pi) - np.pi
+            target_yawrate_deg_s = self.yaw_pid.control(degrees(rz + yaw_diff), degrees(rz))
+
+
+
             #print_warning(" crazyflie command blocked ")
-            cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust)
+            cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,target_yawrate_deg_s,target_thrust)
             #print_info("sending command %.2f %.2f %.2f %d"%(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust))
             self.log_dict['thrust'] = target_thrust
             #print(target_roll_deg,-target_pitch_deg,target_thrust)

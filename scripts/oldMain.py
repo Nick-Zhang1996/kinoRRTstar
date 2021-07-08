@@ -1,4 +1,4 @@
-# test controller, fly polynomial trajectory from one point to another
+# fly multiple drone
 import threading
 import pickle
 from threading import Event,Thread,Lock
@@ -22,6 +22,7 @@ from CommandTypes import *
 
 from numeric_velocity import quad_fit_functional
 from timeUtil import execution_timer
+from cfcontroller import CFcontroller
 
 import os
 import sys
@@ -29,7 +30,6 @@ base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../src/')
 sys.path.append(base_dir)
 from kinoRRT import *
 from WorldVisualization import WorldVisualization
-from cfcontroller import CFcontroller
 
 
 class Main:
@@ -51,6 +51,9 @@ class Main:
 
         # NOTE order of initialization may be important
         # Maybe put this in a separate function
+        self.external_controller_t0 = None
+        self.cfcontroller = CFcontroller(self.dt)
+        self.initKinoRrt()
         self.initExternalController()
         self.initLog()
         self.initVisualTracking(visual_tracker)
@@ -63,6 +66,139 @@ class Main:
         self.external_controller_t0 = None
         self.cfcontroller = CFcontroller(self.dt)
 
+    def initKinoRrt(self):
+        world = World(-0.1,3, -3,3, -3,0)
+        dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
+        visual = WorldVisualization(dim)
+
+        # create a small window
+        obs1 = Box(1,1.3, -3,-2, -3,0)
+        obs2 = Box(1,1.3, -2,1, -0.7,0)
+        obs3 = Box(1,1.3, -2,1, -3,-1.5)
+        obs4 = Box(1,1.3, 1,3, -3,0)
+        start_node = Node(0,0,-0.5)
+        goal_node = Node(2.5,1,-0.5)
+
+        '''
+        world = World(-10,10,-5,5,-10,0)
+        dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
+        visual = WorldVisualization(dim)
+
+        obs1 = Box(-4,-2, -5,0, -10,0)
+        obs2 = Box(-4,-2, 0,5, -10,-5)
+        obs3 = Box(2,4, 0,5, -10,0)
+        obs4 = Box(2,4, -5,0, -5,0)
+        start_node = Node(2-10, 2-5, 2-10)
+        goal_node = Node(18-10, 8-5, 8-10)
+        '''
+
+
+        #obstacles = [obs1, obs2, obs3, obs4]
+        obstacles = [obs1, obs2, obs4]
+        for obstacle in obstacles:
+            world.addObstacle(obstacle)
+            visual.addObstacle(obstacle)
+
+
+        # TODO check start and goal are in world bobundary
+        print_info("initializing kinoRRT*")
+        rrt = KinoRrtStar(world, start_node, goal_node, 600, 10)
+
+        try:
+            print_info("running kinoRRT*")
+            t0 = time()
+            rrt.run()
+            elapsed = time()-t0
+        except (RuntimeError):
+            print_error("rrt error")
+
+        print_info("rrt search finished in " + str(elapsed) +"sec")
+
+        # sampled nodes
+        critical_waypoint_n = rrt.prepareSolution()
+        critical_waypoints = []
+        for i in range(waypoint_n):
+            p = rrt.getNextWaypoint()
+            assert (p.valid)
+            critical_waypoints.append( (p.t,p.x,p.y,p.z) )
+        # list of (t,x,y,z) 
+        critical_waypoints = np.array(critical_waypoints)
+
+        # waypoints, for accurate visualization
+        self.traj_t = traj_t = rrt.getTrajectoryTime()
+        tt = np.linspace(0,traj_t,1000)
+        waypoints = []
+        for this_t in tt:
+            waypoint = rrt.getTrajectory(this_t)
+            waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z])
+        waypoints = np.array(waypoints)
+
+        # print out critical information about trajectory
+        max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
+        max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
+        print_info("total time : %.1f sec " %(traj_t))
+        print_info("max speed : %.1f m/s " %(max_speed)
+        print_info("max acc : %.1f m/s " %(max_acc)
+
+        # rrt trajectory may demand unrealistic acceleration and velocity
+        # rescale
+        self.waypoints = waypoints
+        self.processWaypoints()
+        waypoints = self.waypoints
+
+
+        ax = visual.visualizeWorld(show=False)
+        ax.scatter(-critical_waypoints[:,1], critical_waypoints[:,2], -critical_waypoints[:,3], 'ro')
+        ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'r')
+        ax.set_xlabel("-x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("-z")
+        plt.show()
+
+        print("start")
+        print(waypoints[0])
+        print("goal")
+        print(waypoints[-1])
+
+        response = input("press q + Enter to abort, Enter to execute")
+        if (response == 'q'):
+            print_warning("Aborting...")
+            self.quit()
+            exit(0)
+            return
+        print_info("saving trajectory")
+        output = open("rrt_traj.p",'wb')
+        pickle.dump(waypoints,output)
+        output.close()
+        print_ok("success")
+
+        print_ok("Executing trajectory")
+
+
+    # adjust time scale and spacial location
+    def processWaypoints(self):
+        waypoints = self.waypoints
+        # scale time to match velocity to vehicle capabilities
+        # find max speed and scale time respectively
+        max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
+        max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
+
+        speed_scale = self.max_speed_limit / max_speed
+        acc_scale = self.max_acc_limit / max_acc
+        self.time_scale = np.min([speed_scale, acc_scale,1.0])
+        print_info("scaling factor = %.1f"%(self.time_scale))
+        waypoints[:,0] /= self.time_scale
+        waypoints[:,4:] *= self.time_scale
+
+        max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
+        max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
+
+        print_info(" after scaling ")
+        print_info("total time : %.1f sec " %(traj_t/self.time_scale))
+        print_info("max speed : %.1f m/s " %(max_speed*self.time_scale)
+        print_info("max acc : %.1f m/s " %(max_acc*self.time_scale)
+
+        self.waypoints = waypoints
 
     def initLog(self):
         # log vector: (x,y,z,rx,ry,rz,vx,vy,vz)
@@ -120,7 +256,6 @@ class Main:
         self.vx_pids = PidController(25,1,1,dt,5,30)
         self.vy_pids = PidController(25,1,1,dt,5,30)
         self.vz_pids = PidController(25,15,1,dt,1,30)
-        self.yaw_pid = PidController(2,0,0,dt,0,20)
 
         # output satuation for position controller
         self.vxy_limit = 1.0
@@ -157,7 +292,6 @@ class Main:
 
     # main entry point
     def run(self,):
-
         # guide crazyflie to initial position
         print_info("taking off")
         (x,y,z,_,_,_) = self.drone_states
@@ -198,6 +332,7 @@ class Main:
         self.quit()
         return
 
+
     def quit(self,):
         self.quit_flag.set()
         print_info("quit flag set")
@@ -234,7 +369,7 @@ class Main:
                 self.drone_vel = self.vt.getLocalVelocity(self.optitrack_internal_id)
                 #self.log_vec.append(self.drone_states+tuple(self.drone_vel)+(self.log_dict['thrust'],self.log_dict['target_vxy']))
                 if (self.enable_log.is_set()):
-                    log_entry = (time(),) + tuple(self.drone_states)
+                    log_entry = (time(),) + tuple(np.drone_states)
                     self.log_vec.append(log_entry)
                 self.new_state.set()
                 self.drone_states_lock.release()
@@ -251,9 +386,7 @@ class Main:
                 self.drone_states = (x,y,z,rx,ry,rz) = state = self.vt.getState(self.vt_id)
                 self.drone_vel = (vx,vy,vz) = self.vt.getVelocity(self.vt_id)
                 #print("%7.3f, %7.3f, %7.3f " %(vx,vy,vz))
-                if (self.enable_log.is_set()):
-                    log_entry = (time(),) + tuple(self.drone_states)
-                    self.log_vec.append(log_entry)
+                self.log_vec.append(self.drone_states)
                 self.new_state.set()
                 self.drone_states_lock.release()
 
@@ -271,7 +404,6 @@ class Main:
             print_error(e)
             return
 
-    # read new command and call requestXXX() functions
     def externalCrazyflieControl(self):
         try:
             cf = self.cf
@@ -307,6 +439,7 @@ class Main:
         except Exception as e:
             print_error("crazyflieControl: "+str(e))
         return
+
 
     # read new command and call requestXXX() functions
     def pidCrazyflieControl(self):

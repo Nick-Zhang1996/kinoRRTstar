@@ -9,11 +9,6 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-struct Waypoint {
-    double t;
-    double x,y,z,vx,vy,vz,ax,ay,az;
-    bool valid;
-};
 
 // represent one node
 struct Node {
@@ -28,6 +23,23 @@ struct Node {
     int id;
     Node():is_end(false){};
     Node(double xx, double yy, double zz):x(xx),y(yy),z(zz),is_end(false){};
+};
+
+struct Waypoint {
+    double t;
+    double x,y,z,vx,vy,vz,ax,ay,az;
+    bool valid;
+    void operator=(Node n){
+      x = n.x;
+      y = n.y;
+      z = n.z;
+      vx = n.vx;
+      vy = n.vy;
+      vz = n.vz;
+      ax = n.ax;
+      ay = n.ay;
+      az = n.az;
+    }
 };
 
 struct Point {

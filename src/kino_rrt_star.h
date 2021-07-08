@@ -30,7 +30,6 @@ class KinoRrtStar{
     int rewire_count;
     int neighbour_total_count;
     int neighbour_count;
-    Waypoint waypoint;
     list<Waypoint>::iterator waypoints_iter;
     list<Waypoint> waypoints;
   public:
@@ -46,7 +45,11 @@ class KinoRrtStar{
 
     // prepare waypoints for optimal solution, including interior points
     // return number of waypoints
+    int prepareSolutionWithInteriorPoints();
     int prepareSolution();
+    double getTrajectoryTime();
+    Waypoint getTrajectory(double t);
+    Waypoint waypoint;
     // after prepareSolution() is called
     // repeatedly call this function to get all waypoints
     // this function should be called <number of waypoints> times

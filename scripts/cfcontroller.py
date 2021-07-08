@@ -8,15 +8,19 @@ import matplotlib.pyplot as plt
 from time import time
 
 class CFcontroller:
-    def __init__(self,dt):
+    def __init__(self,dt,time_scale,rrt=None):
         self.kp = 1.0
         self.kv = 1.0
         self.dt = dt
+        self.time_scale = time_scale
 
         # time scaler
-        self.T = 8
+        #self.T = 7
+        #self.soft_start_T = 10
+        #self.soft_start_duration = 5
         # total experiment time
-        self.Tf = self.T*2
+        #self.Tf = self.T*4
+        self.Tf = rrt.getTrajectoryTime() / time_scale
 
         self.yaw_pid = PidController(2,0,0,dt,0,20)
 
@@ -24,10 +28,36 @@ class CFcontroller:
         self.g = g = 9.81
         self.m = 40e-3
         self.max_thrust = 62e-3 * g
+        self.rrt = rrt
+
+    def getTrajectory(self, t, der=0):
+        if (t > self.Tf):
+            return None
+        waypoint = rrt.getTrajectory(t*self.time_scale)
+        if (der == 0):
+            pos = np.array([waypoint.x, waypoint.y, waypoint.z])
+            return pos
+
+        if (der == 1):
+            vel = np.array([waypoint.vx, waypoint.vy, waypoint.vz])
+            vel = vel*self.time_scale
+            return vel
+
+        if (der == 2):
+            acc = np.array([waypoint.ax, waypoint.ay, waypoint.az])
+            acc = acc*self.time_scale
+            return acc
+
 
     # flower shape
-    def getTrajectory(self, t, der=0):
-        T = self.T
+    def _getTrajectory(self, t, der=0):
+        # initially quad is stationary
+        # if a small T is used, vehicle won't be able to keep up
+        # so we use a soft start
+        if (t < self.soft_start_duration):
+            T = self.soft_start_T + t/self.soft_start_duration * (self.T - self.soft_start_T)
+        else:
+            T = self.T
         R = 1.0
         A = 0.2
         e = 1e-3

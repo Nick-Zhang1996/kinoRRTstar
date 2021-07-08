@@ -31,6 +31,7 @@ class QuadOptimalControl{
   public:
   const int interior_point_count;
   double *buffer_interior_states, *buffer_interior_pos;
+  double *buffer_interior_state;
   // N: no of interior points when evaluating states between initial and final for collision checking
   QuadOptimalControl(const int N) : 
     total_time(0.0),
@@ -38,9 +39,11 @@ class QuadOptimalControl{
     interior_point_count(N){
     buffer_interior_states= new double[9*interior_point_count];
     buffer_interior_pos= new double[3*interior_point_count];
+    buffer_interior_state= new double[9];
   }
 
   ~QuadOptimalControl(){
+    delete[] buffer_interior_state;
     delete[] buffer_interior_states;
     delete[] buffer_interior_pos;
   }
@@ -119,13 +122,21 @@ class QuadOptimalControl{
   // v and a for node_f
   void setFullStatePartialFinalState(double t_s, Node& node_i, Node& node_f);
 
+  // given section time between two end states calculate full state at t and store in buffer_interior_state
+  void state(double t,double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
+  void state(double t,double t_s, Node& node_i, Node& node_f){ return state(t, t_s,  node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z,node_f.vx, node_f.vy, node_f.vz, node_f.ax, node_f.ay, node_f.az);}
+  void state(double t,double t_s, Waypoint& node_i, Waypoint& node_f){ return state(t, t_s,  node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z,node_f.vx, node_f.vy, node_f.vz, node_f.ax, node_f.ay, node_f.az);}
+
+
   // find time to go from initial to final state
   // this requires solving a polynomial
   double time(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13, double  x14, double  x15, double  x16, double  x17, double  x18, double  x19);
   double time( Node& node_i, Node& node_f){ return time( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz, node_f.ax, node_f.ay, node_f.az);}
+  double time( Waypoint& node_i, Waypoint& node_f){ return time( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz, node_f.ax, node_f.ay, node_f.az);}
 
   double timePartialFinalState(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x07, double  x08, double  x09, double  x11, double  x12, double  x13);
   double timePartialFinalState( Node& node_i, Node& node_f){ return timePartialFinalState( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
+  double timePartialFinalState( Waypoint& node_i, Waypoint& node_f){ return timePartialFinalState( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_i.ax, node_i.ay, node_i.az, node_f.x, node_f.y, node_f.z);}
 
 
   // test scripts
