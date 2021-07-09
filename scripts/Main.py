@@ -35,15 +35,24 @@ from cfcontroller import CFcontroller
 class Main:
     def __init__(self,visual_tracker='vicon'):
 
-        # common settings put here for easy access
+        # if False block control from CF
+        self.enable_control = True
+        # common settings
         self.visual_tracker_freq = 120
-        self.dt = 1.0/self.visual_tracker_freq
         # crazyflie address
         self.uri = 'radio://0/80/2M/E7E7E7E7E7'
-        self.enable_log = Event()
 
+        # parameters to limit trajectory properties
+        self.max_speed_limit = 2.0
+        self.max_acc_limit = 10
+
+
+
+
+        self.dt = 1.0/self.visual_tracker_freq
         # for simple performance tracking
         self.p = execution_timer(True)
+        self.enable_log = Event()
         # flag for quitting
         self.quit_flag = Event()
         # keep track of spawned child threads
@@ -57,6 +66,8 @@ class Main:
         self.initVisualTracking(visual_tracker)
         self.initCrazyflie()
         self.initControllers()
+        if (not self.enable_control):
+            print_warning("control is disabled")
 
         return
 
@@ -111,7 +122,7 @@ class Main:
         # sampled nodes
         critical_waypoint_n = rrt.prepareSolution()
         critical_waypoints = []
-        for i in range(waypoint_n):
+        for i in range(critical_waypoint_n):
             p = rrt.getNextWaypoint()
             assert (p.valid)
             critical_waypoints.append( (p.t,p.x,p.y,p.z) )
@@ -124,15 +135,15 @@ class Main:
         waypoints = []
         for this_t in tt:
             waypoint = rrt.getTrajectory(this_t)
-            waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z])
+            waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z, waypoint.vx, waypoint.vy, waypoint.vz, waypoint.ax, waypoint.ay, waypoint.az])
         waypoints = np.array(waypoints)
 
         # print out critical information about trajectory
         max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
         max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
         print_info("total time : %.1f sec " %(traj_t))
-        print_info("max speed : %.1f m/s " %(max_speed)
-        print_info("max acc : %.1f m/s " %(max_acc)
+        print_info("max speed : %.1f m/s " %(max_speed))
+        print_info("max acc : %.1f m/s " %(max_acc))
 
         # rrt trajectory may demand unrealistic acceleration and velocity
         # rescale
@@ -173,13 +184,18 @@ class Main:
         waypoints = self.waypoints
         # scale time to match velocity to vehicle capabilities
         # find max speed and scale time respectively
+        traj_t = waypoints[-1,0]
         max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
         max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
 
         speed_scale = self.max_speed_limit / max_speed
         acc_scale = self.max_acc_limit / max_acc
         self.time_scale = np.min([speed_scale, acc_scale,1.0])
-        print_info("scaling factor = %.1f"%(self.time_scale))
+        print_info("scaling factor = %.2f"%(self.time_scale))
+        if (speed_scale < acc_scale):
+            print_info("speed limited")
+        else:
+            print_info("acc limited")
         waypoints[:,0] /= self.time_scale
         waypoints[:,4:] *= self.time_scale
 
@@ -188,8 +204,8 @@ class Main:
 
         print_info(" after scaling ")
         print_info("total time : %.1f sec " %(traj_t/self.time_scale))
-        print_info("max speed : %.1f m/s " %(max_speed*self.time_scale)
-        print_info("max acc : %.1f m/s " %(max_acc*self.time_scale)
+        print_info("max speed : %.1f m/s " %(max_speed))
+        print_info("max acc : %.1f m/s " %(max_acc))
 
         self.waypoints = waypoints
 
@@ -293,9 +309,10 @@ class Main:
     def run(self,):
 
         # guide crazyflie to initial position
-        print_info("taking off")
+        print_ok("taking off")
         (x,y,z,_,_,_) = self.drone_states
-        print_ok(x,y,z)
+        print_info("current pos")
+        print_info(x,y,z)
         self.issueCommand(Planar(0,0,-0.3))
         response = input("press Enter to continue(go to start pos), q+enter to quit \n")
         if (response == 'q'):
@@ -304,10 +321,11 @@ class Main:
             exit(0)
             return
 
-        print_info("going to start position")
+        print_ok("going to start position")
         retval = self.cfcontroller.getTrajectory(0.0)
         target_x,target_y,target_z = retval
-        print_ok(retval)
+        print_info("start pos")
+        print_info(retval)
         cmd = Pos(x=target_x, y=target_y, z=target_z)
         self.issueCommand(cmd)
         response = input("press Enter to continue, q+enter to quit \n")
@@ -323,7 +341,7 @@ class Main:
         self.external_controller_active.set()
 
         input("press Enter to land (and stop log) \n")
-        print_info("landing")
+        print_ok("landing")
         self.issueCommand(Planar(0,0,-0.1))
         self.external_controller_active.clear()
         self.enable_log.clear()
@@ -436,7 +454,8 @@ class Main:
 
                     target_thrust_raw = int(np.clip(target_thrust_raw,self.minThrust,0xFFFF))
 
-                    cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,target_yawrate_deg_s,target_thrust_raw)
+                    if (self.enable_control):
+                        cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,target_yawrate_deg_s,target_thrust_raw)
 
         except Exception as e:
             print_error("crazyflieControl: "+str(e))
@@ -558,7 +577,8 @@ class Main:
 
 
             #print_warning(" crazyflie command blocked ")
-            cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,target_yawrate_deg_s,target_thrust)
+            if (self.enable_control):
+                cf.commander.send_setpoint(target_roll_deg,-target_pitch_deg,target_yawrate_deg_s,target_thrust)
             #print_info("sending command %.2f %.2f %.2f %d"%(target_roll_deg,-target_pitch_deg,-target_yawrate_deg_s,target_thrust))
             self.log_dict['thrust'] = target_thrust
             #print(target_roll_deg,-target_pitch_deg,target_thrust)
