@@ -35,37 +35,7 @@ ry = data[skip:,5]
 rz = data[skip:,6]
 
 
-# ------  Plot World ------
-world = World(-0.1,3, -3,3, -3,0)
-dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
-visual = WorldVisualization(dim)
-
-# create a small window
-obs1 = Box(1,1.3, -3,-2, -3,0)
-obs2 = Box(1,1.3, -2,1, -0.7,0)
-obs3 = Box(1,1.3, -2,1, -3,-1.5)
-obs4 = Box(1,1.3, 1,3, -3,0)
-start_node = Node(0,0,-0.5)
-goal_node = Node(2.5,1,-0.5)
-
-#obstacles = [obs1, obs2, obs3, obs4]
-obstacles = [obs1, obs2, obs4]
-for obstacle in obstacles:
-    visual.addObstacle(obstacle)
-ax = visual.visualizeWorld(show=False)
-# ------ plot desired trajectory ( waypoints) ------
-ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'b', label='desired')
-
-# ------ plot actual trajectory
-ax.plot(-x, y, -z, color='r', label='actual')
-ax.set_xlabel('-x')
-ax.set_ylabel('-y')
-ax.set_zlabel('altitude (-z)')
-ax.legend()
-plt.show()
-
-# ------ Mic Analytics ------
-
+# ------ Misc Analytics ------
 print_ok("desired")
 desired_max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
 desired_max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
@@ -83,10 +53,43 @@ max_acc = np.max((ddx*ddx + ddy*ddy))**0.5
 print_info("trajectory time %.2f" %(t[-1]))
 print_info("(?)max speed : %.1f m/s "%(max_speed))
 print_info("(?)max acc : %.1f m/s "%(max_acc))
+'''
 print_info("speed")
 plt.plot((dx*dx + dy*dy)**0.5)
 plt.show()
 print_info("acc")
 plt.plot((ddx*ddx + ddy*ddy)**0.5,'o')
 plt.show()
+'''
+print_info("roll/pitch")
+plt.plot(rx*180.0/np.pi)
+plt.plot(ry*180.0/np.pi)
+plt.show()
+
+# ------  Plot World ------
+world = World(-5.5,5.5,-2.5,2.5,-3,0)
+dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
+visual = WorldVisualization(dim)
+
+obs1 = Box(-3,-1.7, -2.5,1, -3,0)
+obs2 = Box(-3,-1.7, 1,2.5, -3,-1)
+obs3 = Box(1.7,3, -1,2.5, -3,0)
+obs4 = Box(1.7,3, -2.5,-1, -1,0)
+start_node = Node(-4, 0, -0.3)
+goal_node = Node(4,0,-0.3)
+obstacles = [obs1, obs2, obs3, obs4]
+for obstacle in obstacles:
+    visual.addObstacle(obstacle)
+ax = visual.visualizeWorld(show=False)
+# ------ plot desired trajectory ( waypoints) ------
+ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'b', label='desired')
+
+# ------ plot actual trajectory
+ax.plot(-x, y, -z, color='r', label='actual')
+ax.set_xlabel('-x')
+ax.set_ylabel('-y')
+ax.set_zlabel('altitude (-z)')
+ax.legend()
+plt.show()
+
 

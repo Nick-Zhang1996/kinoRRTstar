@@ -184,8 +184,8 @@ void KinoRrtStar::moveToVicinity(Node& node, Node& target, double radius){
 bool KinoRrtStar::connectToGoal(Node& node){
   if (dist(node, end_node) > getNeighnourRadius()){ return false; }
   // find traj
-  double t = oc.timePartialFinalState(node, end_node);
-  double* interior_pos = oc.interiorPositionPartialFinalState(t, node, end_node);
+  double t = oc.time(node, end_node);
+  double* interior_pos = oc.interiorPosition(t, node, end_node);
   //   check traj collision
   if (world.checkNoPathCollision(interior_pos)){ 
     return true; 

@@ -43,11 +43,8 @@ class Main:
         self.uri = 'radio://0/80/2M/E7E7E7E7E7'
 
         # parameters to limit trajectory properties
-        self.max_speed_limit = 2.0
+        self.max_speed_limit = 3.0
         self.max_acc_limit = 10
-
-
-
 
         self.dt = 1.0/self.visual_tracker_freq
         # for simple performance tracking
@@ -72,34 +69,20 @@ class Main:
         return
 
     def initKinoRrt(self):
-        world = World(-0.1,3, -3,3, -3,0)
+
+        world = World(-5.5,5.5,-2.5,2.5,-3,-0.1)
         dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
         visual = WorldVisualization(dim)
 
-        # create a small window
-        obs1 = Box(1,1.3, -3,-2, -3,0)
-        obs2 = Box(1,1.3, -2,1, -0.7,0)
-        obs3 = Box(1,1.3, -2,1, -3,-1.5)
-        obs4 = Box(1,1.3, 1,3, -3,0)
-        start_node = Node(0,0,-0.5)
-        goal_node = Node(2.5,1,-0.5)
-
-        '''
-        world = World(-10,10,-5,5,-10,0)
-        dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
-        visual = WorldVisualization(dim)
-
-        obs1 = Box(-4,-2, -5,0, -10,0)
-        obs2 = Box(-4,-2, 0,5, -10,-5)
-        obs3 = Box(2,4, 0,5, -10,0)
-        obs4 = Box(2,4, -5,0, -5,0)
-        start_node = Node(2-10, 2-5, 2-10)
-        goal_node = Node(18-10, 8-5, 8-10)
-        '''
+        obs1 = Box(-3,-1.7, -2.5,1, -3,0)
+        obs2 = Box(-3,-1.7, 1,2.5, -3,-1)
+        obs3 = Box(1.7,3, -1,2.5, -3,0)
+        obs4 = Box(1.7,3, -2.5,-1, -1,0)
+        start_node = Node(-4, 0, -0.3)
+        goal_node = Node(4,0,-0.3)
 
 
-        #obstacles = [obs1, obs2, obs3, obs4]
-        obstacles = [obs1, obs2, obs4]
+        obstacles = [obs1, obs2, obs3, obs4]
         for obstacle in obstacles:
             world.addObstacle(obstacle)
             visual.addObstacle(obstacle)
@@ -107,7 +90,7 @@ class Main:
 
         # TODO check start and goal are in world bobundary
         print_info("initializing kinoRRT*")
-        self.rrt = rrt = KinoRrtStar(world, start_node, goal_node, 600, 10)
+        self.rrt = rrt = KinoRrtStar(world, start_node, goal_node, 600, 30)
 
         try:
             print_info("running kinoRRT*")
@@ -435,7 +418,7 @@ class Main:
                 (x,y,z,rx,ry,rz) = self.drone_states
                 (vx,vy,vz) = self.drone_vel
 
-                if (z<-0.8):
+                if (z<-2.0):
                     print_warning(" exceeding maximum allowable height ")
                     print_info("switching to safety mode")
                     self.issueCommand(Planar(0,0,-0.1))
