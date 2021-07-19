@@ -6,6 +6,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 from itertools import product, combinations
 from mpl_toolkits.mplot3d import Axes3D
+
+import os
+import sys
+base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../src/')
+sys.path.append(base_dir)
 from kinoRRT import World
 
 class WorldVisualization:

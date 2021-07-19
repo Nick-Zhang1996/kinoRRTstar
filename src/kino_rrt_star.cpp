@@ -57,6 +57,9 @@ void KinoRrtStar::showResult(){
 void KinoRrtStar::buildTreeTillFirstSolution(){
   while (tree.getSolutionCount() == 0 && tree.getNodeCount() < 10000) {
     sampleNode();
+    if (tree.getNodeCount() % 100 == 0){
+      cout << tree.getNodeCount() << "\n";
+    }
   }
 }
 
@@ -65,11 +68,9 @@ void KinoRrtStar::buildTreeTillNodeCount(){
   //
   while (tree.getNodeCount() < target_node_count ){
     sampleNode();
-    /*
     if (tree.getNodeCount() % 100 == 0){
       cout << tree.getNodeCount() << "\n";
     }
-    */
   }
 
 }
@@ -326,7 +327,9 @@ int KinoRrtStar::prepareSolution(){
   // key_waypoints_reversed includes index of lowest cost node connected to end node ... root node(start) 
   list<int> key_waypoints_reversed;
   int this_node_id = overall_lowest_cost_id;
-  assert (tree.node(this_node_id).is_end);
+  if (!tree.node(this_node_id).is_end){
+    return 0;
+  }
 
   key_waypoints_reversed.push_back(this_node_id);
   while (this_node_id != 0){
@@ -335,7 +338,7 @@ int KinoRrtStar::prepareSolution(){
     key_waypoints_reversed.push_back(this_node_id);
   }
 
-  // now reverse iterate on the key waypoints, adding in interior points
+  // now reverse iterate on the key waypoints construct list and add timestamp
   double waypoint_t = 0.0;
   waypoints.clear();
   list<int>::reverse_iterator i=key_waypoints_reversed.rbegin();
@@ -351,6 +354,10 @@ int KinoRrtStar::prepareSolution(){
 
     waypoints.push_back(p);
     waypoint_t += section_time;
+    // DEBUG verify no collision
+    if (!world.checkNoCollision(p.x,p.y,p.z)){
+      cout << "[prepareSolution()] found invalid waypoint()" << endl;
+    }
   }
 
   // now add in last waypoint to goal_node

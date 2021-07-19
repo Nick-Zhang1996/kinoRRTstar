@@ -45,6 +45,7 @@ BOOST_PYTHON_MODULE(kinoRRT){
   class_<KinoRrtStar>("KinoRrtStar",init<World&, Node&, Node&, int, int>())
     .def("run", &KinoRrtStar::run)
     .def("prepareSolution", &KinoRrtStar::prepareSolution)
+    .def("prepareSolutionWithInteriorPoints", &KinoRrtStar::prepareSolutionWithInteriorPoints)
     .def("getNextWaypoint", &KinoRrtStar::getNextWaypoint)
     .def("getTrajectoryTime", &KinoRrtStar::getTrajectoryTime)
     .def("getTrajectory", &KinoRrtStar::getTrajectory)
