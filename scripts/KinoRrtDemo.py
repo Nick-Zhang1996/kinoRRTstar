@@ -27,7 +27,6 @@ start_node = Node(2-10, 2-5, 2-10)
 goal_node = Node(18-10, 8-5, 8-10)
 obstacles = [obs1, obs2, obs3, obs4]
 
-'''
 # successful experiment 1, short trajectory
 world = World(-0.1,3, -3,3, -3,0)
 dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
@@ -40,9 +39,10 @@ obs3 = Box(1,1.3, -2,1, -3,-1.5)
 obs4 = Box(1,1.3, 1,3, -3,0)
 start_node = Node(0,0,-0.5)
 goal_node = Node(2.5,1,-0.5)
-obstacles = [obs1,obs2,obs3,obs4]
-
+obstacles = [obs1,obs2,obs3]
 '''
+
+# newly created window obstacle
 start_node = Node(-4, 0, -0.3)
 goal_node = Node(4,0,-0.3)
 
@@ -52,7 +52,6 @@ visual = WorldVisualization(dim)
 obstacles = []
 obstacles += createWindow((-2,0,0), 1, True, world)
 #obstacles += createWindow((2,-1,0), 1, False, world)
-'''
 for obstacle in obstacles:
     world.addObstacle(obstacle)
     visual.addObstacle(obstacle)
@@ -71,7 +70,7 @@ except (RuntimeError):
 
 print_info("rrt search finished in " + str(elapsed) +"sec")
 
-key_waypoint_n = rrt.prepareSolutionWithInteriorPoints()
+key_waypoint_n = rrt.prepareSolution()
 if (key_waypoint_n == 0):
     print_error("RRT failed to find a solution")
     exit(1)

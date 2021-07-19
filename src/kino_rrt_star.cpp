@@ -243,6 +243,7 @@ int KinoRrtStar::prepareSolutionWithInteriorPoints(){
 
     // add early_node
     Waypoint p;
+    p.valid = true;
     p.t = waypoint_t;
     p.x = early_node.x;
     p.y = early_node.y;
@@ -259,6 +260,7 @@ int KinoRrtStar::prepareSolutionWithInteriorPoints(){
     waypoint_t += step_time;
     for (int i=0; i<interior_point_count; i++){
       Waypoint p;
+      p.valid = true;
       p.t = waypoint_t;
       p.x = *(pos_buffer + i*3 + 0);
       p.y = *(pos_buffer + i*3 + 1);
@@ -272,6 +274,7 @@ int KinoRrtStar::prepareSolutionWithInteriorPoints(){
     if (tree.isRoot(late_node)){
       // now add the very last node
       Waypoint p;
+      p.valid = true;
       p.t = waypoint_t;
       p.x = late_node.x;
       p.y = late_node.y;
@@ -287,6 +290,7 @@ int KinoRrtStar::prepareSolutionWithInteriorPoints(){
   Node& early_node = tree.node(overall_lowest_cost_id);
 
   Waypoint p;
+  p.valid = true;
   p.t = waypoint_t;
   p.x = early_node.x;
   p.y = early_node.y;
@@ -300,6 +304,7 @@ int KinoRrtStar::prepareSolutionWithInteriorPoints(){
   waypoint_t += step_time;
   for (int i=0; i<interior_point_count; i++){
     Waypoint p;
+    p.valid = true;
     p.t = waypoint_t;
     p.x = *(pos_buffer + i*3 + 0);
     p.y = *(pos_buffer + i*3 + 1);
