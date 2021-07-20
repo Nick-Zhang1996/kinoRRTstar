@@ -39,26 +39,29 @@ obs3 = Box(1,1.3, -2,1, -3,-1.5)
 obs4 = Box(1,1.3, 1,3, -3,0)
 start_node = Node(0,0,-0.5)
 goal_node = Node(2.5,1,-0.5)
-obstacles = [obs1,obs2,obs3]
+obstacles = [obs1,obs2,obs3,obs4]
 '''
-
 # newly created window obstacle
-start_node = Node(-4, 0, -0.3)
-goal_node = Node(4,0,-0.3)
+start_node = Node(-1.8, 0.6, -0.6)
+goal_node = Node(1.7,0,-2)
 
-world = World(-6,6,-2.5,2.5,-3,0)
+#world = World(-6,6,-2.5,2.5,-3,0)
+world = World(-2,2,-0.7,1,-2.5,0)
 dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
 visual = WorldVisualization(dim)
 obstacles = []
-obstacles += createWindow((-2,0,0), 1, True, world)
-#obstacles += createWindow((2,-1,0), 1, False, world)
+obstacles += createWindow((-1,0,0), 0.5, True, world)
+obstacles += createWindow((0.5,-1,0), 0.5, False, world)
 for obstacle in obstacles:
     world.addObstacle(obstacle)
     visual.addObstacle(obstacle)
 
+visual.visualizeWorld(show=True)
+
 # TODO check start and goal are in world bobundary
 print_info("initializing kinoRRT*")
-rrt = KinoRrtStar(world, start_node, goal_node, 0, 50)
+interior_points = 50
+rrt = KinoRrtStar(world, start_node, goal_node, 1800, interior_points)
 
 try:
     print_info("running kinoRRT*")
@@ -75,9 +78,12 @@ if (key_waypoint_n == 0):
     print_error("RRT failed to find a solution")
     exit(1)
 key_waypoints = []
-for i in range(key_waypoint_n):
+
+#for i in range(key_waypoint_n):
+p = rrt.getNextWaypoint()
+key_waypoints.append( (p.t,p.x,p.y,p.z) )
+while (p.valid):
     p = rrt.getNextWaypoint()
-    assert (p.valid)
     key_waypoints.append( (p.t,p.x,p.y,p.z) )
 
 # list of (t,x,y,z) 

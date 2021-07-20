@@ -82,6 +82,9 @@ class WorldVisualization:
         X, Y, Z = cuboid_data( pos, size )
         #ax.plot_wireframe(X, Y, Z, rstride=1, cstride=1,color='w')
         ax.scatter(-X, Y, -Z,'k')
+        ax.set_xlabel("-x")
+        ax.set_ylabel("y")
+        ax.set_zlabel("-z")
 
         if show:
             plt.show()

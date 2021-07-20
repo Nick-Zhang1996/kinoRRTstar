@@ -64,6 +64,7 @@ class KinoRrtStar{
     void moveToVicinity(Node& node, Node& target, double radius);
     bool connectToGoal(Node& node);
     double getNeighnourRadius();
+    double getSampleRadius();
 
     double sqr(double a) { return a*a; }
     double dist(Node& a, Node& b) { return sqrt(sqr(a.x-b.x) + sqr(a.y-b.y) + sqr(a.z-b.z)); }

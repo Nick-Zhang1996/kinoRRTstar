@@ -21,22 +21,22 @@ def createWindow(origin, thickness, low, world):
     # create the actual obstacle 
     if (low):
         # lowest
-        obs1 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+4*f2m, origin[2]-10*in2m, origin[2])
+        obs1 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+4*f2m, origin[2]-16*in2m, origin[2])
         # window left
-        obs2 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+10*in2m, origin[2]-32*in2m, origin[2]-10*in2m)
+        obs2 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+16*in2m, origin[2]-32*in2m, origin[2]-16*in2m)
         # window right
-        obs3 = Box(origin[0], origin[0]+thickness, origin[1]+4*f2m-10*in2m, origin[1]+4*f2m, origin[2]-32*in2m, origin[2]-10*in2m)
+        obs3 = Box(origin[0], origin[0]+thickness, origin[1]+4*f2m-16*in2m, origin[1]+4*f2m, origin[2]-32*in2m, origin[2]-16*in2m)
         # upper part
         obs4 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+4*f2m, origin[2]-8*f2m, origin[2]-32*in2m)
     else:
         # lower part
         obs1 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+4*f2m, origin[2]-8*f2m+32*in2m, origin[2])
         # window left
-        obs2 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+10*in2m, origin[2]-8*f2m+10*in2m, origin[2]-8*f2m+32*in2m)
+        obs2 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+16*in2m, origin[2]-8*f2m+16*in2m, origin[2]-8*f2m+32*in2m)
         # window right
-        obs3 = Box(origin[0], origin[0]+thickness, origin[1]+4*f2m-10*in2m, origin[1]+4*f2m,origin[2]-8*f2m+10*in2m, origin[2]-8*f2m+32*in2m)
+        obs3 = Box(origin[0], origin[0]+thickness, origin[1]+4*f2m-16*in2m, origin[1]+4*f2m,origin[2]-8*f2m+16*in2m, origin[2]-8*f2m+32*in2m)
         # upper
-        obs4 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+4*f2m, origin[2]-8*f2m, origin[2]-8*f2m+10*in2m)
+        obs4 = Box(origin[0], origin[0]+thickness, origin[1], origin[1]+4*f2m, origin[2]-8*f2m, origin[2]-8*f2m+16*in2m)
     obstacles = [obs1, obs2, obs3, obs4]
 
     # create the virtual obstacle to block the remaining open space

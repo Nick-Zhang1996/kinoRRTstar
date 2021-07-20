@@ -65,7 +65,6 @@ void KinoRrtStar::buildTreeTillFirstSolution(){
 
 void KinoRrtStar::buildTreeTillNodeCount(){
   // keep sampling node until terminal condition is met
-  //
   while (tree.getNodeCount() < target_node_count ){
     sampleNode();
     if (tree.getNodeCount() % 100 == 0){
@@ -80,11 +79,11 @@ void KinoRrtStar::sampleNode(){
   Node new_node = getRandomNode();
 
   Node& closest_node = tree.getClosest(new_node);
-  double radius = getNeighnourRadius();
+  double sample_radius = getSampleRadius();
   // move to closest existing node
   // NOTE in place operation
   // sets x,y,z
-  moveToVicinity(new_node, closest_node, radius);
+  moveToVicinity(new_node, closest_node, sample_radius);
 
   //   check node collision
   if (!world.checkNoCollision(new_node)){ return; }
@@ -95,6 +94,7 @@ void KinoRrtStar::sampleNode(){
   //   check traj collision
   if (!world.checkNoPathCollision(interior_pos)){ return; }
   // search for better parent (lower segment cost)
+  double radius = getNeighnourRadius();
   list<int> id_parent_candidates = tree.getNeighbourId(new_node, radius);
   int id_best_parent = closest_node.id;
   double lowest_cost = closest_node.cost + oc.costPartialFreeFinalState(t, closest_node, new_node);
@@ -199,8 +199,11 @@ bool KinoRrtStar::connectToGoal(Node& node){
 double KinoRrtStar::getNeighnourRadius(){
   double nun = (double) tree.getNodeCount();
   double ner = 40.0 * pow( ( log(nun + 1) / nun ), 1.0/3.0 );
-  return min(ner,4.0);
+  return min(ner,1.0);
+}
 
+double KinoRrtStar::getSampleRadius(){
+  return 0.3;
 }
 
 int KinoRrtStar::prepareSolutionWithInteriorPoints(){
