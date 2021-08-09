@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/test_quad_optimal_control.dir/test_quad_optimal_control.cpp.o CMakeFiles/test_quad_optimal_control.dir/__/quad_optimal_control.cpp.o CMakeFiles/test_quad_optimal_control.dir/quad_oc_tests.cpp.o  -o test_quad_optimal_control 

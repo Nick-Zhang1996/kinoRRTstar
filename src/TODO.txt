@@ -1,2 +1,0 @@
-1. use full final state in connectToGoal()
-2. send back sampled nodes, assemble continuous trajectory in python ( implement interior state function in python)

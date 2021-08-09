@@ -1,0 +1,42 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/nick/dcsl/kinoRRTstar/src/common.h
+iostream
+-
+list
+-
+vector
+-
+
+/home/nick/dcsl/kinoRRTstar/src/tests/test_tree.cpp
+tree.h
+/home/nick/dcsl/kinoRRTstar/src/tests/tree.h
+iostream
+-
+
+/home/nick/dcsl/kinoRRTstar/src/tree.cpp
+tree.h
+/home/nick/dcsl/kinoRRTstar/src/tree.h
+
+/home/nick/dcsl/kinoRRTstar/src/tree.h
+iostream
+-
+list
+-
+vector
+-
+limits
+-
+assert.h
+-
+math.h
+-
+common.h
+/home/nick/dcsl/kinoRRTstar/src/common.h
+

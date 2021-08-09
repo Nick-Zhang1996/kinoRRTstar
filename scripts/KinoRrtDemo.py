@@ -4,9 +4,9 @@ import numpy as np
 from time import time
 import matplotlib.pyplot as plt
 
-base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../src/')
+base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../build/')
 sys.path.append(base_dir)
-from kinoRRT import *
+from libkinoRrt import *
 
 from WorldVisualization import WorldVisualization
 from common import *

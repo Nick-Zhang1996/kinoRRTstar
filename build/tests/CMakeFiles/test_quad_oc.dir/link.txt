@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/test_quad_oc.dir/quad_oc_tests.cpp.o  -o test_quad_oc 
