@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 project(RigidBodyPlanning VERSION 1.0)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 include_directories(SYSTEM ${Boost_INCLULDE_DIR})
 
@@ -11,6 +11,7 @@ find_package(ompl)
 find_package(Eigen3 3.3 REQUIRED)
 
 add_executable(RigidBodyPlanning RigidBodyPlanning.cpp)
+target_include_directories(RigidBodyPlanning PRIVATE ${OMPL_INCLUDE_DIRS})
 
 target_link_libraries(RigidBodyPlanning
   ompl
