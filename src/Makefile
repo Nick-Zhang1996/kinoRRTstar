@@ -5,7 +5,8 @@ CFLAGS=-I. -lm -fpic -Wall -g
 DEPS = common.h
 LIBRARY_PATH = usr/lib/x86_64-linux-gnu:$LIBRARY_PATH
 
-INCLUDE_PYTHON=/usr/include/python3.8
+#INCLUDE_PYTHON=/usr/include/python3.8
+INCLUDE_PYTHON=/usr/include/python3.9
 
 all: main kinoRRT.so
 
@@ -20,10 +21,10 @@ main.o: main.cpp world.h tree.h common.h kino_rrt_star.h
 
 
 boost_wrapper.o: boost_wrapper.cpp common.h world.h kino_rrt_star.h
-	$(CC) -c -o $@ $< $(CFLAGS) -I$(INCLUDE_PYTHON) -lboost_python38
+	$(CC) -c -o $@ $< $(CFLAGS) -I$(INCLUDE_PYTHON) -lboost_python3
 
 kinoRRT.so: boost_wrapper.o world.o kino_rrt_star.o quad_optimal_control.o tree.o
-	$(CC) -shared -o $@ $^ $(CFLAGS) -I$(INCLUDE_PYTHON) -lboost_python38
+	$(CC) -shared -o $@ $^ $(CFLAGS) -I$(INCLUDE_PYTHON) -lboost_python3
 
 ##### tests -------------
 

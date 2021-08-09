@@ -31,6 +31,8 @@ from kinoRRT import *
 from WorldVisualization import WorldVisualization
 from cfcontroller import CFcontroller
 
+from window import createWindow
+
 
 class Main:
     def __init__(self,visual_tracker='vicon'):
@@ -86,7 +88,7 @@ class Main:
 
         # TODO check start and goal are in world bobundary
         print_info("initializing kinoRRT*")
-        self.rrt = rrt = KinoRrtStar(world, start_node, goal_node, 600, 30)
+        self.rrt = rrt = KinoRrtStar(world, start_node, goal_node, 1800, 50)
 
         try:
             print_info("running kinoRRT*")
@@ -414,7 +416,7 @@ class Main:
                 (x,y,z,rx,ry,rz) = self.drone_states
                 (vx,vy,vz) = self.drone_vel
 
-                if (z<-2.0):
+                if (z<-4.0):
                     print_warning(" exceeding maximum allowable height ")
                     print_info("switching to safety mode")
                     self.issueCommand(Planar(0,0,-0.1))

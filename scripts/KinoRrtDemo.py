@@ -13,7 +13,6 @@ from common import *
 from window import createWindow
 
 
-'''
 # Original big test world
 world = World(-10,10,-5,5,-10,0)
 dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
@@ -26,6 +25,7 @@ obs4 = Box(2,4, -5,0, -5,0)
 start_node = Node(2-10, 2-5, 2-10)
 goal_node = Node(18-10, 8-5, 8-10)
 obstacles = [obs1, obs2, obs3, obs4]
+'''
 
 # successful experiment 1, short trajectory
 world = World(-0.1,3, -3,3, -3,0)
@@ -41,6 +41,8 @@ start_node = Node(0,0,-0.5)
 goal_node = Node(2.5,1,-0.5)
 obstacles = [obs1,obs2,obs3,obs4]
 '''
+
+'''
 # newly created window obstacle
 start_node = Node(-1.8, 0.6, -0.6)
 goal_node = Node(1.7,0,-2)
@@ -52,6 +54,7 @@ visual = WorldVisualization(dim)
 obstacles = []
 obstacles += createWindow((-1,0,0), 0.5, True, world)
 obstacles += createWindow((0.5,-1,0), 0.5, False, world)
+'''
 for obstacle in obstacles:
     world.addObstacle(obstacle)
     visual.addObstacle(obstacle)
@@ -61,7 +64,7 @@ visual.visualizeWorld(show=True)
 # TODO check start and goal are in world bobundary
 print_info("initializing kinoRRT*")
 interior_points = 50
-rrt = KinoRrtStar(world, start_node, goal_node, 1800, interior_points)
+rrt = KinoRrtStar(world, start_node, goal_node, 4000, interior_points)
 
 try:
     print_info("running kinoRRT*")

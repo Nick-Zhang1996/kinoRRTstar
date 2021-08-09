@@ -9,6 +9,7 @@ base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../src/')
 sys.path.append(base_dir)
 from kinoRRT import *
 from WorldVisualization import WorldVisualization
+from window import createWindow
 
 
 # ------  Load data ------
@@ -60,24 +61,22 @@ plt.show()
 print_info("acc")
 plt.plot((ddx*ddx + ddy*ddy)**0.5,'o')
 plt.show()
-'''
 print_info("roll/pitch")
 plt.plot(rx*180.0/np.pi)
 plt.plot(ry*180.0/np.pi)
 plt.show()
+'''
 
-# ------  Plot World ------
-world = World(-5.5,5.5,-2.5,2.5,-3,0)
+start_node = Node(-1.8, 0.6, -0.6)
+goal_node = Node(1.7,0,-2)
+
+world = World(-2,2,-0.7,1,-2.5,0)
 dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
 visual = WorldVisualization(dim)
-
-obs1 = Box(-3,-1.7, -2.5,1, -3,0)
-obs2 = Box(-3,-1.7, 1,2.5, -3,-1)
-obs3 = Box(1.7,3, -1,2.5, -3,0)
-obs4 = Box(1.7,3, -2.5,-1, -1,0)
-start_node = Node(-4, 0, -0.3)
-goal_node = Node(4,0,-0.3)
-obstacles = [obs1, obs2, obs3, obs4]
+obstacles = []
+obstacles += createWindow((-1,0,0), 0.5, True, world)
+obstacles += createWindow((0.5,-1,0), 0.5, False, world)
+# ------  Plot World ------
 for obstacle in obstacles:
     visual.addObstacle(obstacle)
 ax = visual.visualizeWorld(show=False)

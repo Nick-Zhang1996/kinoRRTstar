@@ -32,8 +32,10 @@ class CFcontroller:
 
     def getTrajectory(self, t, der=0):
         if (t > self.Tf):
-            return None
-        waypoint = self.rrt.getTrajectory(t*self.time_scale)
+            #return None
+            waypoint = self.rrt.getTrajectory(self.Tf*self.time_scale)
+        else:
+            waypoint = self.rrt.getTrajectory(t*self.time_scale)
         if (der == 0):
             pos = np.array([waypoint.x, waypoint.y, waypoint.z])
             return pos
