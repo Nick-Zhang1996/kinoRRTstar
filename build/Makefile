@@ -162,6 +162,19 @@ test_tree/fast:
 	$(MAKE) -f tests/CMakeFiles/test_tree.dir/build.make tests/CMakeFiles/test_tree.dir/build
 .PHONY : test_tree/fast
 
+#=============================================================================
+# Target rules for targets named RigidBodyPlanning
+
+# Build rule for target.
+RigidBodyPlanning: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 RigidBodyPlanning
+.PHONY : RigidBodyPlanning
+
+# fast build rule for target.
+RigidBodyPlanning/fast:
+	$(MAKE) -f sst/CMakeFiles/RigidBodyPlanning.dir/build.make sst/CMakeFiles/RigidBodyPlanning.dir/build
+.PHONY : RigidBodyPlanning/fast
+
 boost_wrapper.o: boost_wrapper.cpp.o
 
 .PHONY : boost_wrapper.o
@@ -348,6 +361,7 @@ help:
 	@echo "... kinoRRT"
 	@echo "... test_quad_optimal_control"
 	@echo "... test_tree"
+	@echo "... RigidBodyPlanning"
 	@echo "... boost_wrapper.o"
 	@echo "... boost_wrapper.i"
 	@echo "... boost_wrapper.s"

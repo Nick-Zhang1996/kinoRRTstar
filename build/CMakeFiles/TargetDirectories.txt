@@ -6,3 +6,6 @@
 /home/nick/dcsl/kinoRRTstar/build/tests/CMakeFiles/edit_cache.dir
 /home/nick/dcsl/kinoRRTstar/build/tests/CMakeFiles/test_quad_optimal_control.dir
 /home/nick/dcsl/kinoRRTstar/build/tests/CMakeFiles/test_tree.dir
+/home/nick/dcsl/kinoRRTstar/build/sst/CMakeFiles/rebuild_cache.dir
+/home/nick/dcsl/kinoRRTstar/build/sst/CMakeFiles/RigidBodyPlanning.dir
+/home/nick/dcsl/kinoRRTstar/build/sst/CMakeFiles/edit_cache.dir
