@@ -3,10 +3,12 @@ project(kinoRRT VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-#include_directories(SYSTEM ${Boost_INCLULDE_DIR})
+include_directories(SYSTEM ${Boost_INCLULDE_DIR})
 
+find_package(ompl)
 find_package(PythonLibs 3.6 EXACT REQUIRED)
 find_package(Boost 1.58 QUIET REQUIRED COMPONENTS serialization filesystem system program_options python3)
+find_package(Eigen3 3.3 REQUIRED)
 
 include_directories(${PROJECT_SOURCE_DIR})
 
@@ -30,3 +32,4 @@ message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
 #  ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 add_subdirectory(tests)
+add_subdirectory(sst)
