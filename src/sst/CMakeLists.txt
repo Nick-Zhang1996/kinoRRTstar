@@ -1,6 +1,3 @@
-find_package(ompl)
-find_package(Eigen3 3.3 REQUIRED)
-
 add_executable(RigidBodyPlanning RigidBodyPlanning.cpp)
 
 target_link_libraries(RigidBodyPlanning
