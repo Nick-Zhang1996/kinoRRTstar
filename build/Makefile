@@ -124,17 +124,17 @@ main/fast:
 .PHONY : main/fast
 
 #=============================================================================
-# Target rules for targets named kinoRrt
+# Target rules for targets named kinoRRT
 
 # Build rule for target.
-kinoRrt: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 kinoRrt
-.PHONY : kinoRrt
+kinoRRT: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 kinoRRT
+.PHONY : kinoRRT
 
 # fast build rule for target.
-kinoRrt/fast:
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/build
-.PHONY : kinoRrt/fast
+kinoRRT/fast:
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/build
+.PHONY : kinoRRT/fast
 
 #=============================================================================
 # Target rules for targets named test_quad_optimal_control
@@ -168,7 +168,7 @@ boost_wrapper.o: boost_wrapper.cpp.o
 
 # target to build an object file
 boost_wrapper.cpp.o:
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/boost_wrapper.cpp.o
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/boost_wrapper.cpp.o
 .PHONY : boost_wrapper.cpp.o
 
 boost_wrapper.i: boost_wrapper.cpp.i
@@ -177,7 +177,7 @@ boost_wrapper.i: boost_wrapper.cpp.i
 
 # target to preprocess a source file
 boost_wrapper.cpp.i:
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/boost_wrapper.cpp.i
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/boost_wrapper.cpp.i
 .PHONY : boost_wrapper.cpp.i
 
 boost_wrapper.s: boost_wrapper.cpp.s
@@ -186,7 +186,7 @@ boost_wrapper.s: boost_wrapper.cpp.s
 
 # target to generate assembly for a file
 boost_wrapper.cpp.s:
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/boost_wrapper.cpp.s
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/boost_wrapper.cpp.s
 .PHONY : boost_wrapper.cpp.s
 
 kino_rrt_star.o: kino_rrt_star.cpp.o
@@ -196,7 +196,7 @@ kino_rrt_star.o: kino_rrt_star.cpp.o
 # target to build an object file
 kino_rrt_star.cpp.o:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/kino_rrt_star.cpp.o
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/kino_rrt_star.cpp.o
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/kino_rrt_star.cpp.o
 .PHONY : kino_rrt_star.cpp.o
 
 kino_rrt_star.i: kino_rrt_star.cpp.i
@@ -206,7 +206,7 @@ kino_rrt_star.i: kino_rrt_star.cpp.i
 # target to preprocess a source file
 kino_rrt_star.cpp.i:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/kino_rrt_star.cpp.i
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/kino_rrt_star.cpp.i
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/kino_rrt_star.cpp.i
 .PHONY : kino_rrt_star.cpp.i
 
 kino_rrt_star.s: kino_rrt_star.cpp.s
@@ -216,7 +216,7 @@ kino_rrt_star.s: kino_rrt_star.cpp.s
 # target to generate assembly for a file
 kino_rrt_star.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/kino_rrt_star.cpp.s
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/kino_rrt_star.cpp.s
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/kino_rrt_star.cpp.s
 .PHONY : kino_rrt_star.cpp.s
 
 main.o: main.cpp.o
@@ -253,7 +253,7 @@ quad_optimal_control.o: quad_optimal_control.cpp.o
 # target to build an object file
 quad_optimal_control.cpp.o:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/quad_optimal_control.cpp.o
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/quad_optimal_control.cpp.o
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/quad_optimal_control.cpp.o
 .PHONY : quad_optimal_control.cpp.o
 
 quad_optimal_control.i: quad_optimal_control.cpp.i
@@ -263,7 +263,7 @@ quad_optimal_control.i: quad_optimal_control.cpp.i
 # target to preprocess a source file
 quad_optimal_control.cpp.i:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/quad_optimal_control.cpp.i
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/quad_optimal_control.cpp.i
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/quad_optimal_control.cpp.i
 .PHONY : quad_optimal_control.cpp.i
 
 quad_optimal_control.s: quad_optimal_control.cpp.s
@@ -273,7 +273,7 @@ quad_optimal_control.s: quad_optimal_control.cpp.s
 # target to generate assembly for a file
 quad_optimal_control.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/quad_optimal_control.cpp.s
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/quad_optimal_control.cpp.s
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/quad_optimal_control.cpp.s
 .PHONY : quad_optimal_control.cpp.s
 
 tree.o: tree.cpp.o
@@ -283,7 +283,7 @@ tree.o: tree.cpp.o
 # target to build an object file
 tree.cpp.o:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/tree.cpp.o
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/tree.cpp.o
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/tree.cpp.o
 .PHONY : tree.cpp.o
 
 tree.i: tree.cpp.i
@@ -293,7 +293,7 @@ tree.i: tree.cpp.i
 # target to preprocess a source file
 tree.cpp.i:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/tree.cpp.i
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/tree.cpp.i
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/tree.cpp.i
 .PHONY : tree.cpp.i
 
 tree.s: tree.cpp.s
@@ -303,7 +303,7 @@ tree.s: tree.cpp.s
 # target to generate assembly for a file
 tree.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/tree.cpp.s
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/tree.cpp.s
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/tree.cpp.s
 .PHONY : tree.cpp.s
 
 world.o: world.cpp.o
@@ -313,7 +313,7 @@ world.o: world.cpp.o
 # target to build an object file
 world.cpp.o:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/world.cpp.o
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/world.cpp.o
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/world.cpp.o
 .PHONY : world.cpp.o
 
 world.i: world.cpp.i
@@ -323,7 +323,7 @@ world.i: world.cpp.i
 # target to preprocess a source file
 world.cpp.i:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/world.cpp.i
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/world.cpp.i
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/world.cpp.i
 .PHONY : world.cpp.i
 
 world.s: world.cpp.s
@@ -333,7 +333,7 @@ world.s: world.cpp.s
 # target to generate assembly for a file
 world.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/world.cpp.s
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/world.cpp.s
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/world.cpp.s
 .PHONY : world.cpp.s
 
 # Help Target
@@ -345,7 +345,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... main"
-	@echo "... kinoRrt"
+	@echo "... kinoRRT"
 	@echo "... test_quad_optimal_control"
 	@echo "... test_tree"
 	@echo "... boost_wrapper.o"

@@ -97,39 +97,39 @@ clean: CMakeFiles/main.dir/clean
 .PHONY : clean
 
 #=============================================================================
-# Target rules for target CMakeFiles/kinoRrt.dir
+# Target rules for target CMakeFiles/kinoRRT.dir
 
 # All Build rule for target.
-CMakeFiles/kinoRrt.dir/all:
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/depend
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nick/dcsl/kinoRRTstar/build/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target kinoRrt"
-.PHONY : CMakeFiles/kinoRrt.dir/all
+CMakeFiles/kinoRRT.dir/all:
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/depend
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/nick/dcsl/kinoRRTstar/build/CMakeFiles --progress-num=1,2,3,4,5,6 "Built target kinoRRT"
+.PHONY : CMakeFiles/kinoRRT.dir/all
 
 # Include target in all.
-all: CMakeFiles/kinoRrt.dir/all
+all: CMakeFiles/kinoRRT.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/kinoRrt.dir/rule: cmake_check_build_system
+CMakeFiles/kinoRRT.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/nick/dcsl/kinoRRTstar/build/CMakeFiles 6
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/kinoRrt.dir/all
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/kinoRRT.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/nick/dcsl/kinoRRTstar/build/CMakeFiles 0
-.PHONY : CMakeFiles/kinoRrt.dir/rule
+.PHONY : CMakeFiles/kinoRRT.dir/rule
 
 # Convenience name for target.
-kinoRrt: CMakeFiles/kinoRrt.dir/rule
+kinoRRT: CMakeFiles/kinoRRT.dir/rule
 
-.PHONY : kinoRrt
-
-# clean rule for target.
-CMakeFiles/kinoRrt.dir/clean:
-	$(MAKE) -f CMakeFiles/kinoRrt.dir/build.make CMakeFiles/kinoRrt.dir/clean
-.PHONY : CMakeFiles/kinoRrt.dir/clean
+.PHONY : kinoRRT
 
 # clean rule for target.
-clean: CMakeFiles/kinoRrt.dir/clean
+CMakeFiles/kinoRRT.dir/clean:
+	$(MAKE) -f CMakeFiles/kinoRRT.dir/build.make CMakeFiles/kinoRRT.dir/clean
+.PHONY : CMakeFiles/kinoRRT.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/kinoRRT.dir/clean
 
 .PHONY : clean
 

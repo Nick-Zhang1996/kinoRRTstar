@@ -6,3 +6,4 @@ main
 *.out
 *.so
 .cache/
+build/

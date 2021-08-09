@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 base_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../build/')
 sys.path.append(base_dir)
-from libkinoRrt import *
+from kinoRRT import *
 
 from WorldVisualization import WorldVisualization
 from common import *
