@@ -1,10 +1,17 @@
 #include "sst.h"
-bool SST::isStateValid(const oc::SpaceInformation *si, const ob::State *state)
+#include "world.h"
+  
+namespace ob = ompl::base;
+namespace oc = ompl::control;
+
+bool isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state)
 {
-  return true;
+  const auto* local_state = state->as<ob::RealVectorStateSpace::StateType>()->values;
+  return world.checkNoCollision(local_state[0], local_state[1], local_state[2]);
 }
 
-void SST::propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result)
+// system dynamics
+void propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result)
 {
   const auto* state = start->as<ob::RealVectorStateSpace::StateType>()->values;
   const auto* ctrl = control->as<oc::RealVectorControlSpace::ControlType>()->values;
@@ -20,8 +27,21 @@ void SST::propagate(const ob::State *start, const oc::Control *control, const do
 
 }
 
-void SST::planWithSimpleSetup()
+void planWithSimpleSetup()
 {
+  // create world 
+  World world(-10,10,-10,10,-10,10);
+  // x_l, x_h, y_l,y_h, z_l, z_h
+  Box obs1(-4,-2, -10,0, -10,10);
+  Box obs2(-4,-2, 0,10, -10,0);
+  Box obs3(2,4, 0,10, -10,10);
+  Box obs4(2,4, -10,0, 0,10);
+
+  world.addObstacle(obs1);
+  world.addObstacle(obs2);
+  world.addObstacle(obs3);
+  world.addObstacle(obs4);
+  
   // state space
   // x,y,z, vx,vy,vz
   int state_dim = 6;
@@ -40,10 +60,10 @@ void SST::planWithSimpleSetup()
   cspace->setBounds(cbounds);
 
   oc::SimpleSetup ss(cspace);
-  ss.setStatePropagator([](const ob::State *start, const oc::Control *control, const double duration, ob::State *result) { return propagate(start, control, duration, result););
+  ss.setStatePropagator(propagate);
 
   ss.setStateValidityChecker(
-      [&, &ss](const ob::State *state) { return SST::isStateValid(ss.getSpaceInformation().get(), state); });
+      [&world, &ss](const ob::State *state) { return isStateValid(world, ss.getSpaceInformation().get(), state); });
 
   // start state
   ob::ScopedState<ob::RealVectorStateSpace> start(space);
@@ -51,17 +71,25 @@ void SST::planWithSimpleSetup()
   {
     start[i] = 0.0;
   }
+  start[0] = -8;
+  start[1] = 2;
+  start[2] = -3;
 
+
+  // goal state
   ob::ScopedState<ob::RealVectorStateSpace> goal(space);
   for (int i=0; i<state_dim; i++)
   {
-    goal[i] = 10.0;
+    goal[i] = 0.0;
   }
+  goal[0] = 8;
+  goal[1] = -2;
+  goal[2] = 3;
 
-  ss.setStartAndGoalStates(start, goal, 0.01);
+  ss.setStartAndGoalStates(start, goal);
   // set planner
   ss.setPlanner(std::make_shared<oc::SST>(ss.getSpaceInformation()));
-  ob::PlannerStatus solved = ss.solve(60.0);
+  ob::PlannerStatus solved = ss.solve(30.0);
   if(solved)
   {
       std::cout << "Found solution:" << std::endl;
@@ -78,9 +106,7 @@ void SST::planWithSimpleSetup()
 
 int main(int, char**)
 {
-  
-  SST sst;
-  sst.planWithSimpleSetup();
-  return 0;
+   planWithSimpleSetup();
+   return 0;
 
 }

@@ -199,7 +199,8 @@ bool KinoRrtStar::connectToGoal(Node& node){
 double KinoRrtStar::getNeighnourRadius(){
   double nun = (double) tree.getNodeCount();
   double ner = 40.0 * pow( ( log(nun + 1) / nun ), 1.0/3.0 );
-  return min(ner,1.0);
+  //return min(ner,1.0);
+  return min(ner,4.0);
 }
 
 double KinoRrtStar::getSampleRadius(){

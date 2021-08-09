@@ -14,12 +14,20 @@
 #include <ompl/config.h>
 #include <iostream>
 
+#include "common.h"
+
 namespace ob = ompl::base;
 namespace oc = ompl::control;
 
 class SST{
+  private:
+    // solution time
+    double duration;
+    
   public:
-    bool isStateValid(const oc::SpaceInformation *si, const ob::State *state);
-    void propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result);
-    void planWithSimpleSetup();
+    SST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration);
+    bool solve();
+    void prepareSolution();
+    Waypoint getWaypoint(int index);
+    int getWaypointCount();
 };

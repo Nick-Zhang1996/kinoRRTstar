@@ -14,16 +14,16 @@ from window import createWindow
 
 
 # Original big test world
-world = World(-10,10,-5,5,-10,0)
+world = World(-10,10,-10,10,-10,10)
 dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
 visual = WorldVisualization(dim)
 
-obs1 = Box(-4,-2, -5,0, -10,0)
-obs2 = Box(-4,-2, 0,5, -10,-5)
-obs3 = Box(2,4, 0,5, -10,0)
-obs4 = Box(2,4, -5,0, -5,0)
-start_node = Node(2-10, 2-5, 2-10)
-goal_node = Node(18-10, 8-5, 8-10)
+obs1 = Box(-4,-2, -10,0, -10,10)
+obs2 = Box(-4,-2, 0,10, -10,0)
+obs3 = Box(2,4, 0,10, -10,10)
+obs4 = Box(2,4, -10,0, 0,10)
+start_node = Node(-8, 2, -3)
+goal_node = Node(8, -2, 3)
 obstacles = [obs1, obs2, obs3, obs4]
 '''
 
@@ -64,7 +64,7 @@ visual.visualizeWorld(show=True)
 # TODO check start and goal are in world bobundary
 print_info("initializing kinoRRT*")
 interior_points = 50
-rrt = KinoRrtStar(world, start_node, goal_node, 4000, interior_points)
+rrt = KinoRrtStar(world, start_node, goal_node, 2000, interior_points)
 
 try:
     print_info("running kinoRRT*")
