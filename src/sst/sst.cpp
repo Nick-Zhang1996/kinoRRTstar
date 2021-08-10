@@ -38,6 +38,7 @@ mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_
 
   ss = new oc::SimpleSetup(cspace);
   ss->setStatePropagator(propagate);
+  ss->setOptimizationObjective(getMyPathLengthObjective(ss->getSpaceInformation()));
   oc::SimpleSetup *local_ss = ss;
 
   ss->setStateValidityChecker(
@@ -219,6 +220,42 @@ bool mySST::solve()
   }
 
 }
+
+ob::OptimizationObjectivePtr mySST::getMyPathLengthObjective(const ob::SpaceInformationPtr& si)
+{
+    return ob::OptimizationObjectivePtr(new myPathLengthOptimizationObjective(si));
+}
+// -------------  myPathLengthOptimizationObjective --------
+
+myPathLengthOptimizationObjective::myPathLengthOptimizationObjective(const ob::SpaceInformationPtr &si)
+  : ob::StateCostIntegralObjective(si,true)
+{
+    description_ = "My Path Length";
+}
+
+ob::Cost myPathLengthOptimizationObjective::stateCost(const ob::State *) const
+{
+    return identityCost();
+}
+
+ob::Cost myPathLengthOptimizationObjective::motionCost(const ob::State *s1, const ob::State *s2) const
+{
+ // TODO
+  double* _s1 = s1->as<ob::RealVectorStateSpace::StateType>()->values;
+  double* _s2 = s2->as<ob::RealVectorStateSpace::StateType>()->values;
+  auto sqr = [](double a){return a*a;};
+  double distance = sqr(_s1[0]-_s2[0]) + sqr(_s1[1]-_s2[1]) + sqr(_s1[2]-_s2[2]);
+  distance = sqrt(distance);
+  return ob::Cost(distance);
+}
+
+ob::Cost myPathLengthOptimizationObjective::motionCostHeuristic(const ob::State *s1,
+                                                                                  const ob::State *s2) const
+{
+    return motionCost(s1, s2);
+}
+
+
 
 // --------- main --------------
 

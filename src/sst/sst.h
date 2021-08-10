@@ -14,8 +14,10 @@
 #include <ompl/control/planners/syclop/GridDecomposition.h>
 #include <ompl/control/SimpleSetup.h>
 #include <ompl/config.h>
-#include <iostream>
+#include <ompl/base/objectives/StateCostIntegralObjective.h>
 
+#include <iostream>
+#include <cmath>
 #include "common.h"
 #include "world.h"
 
@@ -23,7 +25,19 @@
 namespace ob = ompl::base;
 namespace oc = ompl::control;
 
-class mySST{
+class myPathLengthOptimizationObjective : public ob::StateCostIntegralObjective
+{
+  public:
+    myPathLengthOptimizationObjective(const ob::SpaceInformationPtr &si);
+    ob::Cost stateCost(const ob::State *s) const override;
+    ob::Cost motionCost(const ob::State *s1, const ob::State *s2) const override;
+    ob::Cost motionCostHeuristic(const ob::State *s1, const ob::State *s2) const override;
+    //ob::InformedSamplerPtr allocInformedStateSampler(const ob::ProblemDefinitionPtr &probDefn,
+                                                  //unsigned int maxNumberCalls) const override;
+};
+
+class mySST
+{
   private:
     // solution time
     double duration;
@@ -35,6 +49,7 @@ class mySST{
     //static callback functions
     static bool isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state);
     static void propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result);
+    static ob::OptimizationObjectivePtr getMyPathLengthObjective(const ob::SpaceInformationPtr& si);
     
   public:
     mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration);

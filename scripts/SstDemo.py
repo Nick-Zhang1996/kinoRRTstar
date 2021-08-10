@@ -32,7 +32,7 @@ for obstacle in obstacles:
     visual.addObstacle(obstacle)
 
 visual.visualizeWorld(show=True)
-duration = 60.0
+duration = 30.0
 print("solving with SST, time limit = %.2f sec"%(duration))
 sst = SST(world, start_node, goal_node, duration)
 #sst.solve()
