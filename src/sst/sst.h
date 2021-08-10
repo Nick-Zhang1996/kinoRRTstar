@@ -36,6 +36,17 @@ class myPathLengthOptimizationObjective : public ob::StateCostIntegralObjective
                                                   //unsigned int maxNumberCalls) const override;
 };
 
+class mixedOptimizationObjective : public ob::StateCostIntegralObjective
+{
+  public:
+    mixedOptimizationObjective(const ob::SpaceInformationPtr &si);
+    ob::Cost stateCost(const ob::State *s) const override;
+    ob::Cost motionCost(const ob::State *s1, const ob::State *s2) const override;
+    ob::Cost motionCostHeuristic(const ob::State *s1, const ob::State *s2) const override;
+    //ob::InformedSamplerPtr allocInformedStateSampler(const ob::ProblemDefinitionPtr &probDefn,
+                                                  //unsigned int maxNumberCalls) const override;
+};
+
 class mySST
 {
   private:
@@ -50,6 +61,7 @@ class mySST
     static bool isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state);
     static void propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result);
     static ob::OptimizationObjectivePtr getMyPathLengthObjective(const ob::SpaceInformationPtr& si);
+    static ob::OptimizationObjectivePtr getMixedObjective(const ob::SpaceInformationPtr& si);
     
   public:
     mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration);

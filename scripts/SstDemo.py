@@ -32,7 +32,7 @@ for obstacle in obstacles:
     visual.addObstacle(obstacle)
 
 visual.visualizeWorld(show=True)
-duration = 30.0
+duration = 60.0
 print("solving with SST, time limit = %.2f sec"%(duration))
 sst = SST(world, start_node, goal_node, duration)
 #sst.solve()
@@ -41,8 +41,6 @@ waypoints = []
 for i in range(count):
     waypoint = sst.getWaypoint(i)
     waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z, waypoint.vx, waypoint.vy, waypoint.vz, waypoint.ax, waypoint.ay, waypoint.az])
-
-
 
 waypoints = np.array(waypoints)
 print(waypoints)

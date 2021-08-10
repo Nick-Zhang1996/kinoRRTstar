@@ -38,7 +38,8 @@ mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_
 
   ss = new oc::SimpleSetup(cspace);
   ss->setStatePropagator(propagate);
-  ss->setOptimizationObjective(getMyPathLengthObjective(ss->getSpaceInformation()));
+  //ss->setOptimizationObjective(getMyPathLengthObjective(ss->getSpaceInformation()));
+  ss->setOptimizationObjective(getMixedObjective(ss->getSpaceInformation()));
   oc::SimpleSetup *local_ss = ss;
 
   ss->setStateValidityChecker(
@@ -69,6 +70,7 @@ mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_
   ss->setStartAndGoalStates(start, goal);
   // set planner
   ss->setPlanner(std::make_shared<oc::SST>(ss->getSpaceInformation()));
+  //ss->setPlanner(std::make_shared<oc::RRT>(ss->getSpaceInformation()));
   solve();
 
 }
@@ -225,6 +227,11 @@ ob::OptimizationObjectivePtr mySST::getMyPathLengthObjective(const ob::SpaceInfo
 {
     return ob::OptimizationObjectivePtr(new myPathLengthOptimizationObjective(si));
 }
+
+ob::OptimizationObjectivePtr mySST::getMixedObjective(const ob::SpaceInformationPtr& si)
+{
+    return ob::OptimizationObjectivePtr(new mixedOptimizationObjective(si));
+}
 // -------------  myPathLengthOptimizationObjective --------
 
 myPathLengthOptimizationObjective::myPathLengthOptimizationObjective(const ob::SpaceInformationPtr &si)
@@ -255,6 +262,47 @@ ob::Cost myPathLengthOptimizationObjective::motionCostHeuristic(const ob::State 
     return motionCost(s1, s2);
 }
 
+// -------------  mixedOptimizationObjective --------
+//  integrate: (1 + u'Ru) dt, R = lambda * I (uniform cost)
+
+mixedOptimizationObjective::mixedOptimizationObjective(const ob::SpaceInformationPtr &si)
+  : ob::StateCostIntegralObjective(si,true)
+{
+    description_ = "Mixed Time + Control Effort";
+}
+
+// is this really used?
+ob::Cost mixedOptimizationObjective::stateCost(const ob::State *) const
+{
+  std::cout << "stateCost called" << std::endl;
+  return identityCost();
+}
+
+ob::Cost mixedOptimizationObjective::motionCost(const ob::State *s1, const ob::State *s2) const
+{
+  double* _s1 = s1->as<ob::RealVectorStateSpace::StateType>()->values;
+  double* _s2 = s2->as<ob::RealVectorStateSpace::StateType>()->values;
+  // calculate time interval
+  double dt = (_s2[0] - _s1[0]) / (_s2[3] + _s1[3]) * 2; 
+  double dt_alt = (_s2[1] - _s1[1]) / (_s2[4] + _s1[4]) * 2; 
+  if (dt/dt_alt > 1.01 || dt/dt_alt < 0.99 || dt < 0)
+  {
+    std::cout << " --- bu hao le ---" << std::endl;
+  }
+  // calculate  control effort
+  double ax = (_s2[3] - _s2[3]) / dt;
+  double ay = (_s2[4] - _s2[4]) / dt;
+  double az = (_s2[5] - _s2[5]) / dt;
+  double cost = dt * (ax*ax + ay*ay + az*az + 1);
+
+  return ob::Cost(cost);
+}
+
+ob::Cost mixedOptimizationObjective::motionCostHeuristic(const ob::State *s1,
+                                                                                  const ob::State *s2) const
+{
+    return motionCost(s1, s2);
+}
 
 
 // --------- main --------------
