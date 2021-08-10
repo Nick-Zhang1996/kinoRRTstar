@@ -2,6 +2,7 @@
 #include "common.h"
 #include "world.h"
 #include "kino_rrt_star.h"
+#include "sst.h"
 
 using namespace boost::python;
 BOOST_PYTHON_MODULE(kinoRRT){
@@ -51,5 +52,14 @@ BOOST_PYTHON_MODULE(kinoRRT){
     .def("getTrajectory", &KinoRrtStar::getTrajectory)
     .def_readonly("waypoint", &KinoRrtStar::waypoint)
     ;
+
+  /*
+  class_<SST>("SST", init<World&, Node&, Node&, double>())
+    //.def("solve", &SST::solve)
+    //.def("getWaypoint", &SST::getWaypoint)
+    //.def("getWaypointCount", &SST::getWaypointCount)
+    ;
+    */
+
 }
 

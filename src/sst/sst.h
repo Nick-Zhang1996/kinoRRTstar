@@ -1,3 +1,5 @@
+#ifndef SST_H
+#define SST_H
 #include <ompl/control/SpaceInformation.h>
 #include <ompl/base/goals/GoalState.h>
 #include <ompl/base/spaces/SE2StateSpace.h>
@@ -15,6 +17,8 @@
 #include <iostream>
 
 #include "common.h"
+#include "world.h"
+
 
 namespace ob = ompl::base;
 namespace oc = ompl::control;
@@ -23,11 +27,23 @@ class SST{
   private:
     // solution time
     double duration;
+    Waypoint waypoint;
+    World world;
+    Node start_node,goal_node;
+    oc::SimpleSetup *ss;
+
+    //static callback functions
+    static bool isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state);
+    static void propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result);
     
   public:
     SST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration);
+    SST();
     bool solve();
-    void prepareSolution();
     Waypoint getWaypoint(int index);
     int getWaypointCount();
+    void planWithSimpleSetup();
+
 };
+
+#endif

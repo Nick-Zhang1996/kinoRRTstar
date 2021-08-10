@@ -1,17 +1,109 @@
 #include "sst.h"
 #include "world.h"
-  
-namespace ob = ompl::base;
-namespace oc = ompl::control;
+SST::SST():
+  duration(10),
+  waypoint(),
+  world(0,0,0,0,0,0),
+  start_node(),
+  goal_node()
+{
 
-bool isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state)
+}
+
+SST::SST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration):
+  duration(in_duration),
+  waypoint(),
+  world(in_world),
+  start_node(in_start_node),
+  goal_node(in_end_node)
+{
+
+  // state space
+  // x,y,z, vx,vy,vz
+  int state_dim = 6;
+  int control_dim = 3;
+  auto space(std::make_shared<ob::RealVectorStateSpace>(state_dim));
+  ob::RealVectorBounds bounds(state_dim);
+  // NOTE assuming world to be a cube centered at origin
+  bounds.setLow(world.x_l);
+  bounds.setHigh(world.x_h);
+  space->setBounds(bounds);
+
+  // control space
+  auto cspace(std::make_shared<oc::RealVectorControlSpace>(space,control_dim));
+  ob::RealVectorBounds cbounds(control_dim);
+  cbounds.setLow(-10);
+  cbounds.setHigh(10);
+  cspace->setBounds(cbounds);
+
+  ss = new oc::SimpleSetup(cspace);
+  ss->setStatePropagator(propagate);
+  oc::SimpleSetup *local_ss = ss;
+
+  ss->setStateValidityChecker(
+      [&in_world, &local_ss](const ob::State *state) { return SST::isStateValid(in_world, local_ss->getSpaceInformation().get(), state); });
+
+  // start state
+  ob::ScopedState<ob::RealVectorStateSpace> start(space);
+  for (int i=0; i<state_dim; i++)
+  {
+    start[i] = 0.0;
+  }
+  start[0] = start_node.x;
+  start[1] = start_node.y;
+  start[2] = start_node.z;
+
+
+  // goal state
+  ob::ScopedState<ob::RealVectorStateSpace> goal(space);
+  for (int i=0; i<state_dim; i++)
+  {
+    goal[i] = 0.0;
+  }
+  goal[0] = goal_node.x;
+  goal[1] = goal_node.y;
+  goal[2] = goal_node.z;
+
+  ss->setStartAndGoalStates(start, goal);
+  // set planner
+  ss->setPlanner(std::make_shared<oc::SST>(ss->getSpaceInformation()));
+
+}
+
+Waypoint SST::getWaypoint(int index)
+{
+  ob::State* _state = ss->getSolutionPath().getState(index);
+  double* states = _state->as<ob::RealVectorStateSpace::StateType>()->values;
+
+  waypoint.t = 0.0;
+  waypoint.valid = true;
+  waypoint.x = states[0];
+  waypoint.y = states[1];
+  waypoint.z = states[2];
+  waypoint.vx = states[3];
+  waypoint.vy = states[4];
+  waypoint.vz = states[5];
+  waypoint.ax = states[6];
+  waypoint.ay = states[7];
+  waypoint.az = states[8];
+  return waypoint;
+}
+
+int SST::getWaypointCount()
+{
+  return (int)ss->getSolutionPath().getStateCount();
+}
+
+// passing a class method to ompl is tricky(idk how to)
+// so instead leave it out of class
+bool SST::isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state)
 {
   const auto* local_state = state->as<ob::RealVectorStateSpace::StateType>()->values;
   return world.checkNoCollision(local_state[0], local_state[1], local_state[2]);
 }
 
 // system dynamics
-void propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result)
+void SST::propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result)
 {
   const auto* state = start->as<ob::RealVectorStateSpace::StateType>()->values;
   const auto* ctrl = control->as<oc::RealVectorControlSpace::ControlType>()->values;
@@ -27,7 +119,7 @@ void propagate(const ob::State *start, const oc::Control *control, const double 
 
 }
 
-void planWithSimpleSetup()
+void SST::planWithSimpleSetup()
 {
   // create world 
   World world(-10,10,-10,10,-10,10);
@@ -59,11 +151,12 @@ void planWithSimpleSetup()
   cbounds.setHigh(10);
   cspace->setBounds(cbounds);
 
-  oc::SimpleSetup ss(cspace);
-  ss.setStatePropagator(propagate);
+  ss = new oc::SimpleSetup(cspace);
+  ss->setStatePropagator(propagate);
+  oc::SimpleSetup *local_ss = ss;
 
-  ss.setStateValidityChecker(
-      [&world, &ss](const ob::State *state) { return isStateValid(world, ss.getSpaceInformation().get(), state); });
+  ss->setStateValidityChecker(
+      [&world, &local_ss](const ob::State *state) { return isStateValid(world, local_ss->getSpaceInformation().get(), state); });
 
   // start state
   ob::ScopedState<ob::RealVectorStateSpace> start(space);
@@ -86,17 +179,17 @@ void planWithSimpleSetup()
   goal[1] = -2;
   goal[2] = 3;
 
-  ss.setStartAndGoalStates(start, goal);
+  ss->setStartAndGoalStates(start, goal);
   // set planner
-  ss.setPlanner(std::make_shared<oc::SST>(ss.getSpaceInformation()));
-  ob::PlannerStatus solved = ss.solve(30.0);
+  ss->setPlanner(std::make_shared<oc::SST>(ss->getSpaceInformation()));
+  ob::PlannerStatus solved = ss->solve(30.0);
   if(solved)
   {
       std::cout << "Found solution:" << std::endl;
       // print the path to screen
 
-      ss.getSolutionPath().printAsMatrix(std::cout);
-      ss.getSolutionPath().print(std::cout);
+      ss->getSolutionPath().printAsMatrix(std::cout);
+      ss->getSolutionPath().print(std::cout);
   }
   else
       std::cout << "No solution found" << std::endl;
@@ -104,9 +197,33 @@ void planWithSimpleSetup()
 
 }
 
+bool SST::solve()
+{
+  std::cout << "sst solving with time limit: " << duration << std::endl;
+  ob::PlannerStatus solved = ss->solve(duration);
+  if(solved)
+  {
+    std::cout << "Found solution:" << std::endl;
+    // print the path to screen
+
+    ss->getSolutionPath().printAsMatrix(std::cout);
+    ss->getSolutionPath().print(std::cout);
+    return true;
+  }
+  else
+  {
+    std::cout << "No solution found" << std::endl;
+    return false;
+  }
+
+}
+
+// --------- main --------------
+
 int main(int, char**)
 {
-   planWithSimpleSetup();
-   return 0;
+  SST sst;
+  sst.planWithSimpleSetup();
+  return 0;
 
 }

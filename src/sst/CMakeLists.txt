@@ -6,6 +6,7 @@ find_package(Eigen3 3.3 REQUIRED)
 
 add_executable(sst sst.cpp)
 target_include_directories(sst PRIVATE ${OMPL_INCLUDE_DIRS})
+message(STATUS "ompl_include_dir: ${OMPL_INCLUDE_DIRS}")
 
 target_link_libraries(sst
   ompl
