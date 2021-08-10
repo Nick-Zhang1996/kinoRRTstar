@@ -15,7 +15,7 @@ include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/sst)
 
 add_executable(main main.cpp kino_rrt_star.cpp quad_optimal_control.cpp world.cpp tree.cpp)
 
-add_library(kinoRRT SHARED boost_wrapper world kino_rrt_star quad_optimal_control tree sst) 
+add_library(kinoRRT SHARED boost_wrapper.cpp world.cpp kino_rrt_star.cpp quad_optimal_control.cpp tree.cpp sst/sst.cpp) 
 set_target_properties(kinoRRT PROPERTIES PREFIX "")
 target_include_directories(kinoRRT PRIVATE
   ${PYTHON_INCLUDE_DIRS}

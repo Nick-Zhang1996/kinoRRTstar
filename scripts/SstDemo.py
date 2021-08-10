@@ -32,9 +32,10 @@ for obstacle in obstacles:
     visual.addObstacle(obstacle)
 
 visual.visualizeWorld(show=True)
-print_info("initializing SST*")
-sst = SST(world, start_node, goal_node, 20.0)
-sst.solve()
+duration = 60.0
+print("solving with SST, time limit = %.2f sec"%(duration))
+sst = SST(world, start_node, goal_node, duration)
+#sst.solve()
 count = sst.getWaypointCount()
 waypoints = []
 for i in range(count):

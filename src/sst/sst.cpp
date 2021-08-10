@@ -1,6 +1,5 @@
 #include "sst.h"
-#include "world.h"
-SST::SST():
+mySST::mySST():
   duration(10),
   waypoint(),
   world(0,0,0,0,0,0),
@@ -10,7 +9,7 @@ SST::SST():
 
 }
 
-SST::SST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration):
+mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration):
   duration(in_duration),
   waypoint(),
   world(in_world),
@@ -28,6 +27,7 @@ SST::SST(World& in_world, Node& in_start_node, Node& in_end_node, double in_dura
   bounds.setLow(world.x_l);
   bounds.setHigh(world.x_h);
   space->setBounds(bounds);
+  space->setLongestValidSegmentFraction(0.02/space->getMaximumExtent());
 
   // control space
   auto cspace(std::make_shared<oc::RealVectorControlSpace>(space,control_dim));
@@ -41,7 +41,8 @@ SST::SST(World& in_world, Node& in_start_node, Node& in_end_node, double in_dura
   oc::SimpleSetup *local_ss = ss;
 
   ss->setStateValidityChecker(
-      [&in_world, &local_ss](const ob::State *state) { return SST::isStateValid(in_world, local_ss->getSpaceInformation().get(), state); });
+      [&in_world, &local_ss](const ob::State *state) { return mySST::isStateValid(in_world, local_ss->getSpaceInformation().get(), state); });
+
 
   // start state
   ob::ScopedState<ob::RealVectorStateSpace> start(space);
@@ -67,10 +68,11 @@ SST::SST(World& in_world, Node& in_start_node, Node& in_end_node, double in_dura
   ss->setStartAndGoalStates(start, goal);
   // set planner
   ss->setPlanner(std::make_shared<oc::SST>(ss->getSpaceInformation()));
+  solve();
 
 }
 
-Waypoint SST::getWaypoint(int index)
+Waypoint mySST::getWaypoint(int index)
 {
   ob::State* _state = ss->getSolutionPath().getState(index);
   double* states = _state->as<ob::RealVectorStateSpace::StateType>()->values;
@@ -89,21 +91,21 @@ Waypoint SST::getWaypoint(int index)
   return waypoint;
 }
 
-int SST::getWaypointCount()
+int mySST::getWaypointCount()
 {
   return (int)ss->getSolutionPath().getStateCount();
 }
 
 // passing a class method to ompl is tricky(idk how to)
 // so instead leave it out of class
-bool SST::isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state)
+bool mySST::isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state)
 {
   const auto* local_state = state->as<ob::RealVectorStateSpace::StateType>()->values;
   return world.checkNoCollision(local_state[0], local_state[1], local_state[2]);
 }
 
 // system dynamics
-void SST::propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result)
+void mySST::propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result)
 {
   const auto* state = start->as<ob::RealVectorStateSpace::StateType>()->values;
   const auto* ctrl = control->as<oc::RealVectorControlSpace::ControlType>()->values;
@@ -119,7 +121,7 @@ void SST::propagate(const ob::State *start, const oc::Control *control, const do
 
 }
 
-void SST::planWithSimpleSetup()
+void mySST::planWithSimpleSetup()
 {
   // create world 
   World world(-10,10,-10,10,-10,10);
@@ -197,7 +199,7 @@ void SST::planWithSimpleSetup()
 
 }
 
-bool SST::solve()
+bool mySST::solve()
 {
   std::cout << "sst solving with time limit: " << duration << std::endl;
   ob::PlannerStatus solved = ss->solve(duration);
@@ -222,7 +224,7 @@ bool SST::solve()
 
 int main(int, char**)
 {
-  SST sst;
+  mySST sst;
   sst.planWithSimpleSetup();
   return 0;
 

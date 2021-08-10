@@ -23,7 +23,7 @@
 namespace ob = ompl::base;
 namespace oc = ompl::control;
 
-class SST{
+class mySST{
   private:
     // solution time
     double duration;
@@ -37,8 +37,8 @@ class SST{
     static void propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result);
     
   public:
-    SST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration);
-    SST();
+    mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration);
+    mySST();
     bool solve();
     Waypoint getWaypoint(int index);
     int getWaypointCount();
