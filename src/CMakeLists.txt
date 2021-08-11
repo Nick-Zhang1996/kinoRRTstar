@@ -6,8 +6,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undef")
 
 
-find_package(PythonLibs 3.6 EXACT REQUIRED)
-find_package(Boost 1.58 QUIET REQUIRED COMPONENTS serialization filesystem system program_options python3)
+find_package(PythonLibs 3.6 REQUIRED)
+#find_package(Boost 1.58 QUIET REQUIRED COMPONENTS serialization filesystem system program_options python3)
+find_package(Boost 1.58 QUIET REQUIRED COMPONENTS serialization filesystem system program_options python)
 find_package(ompl)
 
 include_directories(SYSTEM ${Boost_INCLULDE_DIR})
