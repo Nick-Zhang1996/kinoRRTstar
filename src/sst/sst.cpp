@@ -39,7 +39,8 @@ mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_
   ss = new oc::SimpleSetup(cspace);
   ss->setStatePropagator(propagate);
   //ss->setOptimizationObjective(getMyPathLengthObjective(ss->getSpaceInformation()));
-  ss->setOptimizationObjective(getMixedObjective(ss->getSpaceInformation()));
+  optimization_objective = getMixedObjective(ss->getSpaceInformation());
+  ss->setOptimizationObjective(optimization_objective);
   oc::SimpleSetup *local_ss = ss;
 
   ss->setStateValidityChecker(
@@ -212,7 +213,9 @@ bool mySST::solve()
     // print the path to screen
 
     ss->getSolutionPath().printAsMatrix(std::cout);
-    ss->getSolutionPath().print(std::cout);
+    //ss->getSolutionPath().print(std::cout);
+    double cost = ss->getSolutionPath().asGeometric().cost(optimization_objective).value();
+    std::cout << "cost = " << cost << std::endl;
     return true;
   }
   else

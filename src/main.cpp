@@ -23,11 +23,12 @@ int main(){
   world.addObstacle(obs4);
 
 
-  KinoRrtStar rrt(world, start_node, goal_node, 600, 10);
+  KinoRrtStar rrt(world, start_node, goal_node, 10);
 
   auto start = std::chrono::system_clock::now();
 
-  rrt.run();
+  // run with 600 nodes
+  rrt.run(600);
   rrt.prepareSolution();
   while (true){
     auto p = rrt.getNextWaypoint();

@@ -1,10 +1,10 @@
 #include "kino_rrt_star.h"
 
-KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int in_interior_point_count ) : 
+KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node,int in_interior_point_count ) : 
     tree(in_start_node),
     start_node(in_start_node),
     end_node(in_end_node),
-    target_node_count(in_target_node_count),
+    target_node_count(0),
     world(in_world),
     oc(in_interior_point_count),
     interior_point_count(in_interior_point_count),
@@ -16,8 +16,9 @@ KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node
     cout << "Using only position coordinate for start/end \n";
 }
 
-void KinoRrtStar::run(){
-  cout << "KinoRrtStar.run()" << endl;
+void KinoRrtStar::run(int in_target_node_count){
+  target_node_count = in_target_node_count;
+  cout << "KinoRrtStar.run(" << target_node_count << ")" << endl;
   // build tree
   if (target_node_count <= 0){
     buildTreeTillFirstSolution();
@@ -32,6 +33,21 @@ void KinoRrtStar::run(){
     cout << "no results find with " << target_node_count << "nodes \n";
   }
 
+  oc.printTotalTime();
+}
+
+void KinoRrtStar::runWithTimeLimit(double duration){
+  cout << "runWithTimeLimit(" << duration << ")" << endl;
+  auto start = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed_seconds = start-start;
+  while (elapsed_seconds.count() < duration){
+    sampleNode();
+    if (tree.getNodeCount() % 100 == 0){
+      cout << "nodes: " << tree.getNodeCount() << "\n";
+      cout << "found " << tree.getSolutionCount() << " solutions \n";
+    }
+    elapsed_seconds = std::chrono::system_clock::now()-start;
+  }
   oc.printTotalTime();
 
 }
@@ -339,6 +355,7 @@ int KinoRrtStar::prepareSolution(){
   if (!tree.node(this_node_id).is_end){
     return 0;
   }
+  cout << "cost: " << overall_lowest_cost << endl;
 
   key_waypoints_reversed.push_back(this_node_id);
   while (this_node_id != 0){

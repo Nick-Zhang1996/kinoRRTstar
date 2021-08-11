@@ -25,36 +25,7 @@ obs4 = Box(2,4, -10,0, 0,10)
 start_node = Node(-8, 2, -3)
 goal_node = Node(8, -2, 3)
 obstacles = [obs1, obs2, obs3, obs4]
-'''
 
-# successful experiment 1, short trajectory
-world = World(-0.1,3, -3,3, -3,0)
-dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
-visual = WorldVisualization(dim)
-
-# create a small window
-obs1 = Box(1,1.3, -3,-2, -3,0)
-obs2 = Box(1,1.3, -2,1, -0.7,0)
-obs3 = Box(1,1.3, -2,1, -3,-1.5)
-obs4 = Box(1,1.3, 1,3, -3,0)
-start_node = Node(0,0,-0.5)
-goal_node = Node(2.5,1,-0.5)
-obstacles = [obs1,obs2,obs3,obs4]
-'''
-
-'''
-# newly created window obstacle
-start_node = Node(-1.8, 0.6, -0.6)
-goal_node = Node(1.7,0,-2)
-
-#world = World(-6,6,-2.5,2.5,-3,0)
-world = World(-2,2,-0.7,1,-2.5,0)
-dim = ((world.x_l, world.x_h), (world.y_l, world.y_h),(world.z_l, world.z_h))
-visual = WorldVisualization(dim)
-obstacles = []
-obstacles += createWindow((-1,0,0), 0.5, True, world)
-obstacles += createWindow((0.5,-1,0), 0.5, False, world)
-'''
 for obstacle in obstacles:
     world.addObstacle(obstacle)
     visual.addObstacle(obstacle)
@@ -64,12 +35,13 @@ visual.visualizeWorld(show=True)
 # TODO check start and goal are in world bobundary
 print_info("initializing kinoRRT*")
 interior_points = 50
-rrt = KinoRrtStar(world, start_node, goal_node, 2000, interior_points)
+rrt = KinoRrtStar(world, start_node, goal_node, interior_points)
 
 try:
-    print_info("running kinoRRT*")
+    duration = 30
+    print_info("running kinoRRT* for %.2f seconds"%(duration))
     t0 = time()
-    rrt.run()
+    rrt.runWithTimeLimit(duration)
     elapsed = time()-t0
 except (RuntimeError):
     print_error("rrt error")

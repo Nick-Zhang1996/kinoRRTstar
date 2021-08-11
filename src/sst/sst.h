@@ -56,6 +56,8 @@ class mySST
     World world;
     Node start_node,goal_node;
     oc::SimpleSetup *ss;
+    ob::OptimizationObjectivePtr optimization_objective;
+    
 
     //static callback functions
     static bool isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state);

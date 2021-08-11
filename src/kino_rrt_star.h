@@ -12,6 +12,7 @@
 #include <limits>
 #include <math.h>
 #include <algorithm>
+#include <chrono>
 using std::cout;
 using std::rand;
 using std::min;
@@ -33,11 +34,12 @@ class KinoRrtStar{
     list<Waypoint>::iterator waypoints_iter;
     list<Waypoint> waypoints;
   public:
-    KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_target_node_count, int in_interior_point_count );
+    KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_interior_point_count );
     // n_nodes: number of nodes to add to tree, if 0 then stop after first solution
     void buildTree(int n_nodes);
     bool sampleSpace();
-    void run();
+    void run(int in_target_node_count);
+    void runWithTimeLimit(double duration);
     void buildTreeTillNodeCount();
     void buildTreeTillFirstSolution();
     void sampleNode();

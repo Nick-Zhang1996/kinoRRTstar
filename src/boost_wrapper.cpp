@@ -43,8 +43,9 @@ BOOST_PYTHON_MODULE(kinoRRT){
     .def_readonly("z_h", &World::z_h)
     ;
 
-  class_<KinoRrtStar>("KinoRrtStar",init<World&, Node&, Node&, int, int>())
+  class_<KinoRrtStar>("KinoRrtStar",init<World&, Node&, Node&, int>())
     .def("run", &KinoRrtStar::run)
+    .def("runWithTimeLimit", &KinoRrtStar::runWithTimeLimit)
     .def("prepareSolution", &KinoRrtStar::prepareSolution)
     .def("prepareSolutionWithInteriorPoints", &KinoRrtStar::prepareSolutionWithInteriorPoints)
     .def("getNextWaypoint", &KinoRrtStar::getNextWaypoint)
