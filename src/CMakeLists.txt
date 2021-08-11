@@ -13,6 +13,7 @@ find_package(ompl)
 
 include_directories(SYSTEM ${Boost_INCLULDE_DIR})
 include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/sst)
+link_directories($ENV{HOME}/.local/lib)
 
 add_executable(main main.cpp kino_rrt_star.cpp quad_optimal_control.cpp world.cpp tree.cpp)
 
@@ -29,6 +30,7 @@ target_link_libraries(kinoRRT
 
 #message(STATUS "PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
 #message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
+message(STATUS "OMPL_INCLUDE_DIRS: ${OMPL_INCLUDE_DIRS}")
 
 
 #  ${Boost_FILESYSTEM_LIBRARY}
