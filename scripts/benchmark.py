@@ -11,6 +11,7 @@ from kinoRRT import *
 from WorldVisualization import WorldVisualization
 from common import *
 from window import createWindow
+import pickle
 
 def makeWorld():
     # Original big test world
@@ -110,10 +111,16 @@ def benchmarkKinoRRT(world, start_node, goal_node, duration):
     ax.set_zlabel("-z")
     plt.show()
 
+    # progress statistics
+    nodes = rrt.getNodeCountHistPy()
+    cost = rrt.getMinCostHistPy()
+    sols = rrt.getSolutionCountHistPy()
+    return np.array(nodes), np.array(cost), np.array(sols)
+
 def benchmarkSST(world, start_node, goal_node, duration):
     print("solving with SST, time limit = %.2f sec"%(duration))
-    sst = SST(world, start_node, goal_node, duration)
-    #sst.solve()
+    sst = SST(world, start_node, goal_node)
+    sst.solveIncrementally(duration, 1.0)
     count = sst.getWaypointCount()
     waypoints = []
     for i in range(count):
@@ -130,10 +137,21 @@ def benchmarkSST(world, start_node, goal_node, duration):
     ax.set_ylabel("y")
     ax.set_zlabel("-z")
     plt.show()
+    # progress statistics
+    nodes = sst.getNodeCountHistPy()
+    cost = sst.getMinCostHistPy()
+    sols = sst.getSolutionCountHistPy()
+    return np.array(nodes), np.array(cost), np.array(sols)
 
 if __name__ == "__main__":
     duration = 30.0
     world, visual, start_node, goal_node = makeWorld()
-    benchmarkKinoRRT(world, start_node, goal_node, duration)
-    benchmarkSST(world, start_node, goal_node, duration)
+    rrt_nodes, rrt_cost, rrt_sols = benchmarkKinoRRT(world, start_node, goal_node, duration)
+    sst_nodes, sst_cost, sst_sols = benchmarkSST(world, start_node, goal_node, duration)
+    pass
+    with open("log.txt", 'wb') as f:
+        rrt = [rrt_nodes, rrt_cost, rrt_sols]
+        sst = [sst_nodes, sst_cost, sst_sols]
+        data = [rrt, sst]
+        pickle.dump(data,f)
 

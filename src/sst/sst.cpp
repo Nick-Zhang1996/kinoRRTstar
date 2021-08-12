@@ -9,8 +9,8 @@ mySST::mySST():
 
 }
 
-mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration):
-  duration(in_duration),
+mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node):
+  duration(0),
   waypoint(),
   world(in_world),
   start_node(in_start_node),
@@ -21,30 +21,26 @@ mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_
   // x,y,z, vx,vy,vz
   int state_dim = 6;
   int control_dim = 3;
-  auto space(std::make_shared<ob::RealVectorStateSpace>(state_dim));
-  ob::RealVectorBounds bounds(state_dim);
+  space = std::make_shared<ob::RealVectorStateSpace>(state_dim);
+  bounds = new ob::RealVectorBounds(state_dim);
   // NOTE assuming world to be a cube centered at origin
-  bounds.setLow(world.x_l);
-  bounds.setHigh(world.x_h);
-  space->setBounds(bounds);
+  bounds->setLow(world.x_l);
+  bounds->setHigh(world.x_h);
+  space->setBounds(*bounds);
   space->setLongestValidSegmentFraction(0.02/space->getMaximumExtent());
 
   // control space
   auto cspace(std::make_shared<oc::RealVectorControlSpace>(space,control_dim));
-  ob::RealVectorBounds cbounds(control_dim);
-  cbounds.setLow(-10);
-  cbounds.setHigh(10);
-  cspace->setBounds(cbounds);
+  cbounds = new ob::RealVectorBounds(control_dim);
+  cbounds->setLow(-10);
+  cbounds->setHigh(10);
+  cspace->setBounds(*cbounds);
 
   ss = new oc::SimpleSetup(cspace);
   ss->setStatePropagator(propagate);
   //ss->setOptimizationObjective(getMyPathLengthObjective(ss->getSpaceInformation()));
   optimization_objective = getMixedObjective(ss->getSpaceInformation());
   ss->setOptimizationObjective(optimization_objective);
-  oc::SimpleSetup *local_ss = ss;
-
-  ss->setStateValidityChecker(
-      [&in_world, &local_ss](const ob::State *state) { return mySST::isStateValid(in_world, local_ss->getSpaceInformation().get(), state); });
 
 
   // start state
@@ -72,8 +68,91 @@ mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_
   // set planner
   ss->setPlanner(std::make_shared<oc::SST>(ss->getSpaceInformation()));
   //ss->setPlanner(std::make_shared<oc::RRT>(ss->getSpaceInformation()));
-  solve();
 
+  //oc::SimpleSetup *local_ss = ss;
+  //World local_world = world;
+
+  ss->setStateValidityChecker(
+      [&local_world = world, &local_ss = ss](const ob::State *state) { return mySST::isStateValid(local_world, local_ss->getSpaceInformation().get(), state); });
+}
+
+bool mySST::solve(double in_duration)
+{
+
+  duration = in_duration;
+  std::cout << "sst solving with time limit: " << duration << std::endl;
+  ob::PlannerStatus solved = ss->solve(duration);
+  if(solved)
+  {
+    std::cout << "Found solution:" << std::endl;
+    // print the path to screen
+
+    ss->getSolutionPath().printAsMatrix(std::cout);
+    //ss->getSolutionPath().print(std::cout);
+    double cost = ss->getSolutionPath().asGeometric().cost(optimization_objective).value();
+    std::cout << "cost = " << cost << std::endl;
+    return true;
+  }
+  else
+  {
+    std::cout << "No solution found" << std::endl;
+    return false;
+  }
+}
+
+bool mySST::solveIncrementally(double in_duration, double step)
+{
+
+  duration = in_duration;
+  std::cout << "sst solving with time limit: " << duration << std::endl;
+
+  double total_time = 0;
+  auto start = std::chrono::system_clock::now();
+  //std::chrono::duration<double> elapsed_seconds = start-start;
+  int iter = (int) (in_duration/step);
+  for (int i=0; i<iter; i++)
+  {
+    ob::PlannerStatus solved = ss->solve(step);
+
+    // cost
+    double min_cost = ss->getSolutionPath().asGeometric().cost(optimization_objective).value();
+    min_cost_hist.append(min_cost);
+
+    // node count ?
+    ob::PlannerData data(ss->getSpaceInformation());
+    ss->getPlanner()->getPlannerData(data);
+    int node_count = data.numVertices();
+    node_count_hist.append(node_count);
+
+    // solution count ?
+    int solution_count = data.numGoalVertices();
+    solution_count_hist.append(solution_count);
+
+    //elapsed_seconds = std::chrono::system_clock::now()-start;
+    cout << "runtime: " << i*step << " nodes: " << node_count << " cost: " << min_cost << " solutions: " << solution_count << endl;
+
+  }
+
+
+
+
+  ob::PlannerStatus solved = ss->solve(duration);
+  if(solved)
+  {
+    std::cout << "Found solution:" << std::endl;
+    // print the path to screen
+
+    ss->getSolutionPath().printAsMatrix(std::cout);
+    //ss->getSolutionPath().print(std::cout);
+    double cost = ss->getSolutionPath().asGeometric().cost(optimization_objective).value();
+    std::cout << "cost = " << cost << std::endl;
+    return true;
+  }
+  else
+  {
+    std::cout << "No solution found" << std::endl;
+    return false;
+  }
 }
 
 Waypoint mySST::getWaypoint(int index)
@@ -123,6 +202,21 @@ void mySST::propagate(const ob::State *start, const oc::Control *control, const 
   out[4] = state[4] + ctrl[1] * duration;
   out[5] = state[5] + ctrl[2] * duration;
 
+}
+
+boost::python::list mySST::getNodeCountHistPy()
+{
+  return node_count_hist;
+}
+
+boost::python::list mySST::getMinCostHistPy()
+{
+  return min_cost_hist;
+}
+
+boost::python::list mySST::getSolutionCountHistPy()
+{
+  return solution_count_hist;
 }
 
 void mySST::planWithSimpleSetup()
@@ -203,28 +297,6 @@ void mySST::planWithSimpleSetup()
 
 }
 
-bool mySST::solve()
-{
-  std::cout << "sst solving with time limit: " << duration << std::endl;
-  ob::PlannerStatus solved = ss->solve(duration);
-  if(solved)
-  {
-    std::cout << "Found solution:" << std::endl;
-    // print the path to screen
-
-    ss->getSolutionPath().printAsMatrix(std::cout);
-    //ss->getSolutionPath().print(std::cout);
-    double cost = ss->getSolutionPath().asGeometric().cost(optimization_objective).value();
-    std::cout << "cost = " << cost << std::endl;
-    return true;
-  }
-  else
-  {
-    std::cout << "No solution found" << std::endl;
-    return false;
-  }
-
-}
 
 ob::OptimizationObjectivePtr mySST::getMyPathLengthObjective(const ob::SpaceInformationPtr& si)
 {

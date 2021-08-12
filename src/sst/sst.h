@@ -18,6 +18,8 @@
 
 #include <iostream>
 #include <cmath>
+#include <chrono>
+#include <boost/python.hpp>
 #include "common.h"
 #include "world.h"
 
@@ -55,8 +57,15 @@ class mySST
     Waypoint waypoint;
     World world;
     Node start_node,goal_node;
+    std::shared_ptr<ob::RealVectorStateSpace> space;
+    ob::RealVectorBounds* bounds;
+    ob::RealVectorBounds* cbounds;
     oc::SimpleSetup *ss;
     ob::OptimizationObjectivePtr optimization_objective;
+    boost::python::list node_count_hist;
+    boost::python::list min_cost_hist;
+    boost::python::list solution_count_hist;
+
     
 
     //static callback functions
@@ -66,13 +75,16 @@ class mySST
     static ob::OptimizationObjectivePtr getMixedObjective(const ob::SpaceInformationPtr& si);
     
   public:
-    mySST(World& in_world, Node& in_start_node, Node& in_end_node, double in_duration);
+    mySST(World& in_world, Node& in_start_node, Node& in_end_node);
     mySST();
-    bool solve();
+    bool solve(double duration);
+    bool solveIncrementally(double in_duration, double step);
     Waypoint getWaypoint(int index);
     int getWaypointCount();
     void planWithSimpleSetup();
-
+    boost::python::list getNodeCountHistPy();
+    boost::python::list getMinCostHistPy();
+    boost::python::list getSolutionCountHistPy();
 };
 
 #endif

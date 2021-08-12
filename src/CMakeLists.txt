@@ -22,6 +22,7 @@ target_include_directories(main PRIVATE
 target_link_libraries(main
   ${PYTHON_LIBRARIES}
   ${Boost_LIBRARIES})
+message(STATUS "[main]Boost_LIBRARIES: ${Boost_LIBRARIES}")
 
 # boost library kinoRRT
 add_library(kinoRRT SHARED boost_wrapper.cpp world.cpp kino_rrt_star.cpp quad_optimal_control.cpp tree.cpp sst/sst.cpp) 
@@ -34,15 +35,6 @@ target_link_libraries(kinoRRT
   ompl
   ${PYTHON_LIBRARIES}
   ${Boost_LIBRARIES})
-
-#message(STATUS "PYTHON_LIBRARIES: ${PYTHON_LIBRARIES}")
-#message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
-#message(STATUS "OMPL_INCLUDE_DIRS: ${OMPL_INCLUDE_DIRS}")
-
-
-#  ${Boost_FILESYSTEM_LIBRARY}
-#  ${Boost_SYSTEM_LIBRARY}
-#  ${Boost_PROGRAM_OPTIONS_LIBRARY})
 
 add_subdirectory(tests)
 add_subdirectory(sst)

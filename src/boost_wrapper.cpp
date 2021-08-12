@@ -58,10 +58,14 @@ BOOST_PYTHON_MODULE(kinoRRT){
     .def_readonly("waypoint", &KinoRrtStar::waypoint)
     ;
 
-  class_<mySST>("SST", init<World&, Node&, Node&, double>())
+  class_<mySST>("SST", init<World&, Node&, Node&>())
     .def("solve", &mySST::solve)
+    .def("solveIncrementally", &mySST::solveIncrementally)
     .def("getWaypoint", &mySST::getWaypoint)
     .def("getWaypointCount", &mySST::getWaypointCount)
+    .def("getNodeCountHistPy", &mySST::getNodeCountHistPy)
+    .def("getMinCostHistPy", &mySST::getMinCostHistPy)
+    .def("getSolutionCountHistPy", &mySST::getSolutionCountHistPy)
     ;
 
 }
