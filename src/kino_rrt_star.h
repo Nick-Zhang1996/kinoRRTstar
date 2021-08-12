@@ -13,6 +13,7 @@
 #include <math.h>
 #include <algorithm>
 #include <chrono>
+#include <boost/python.hpp>
 using std::cout;
 using std::rand;
 using std::min;
@@ -33,6 +34,16 @@ class KinoRrtStar{
     int neighbour_count;
     list<Waypoint>::iterator waypoints_iter;
     list<Waypoint> waypoints;
+
+    // progress statistics 
+    // log various progress metrics by time interval log_interval_s
+    // 0: 0s, 1:log_interval_s, 2: 2*log_interval_s
+    double log_interval_s;
+    vector<int> node_count_hist;
+    vector<double> min_cost_hist;
+    vector<int> solution_count_hist;
+
+
   public:
     KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node, int in_interior_point_count );
     // n_nodes: number of nodes to add to tree, if 0 then stop after first solution
@@ -70,6 +81,14 @@ class KinoRrtStar{
 
     double sqr(double a) { return a*a; }
     double dist(Node& a, Node& b) { return sqrt(sqr(a.x-b.x) + sqr(a.y-b.y) + sqr(a.z-b.z)); }
+
+    vector<int> getNodeCountHist();
+    vector<double> getMinCostHist();
+    vector<int> getSolutionCountHist();
+
+    boost::python::list getNodeCountHistPy();
+    boost::python::list getMinCostHistPy();
+    boost::python::list getSolutionCountHistPy();
 
 };
 

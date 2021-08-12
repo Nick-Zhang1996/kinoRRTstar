@@ -8,7 +8,8 @@ KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node
     world(in_world),
     oc(in_interior_point_count),
     interior_point_count(in_interior_point_count),
-    rewire_count(0)
+    rewire_count(0),
+    log_interval_s(1.0)
 {
     overall_lowest_cost = std::numeric_limits<double>::max();
     std::srand(std::time(nullptr)); // use current time as seed for random generator
@@ -42,11 +43,22 @@ void KinoRrtStar::runWithTimeLimit(double duration){
   std::chrono::duration<double> elapsed_seconds = start-start;
   while (elapsed_seconds.count() < duration){
     sampleNode();
+    /*
     if (tree.getNodeCount() % 100 == 0){
       cout << "nodes: " << tree.getNodeCount() << "\n";
       cout << "found " << tree.getSolutionCount() << " solutions \n";
     }
+    */
     elapsed_seconds = std::chrono::system_clock::now()-start;
+    // progress statistics
+    int interval = floor(elapsed_seconds.count()/log_interval_s);
+    if (node_count_hist.size() < interval){
+      node_count_hist.push_back(tree.getNodeCount());
+      min_cost_hist.push_back(overall_lowest_cost);
+      solution_count_hist.push_back(tree.getSolutionCount());
+      cout << "runtime: " << elapsed_seconds.count() << " nodes: " << tree.getNodeCount() << " cost: " << overall_lowest_cost << " solutions: " << tree.getSolutionCount() << endl;
+    }
+
   }
   oc.printTotalTime();
 
@@ -343,6 +355,43 @@ int KinoRrtStar::prepareSolutionWithInteriorPoints(){
 
   waypoints_iter = waypoints.begin();
   return waypoints.size();
+
+}
+
+vector<int> KinoRrtStar::getNodeCountHist(){
+  return node_count_hist;
+}
+
+vector<double> KinoRrtStar::getMinCostHist(){
+  return min_cost_hist;
+}
+
+vector<int> KinoRrtStar::getSolutionCountHist(){
+  return solution_count_hist;
+}
+
+boost::python::list KinoRrtStar::getNodeCountHistPy(){
+  boost::python::list result;
+  for (auto it = node_count_hist.begin(); it!=node_count_hist.end(); it++){
+    result.append(*it);
+  }
+  return result;
+}
+
+boost::python::list KinoRrtStar::getMinCostHistPy(){
+  boost::python::list result;
+  for (auto it = min_cost_hist.begin(); it!=min_cost_hist.end(); it++){
+    result.append(*it);
+  }
+  return result;
+
+}
+boost::python::list KinoRrtStar::getSolutionCountHistPy(){
+  boost::python::list result;
+  for (auto it = solution_count_hist.begin(); it!=solution_count_hist.end(); it++){
+    result.append(*it);
+  }
+  return result;
 
 }
 

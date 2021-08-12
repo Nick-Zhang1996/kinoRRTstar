@@ -113,8 +113,8 @@ void mySST::propagate(const ob::State *start, const oc::Control *control, const 
 {
   const auto* state = start->as<ob::RealVectorStateSpace::StateType>()->values;
   const auto* ctrl = control->as<oc::RealVectorControlSpace::ControlType>()->values;
-  auto* out = result->as<ob::RealVectorStateSpace::StateType>()->values; // x+ = x + vx * dt + 1/2 * ax * dt*dt
-
+  auto* out = result->as<ob::RealVectorStateSpace::StateType>()->values; 
+  // x+ = x + vx * dt + 1/2 * ax * dt*dt
   out[0] = state[0] + state[3] * duration + ctrl[0] * 0.5 * duration * duration;
   out[1] = state[1] + state[4] * duration + ctrl[1] * 0.5 * duration * duration;
   out[2] = state[2] + state[5] * duration + ctrl[2] * 0.5 * duration * duration;
@@ -296,7 +296,7 @@ ob::Cost mixedOptimizationObjective::motionCost(const ob::State *s1, const ob::S
   double ax = (_s2[3] - _s2[3]) / dt;
   double ay = (_s2[4] - _s2[4]) / dt;
   double az = (_s2[5] - _s2[5]) / dt;
-  double cost = dt * (ax*ax + ay*ay + az*az + 1);
+  double cost = dt * (ax*ax + ay*ay + az*az)*0.0002 + dt;
 
   return ob::Cost(cost);
 }

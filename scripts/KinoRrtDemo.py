@@ -48,6 +48,11 @@ except (RuntimeError):
 
 print_info("rrt search finished in " + str(elapsed) +"sec")
 
+# progress statistics
+print(rrt.getNodeCountHistPy())
+print(rrt.getMinCostHistPy())
+print(rrt.getSolutionCountHistPy())
+
 key_waypoint_n = rrt.prepareSolution()
 if (key_waypoint_n == 0):
     print_error("RRT failed to find a solution")

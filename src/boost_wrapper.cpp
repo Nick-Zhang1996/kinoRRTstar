@@ -51,6 +51,10 @@ BOOST_PYTHON_MODULE(kinoRRT){
     .def("getNextWaypoint", &KinoRrtStar::getNextWaypoint)
     .def("getTrajectoryTime", &KinoRrtStar::getTrajectoryTime)
     .def("getTrajectory", &KinoRrtStar::getTrajectory)
+    .def("getNodeCountHistPy", &KinoRrtStar::getNodeCountHistPy)
+    .def("getMinCostHistPy", &KinoRrtStar::getMinCostHistPy)
+    .def("getSolutionCountHistPy", &KinoRrtStar::getSolutionCountHistPy)
+
     .def_readonly("waypoint", &KinoRrtStar::waypoint)
     ;
 
