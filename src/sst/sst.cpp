@@ -1,5 +1,5 @@
 #include "sst.h"
-mySST::mySST():
+OmplBenchmark::OmplBenchmark():
   duration(10),
   waypoint(),
   world(0,0,0,0,0,0),
@@ -9,7 +9,7 @@ mySST::mySST():
 
 }
 
-mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node):
+OmplBenchmark::OmplBenchmark(World& in_world, Node& in_start_node, Node& in_end_node):
   duration(0),
   waypoint(),
   world(in_world),
@@ -73,10 +73,10 @@ mySST::mySST(World& in_world, Node& in_start_node, Node& in_end_node):
   //World local_world = world;
 
   ss->setStateValidityChecker(
-      [&local_world = world, &local_ss = ss](const ob::State *state) { return mySST::isStateValid(local_world, local_ss->getSpaceInformation().get(), state); });
+      [&local_world = world, &local_ss = ss](const ob::State *state) { return OmplBenchmark::isStateValid(local_world, local_ss->getSpaceInformation().get(), state); });
 }
 
-bool mySST::solve(double in_duration)
+bool OmplBenchmark::solve(double in_duration)
 {
 
   duration = in_duration;
@@ -100,7 +100,7 @@ bool mySST::solve(double in_duration)
   }
 }
 
-bool mySST::solveIncrementally(double in_duration, double step)
+bool OmplBenchmark::solveIncrementally(double in_duration, double step)
 {
 
   duration = in_duration;
@@ -155,7 +155,7 @@ bool mySST::solveIncrementally(double in_duration, double step)
   }
 }
 
-Waypoint mySST::getWaypoint(int index)
+Waypoint OmplBenchmark::getWaypoint(int index)
 {
   ob::State* _state = ss->getSolutionPath().getState(index);
   double* states = _state->as<ob::RealVectorStateSpace::StateType>()->values;
@@ -174,21 +174,21 @@ Waypoint mySST::getWaypoint(int index)
   return waypoint;
 }
 
-int mySST::getWaypointCount()
+int OmplBenchmark::getWaypointCount()
 {
   return (int)ss->getSolutionPath().getStateCount();
 }
 
 // passing a class method to ompl is tricky(idk how to)
 // so instead leave it out of class
-bool mySST::isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state)
+bool OmplBenchmark::isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state)
 {
   const auto* local_state = state->as<ob::RealVectorStateSpace::StateType>()->values;
   return world.checkNoCollision(local_state[0], local_state[1], local_state[2]);
 }
 
 // system dynamics
-void mySST::propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result)
+void OmplBenchmark::propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result)
 {
   const auto* state = start->as<ob::RealVectorStateSpace::StateType>()->values;
   const auto* ctrl = control->as<oc::RealVectorControlSpace::ControlType>()->values;
@@ -204,22 +204,22 @@ void mySST::propagate(const ob::State *start, const oc::Control *control, const 
 
 }
 
-boost::python::list mySST::getNodeCountHistPy()
+boost::python::list OmplBenchmark::getNodeCountHistPy()
 {
   return node_count_hist;
 }
 
-boost::python::list mySST::getMinCostHistPy()
+boost::python::list OmplBenchmark::getMinCostHistPy()
 {
   return min_cost_hist;
 }
 
-boost::python::list mySST::getSolutionCountHistPy()
+boost::python::list OmplBenchmark::getSolutionCountHistPy()
 {
   return solution_count_hist;
 }
 
-void mySST::planWithSimpleSetup()
+void OmplBenchmark::planWithSimpleSetup()
 {
   // create world 
   World world(-10,10,-10,10,-10,10);
@@ -298,12 +298,12 @@ void mySST::planWithSimpleSetup()
 }
 
 
-ob::OptimizationObjectivePtr mySST::getMyPathLengthObjective(const ob::SpaceInformationPtr& si)
+ob::OptimizationObjectivePtr OmplBenchmark::getMyPathLengthObjective(const ob::SpaceInformationPtr& si)
 {
     return ob::OptimizationObjectivePtr(new myPathLengthOptimizationObjective(si));
 }
 
-ob::OptimizationObjectivePtr mySST::getMixedObjective(const ob::SpaceInformationPtr& si)
+ob::OptimizationObjectivePtr OmplBenchmark::getMixedObjective(const ob::SpaceInformationPtr& si)
 {
     return ob::OptimizationObjectivePtr(new mixedOptimizationObjective(si));
 }
@@ -384,7 +384,7 @@ ob::Cost mixedOptimizationObjective::motionCostHeuristic(const ob::State *s1,
 
 int main(int, char**)
 {
-  mySST sst;
+  OmplBenchmark sst;
   sst.planWithSimpleSetup();
   return 0;
 

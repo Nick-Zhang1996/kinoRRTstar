@@ -49,7 +49,7 @@ class mixedOptimizationObjective : public ob::StateCostIntegralObjective
                                                   //unsigned int maxNumberCalls) const override;
 };
 
-class mySST
+class OmplBenchmark
 {
   private:
     // solution time
@@ -75,8 +75,8 @@ class mySST
     static ob::OptimizationObjectivePtr getMixedObjective(const ob::SpaceInformationPtr& si);
     
   public:
-    mySST(World& in_world, Node& in_start_node, Node& in_end_node);
-    mySST();
+    OmplBenchmark(World& in_world, Node& in_start_node, Node& in_end_node);
+    OmplBenchmark();
     bool solve(double duration);
     bool solveIncrementally(double in_duration, double step);
     Waypoint getWaypoint(int index);
