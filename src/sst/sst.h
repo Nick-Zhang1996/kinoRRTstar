@@ -22,6 +22,7 @@
 #include <boost/python.hpp>
 #include "common.h"
 #include "world.h"
+#define SINGLE_INTEGRATOR_DYNAMICS
 
 
 namespace ob = ompl::base;
@@ -48,6 +49,37 @@ class mixedOptimizationObjective : public ob::StateCostIntegralObjective
     //ob::InformedSamplerPtr allocInformedStateSampler(const ob::ProblemDefinitionPtr &probDefn,
                                                   //unsigned int maxNumberCalls) const override;
 };
+
+namespace ompl
+{
+  namespace control
+  { 
+    class mySST : public SST
+    {
+      using SST::SST;
+      public:
+        base::Cost getBestCost(){ return prevSolutionCost_;}
+    };
+  }
+}
+
+class myGoal : public ompl::base::Goal
+{
+  private:
+    double _x,_y,_z;
+  public:
+    myGoal(const ob::SpaceInformationPtr &si, double x, double y, double z) : 
+      ob::Goal(si),
+      _x(x),
+      _y(y),
+      _z(z)
+    {
+    }
+
+    virtual bool isSatisfied(const ob::State* st) const;
+};
+
+
 
 class OmplBenchmark
 {

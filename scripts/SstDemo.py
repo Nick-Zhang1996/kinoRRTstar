@@ -34,7 +34,7 @@ for obstacle in obstacles:
 visual.visualizeWorld(show=True)
 duration = 30.0
 print("solving with SST, time limit = %.2f sec"%(duration))
-sst = SST(world, start_node, goal_node)
+sst = OmplBenchmark(world, start_node, goal_node)
 sst.solveIncrementally(duration, 1.0)
 
 # progress statistics
