@@ -22,7 +22,7 @@
 #include <boost/python.hpp>
 #include "common.h"
 #include "world.h"
-#define SINGLE_INTEGRATOR_DYNAMICS
+#define DOUBLE_INTEGRATOR_DYNAMICS
 
 
 namespace ob = ompl::base;
@@ -68,12 +68,21 @@ class myGoal : public ompl::base::Goal
   private:
     double _x,_y,_z;
   public:
+    myGoal(const ob::SpaceInformationPtr &si) :
+      ob::Goal(si)
+    {}
     myGoal(const ob::SpaceInformationPtr &si, double x, double y, double z) : 
       ob::Goal(si),
       _x(x),
       _y(y),
       _z(z)
     {
+    }
+    void setPos(double x, double y, double z)
+    {
+      _x = x;
+      _y = y;
+      _z = z;
     }
 
     virtual bool isSatisfied(const ob::State* st) const;

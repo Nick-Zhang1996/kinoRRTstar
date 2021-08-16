@@ -64,6 +64,7 @@ OmplBenchmark::OmplBenchmark(World& in_world, Node& in_start_node, Node& in_end_
 
 
   // goal state
+  /*
   ob::ScopedState<ob::RealVectorStateSpace> goal(space);
   for (int i=0; i<state_dim; i++)
   {
@@ -72,11 +73,17 @@ OmplBenchmark::OmplBenchmark(World& in_world, Node& in_start_node, Node& in_end_
   goal[0] = goal_node.x;
   goal[1] = goal_node.y;
   goal[2] = goal_node.z;
+  */
 
-  ss->setStartAndGoalStates(start, goal);
+  //ss->setStartAndGoalStates(start, goal);
+  //auto goal = std::make_shared<myGoal>(ss->getSpaceInformation(), 8, -2, 3);
+  auto goal = std::make_shared<myGoal>(ss->getSpaceInformation());
+  goal->setPos(8, -2, 3);
+  ss->addStartState(start);
+  ss->setGoal(goal);
   // set planner
-  //ss->setPlanner(std::make_shared<oc::mySST>(ss->getSpaceInformation()));
-  ss->setPlanner(std::make_shared<oc::RRT>(ss->getSpaceInformation()));
+  ss->setPlanner(std::make_shared<oc::mySST>(ss->getSpaceInformation()));
+  //ss->setPlanner(std::make_shared<oc::RRT>(ss->getSpaceInformation()));
 
   //oc::SimpleSetup *local_ss = ss;
   //World local_world = world;
@@ -322,7 +329,6 @@ void OmplBenchmark::planWithSimpleSetup()
 
 
   // goal state
-  /*
   ob::ScopedState<ob::RealVectorStateSpace> goal(space);
   for (int i=0; i<state_dim; i++)
   {
@@ -331,12 +337,8 @@ void OmplBenchmark::planWithSimpleSetup()
   goal[0] = 8;
   goal[1] = -2;
   goal[2] = 3;
-  */
 
-  auto goal = std::make_shared<myGoal>(new myGoal(ss->getSpaceInformation(), 8, -2, 3));
-  //ss->setStartAndGoalStates(start, goal);
-  ss->addStartState(start);
-  ss->setGoal(goal);
+  ss->setStartAndGoalStates(start, goal);
   // set planner
   ss->setPlanner(std::make_shared<oc::SST>(ss->getSpaceInformation()));
   ob::PlannerStatus solved = ss->solve(30.0);
@@ -474,10 +476,10 @@ ob::Cost mixedOptimizationObjective::motionCostHeuristic(const ob::State *s1,
     return motionCost(s1, s2);
 }
 
-virtual bool myGoal::isSatisfied(const ob::State* st) const
+bool myGoal::isSatisfied(const ob::State* st) const
 {
   double* state = st->as<ob::RealVectorStateSpace::StateType>()->values;
-  if (std::abs(x-state[0]) < 1.5f && std::abs(y-state[1]) < 1.5f && std::abs(z-state[2]) < 1.5f)
+  if (std::abs(_x-state[0]) < 1.5f && std::abs(_y-state[1]) < 1.5f && std::abs(_z-state[2]) < 1.5f)
   {
     return true;
   } else 
