@@ -119,7 +119,7 @@ def benchmarkKinoRRT(world, start_node, goal_node, duration):
 
 def benchmarkSST(world, start_node, goal_node, duration):
     print("solving with SST, time limit = %.2f sec"%(duration))
-    sst = SST(world, start_node, goal_node)
+    sst = OmplBenchmark(world, start_node, goal_node)
     sst.solveIncrementally(duration, 1.0)
     count = sst.getWaypointCount()
     waypoints = []
