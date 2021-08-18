@@ -441,7 +441,7 @@ ob::Cost mixedOptimizationObjective::motionCost(const ob::State *s1, const ob::S
   double ax = (_s2[3] - _s2[3]) / dt;
   double ay = (_s2[4] - _s2[4]) / dt;
   double az = (_s2[5] - _s2[5]) / dt;
-  double cost = dt * (ax*ax + ay*ay + az*az)*0.0002 + dt;
+  double cost = dt * (ax*ax + ay*ay + az*az) + dt;
 
   return ob::Cost(cost);
 }

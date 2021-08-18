@@ -8,6 +8,9 @@ using std::list;
 using std::vector;
 using std::cout;
 using std::endl;
+//#define SINGLE_INTEGRATOR_DYNAMICS
+#define DOUBLE_INTEGRATOR_DYNAMICS
+//#define TRIPLE_INTEGRATOR_DYNAMICS
 
 
 // represent one node

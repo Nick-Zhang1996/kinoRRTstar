@@ -147,7 +147,7 @@ void KinoRrtStar::sampleNode(){
   // up to now only x,y,z in new_node is used
   // now we know the final parent
   // set full state in new_node
-  // this sets vxyz and axyz
+  // this sets vxyz (and axyz)
   oc.setFullStatePartialFinalState(t, tree.node(id_best_parent), new_node);
   new_node.cost = lowest_cost;
   
@@ -523,9 +523,11 @@ Waypoint KinoRrtStar::getTrajectory(double t){
     waypoint.vx = *(oc.buffer_interior_state + 3);
     waypoint.vy = *(oc.buffer_interior_state + 4);
     waypoint.vz = *(oc.buffer_interior_state + 5);
+    #ifdef TRIPLE_INTEGRATOR_DYNAMICS
     waypoint.ax = *(oc.buffer_interior_state + 6);
     waypoint.ay = *(oc.buffer_interior_state + 7);
     waypoint.az = *(oc.buffer_interior_state + 8);
+    #endif
     return waypoint;
   } catch ( const std::exception &e) {
     cout << "error: ";

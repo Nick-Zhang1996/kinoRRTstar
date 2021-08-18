@@ -8,7 +8,12 @@
 #include "world.h"
 #include <cstdlib>
 #include <ctime>
+#ifdef TRIPLE_INTEGRATOR_DYNAMICS
 #include "quad_optimal_control.h"
+#elif defined DOUBLE_INTEGRATOR_DYNAMICS
+#include "double_integrator.h"
+#endif
+
 #include <limits>
 #include <math.h>
 #include <algorithm>
@@ -25,7 +30,11 @@ class KinoRrtStar{
     Node start_node, end_node;
     int target_node_count;
     World world;
+    #ifdef TRIPLE_INTEGRATOR_DYNAMICS
     QuadOptimalControl oc;
+    #elif defined DOUBLE_INTEGRATOR_DYNAMICS
+    DoubleIntegrator oc;
+    #endif
     double overall_lowest_cost;
     int overall_lowest_cost_id;
     int interior_point_count;

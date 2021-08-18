@@ -144,7 +144,7 @@ def benchmarkSST(world, start_node, goal_node, duration):
     return np.array(nodes), np.array(cost), np.array(sols)
 
 if __name__ == "__main__":
-    duration = 30.0
+    duration = 60.0
     world, visual, start_node, goal_node = makeWorld()
     rrt_nodes, rrt_cost, rrt_sols = benchmarkKinoRRT(world, start_node, goal_node, duration)
     sst_nodes, sst_cost, sst_sols = benchmarkSST(world, start_node, goal_node, duration)

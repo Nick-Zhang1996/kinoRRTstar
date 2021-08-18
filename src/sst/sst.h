@@ -22,9 +22,6 @@
 #include <boost/python.hpp>
 #include "common.h"
 #include "world.h"
-//#define SINGLE_INTEGRATOR_DYNAMICS
-#define DOUBLE_INTEGRATOR_DYNAMICS
-//#define TRIPLE_INTEGRATOR_DYNAMICS
 
 
 namespace ob = ompl::base;

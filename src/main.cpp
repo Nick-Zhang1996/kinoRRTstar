@@ -27,8 +27,7 @@ int main(){
 
   auto start = std::chrono::system_clock::now();
 
-  // run with 600 nodes
-  rrt.run(600);
+  rrt.run(2000);
   rrt.prepareSolution();
   while (true){
     auto p = rrt.getNextWaypoint();

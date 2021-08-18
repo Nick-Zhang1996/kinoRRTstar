@@ -16,7 +16,7 @@ include_directories(${PROJECT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/sst)
 link_directories($ENV{HOME}/.local/lib)
 
 # main
-add_executable(main main.cpp kino_rrt_star.cpp quad_optimal_control.cpp world.cpp tree.cpp)
+add_executable(main main.cpp kino_rrt_star.cpp quad_optimal_control.cpp world.cpp tree.cpp double_integrator.cpp)
 target_include_directories(main PRIVATE
   ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(main
@@ -25,7 +25,7 @@ target_link_libraries(main
 message(STATUS "[main]Boost_LIBRARIES: ${Boost_LIBRARIES}")
 
 # boost library kinoRRT
-add_library(kinoRRT SHARED boost_wrapper.cpp world.cpp kino_rrt_star.cpp quad_optimal_control.cpp tree.cpp sst/sst.cpp) 
+add_library(kinoRRT SHARED boost_wrapper.cpp world.cpp kino_rrt_star.cpp quad_optimal_control.cpp tree.cpp sst/sst.cpp double_integrator.cpp) 
 set_target_properties(kinoRRT PROPERTIES PREFIX "")
 target_include_directories(kinoRRT PRIVATE
   ${PYTHON_INCLUDE_DIRS}
