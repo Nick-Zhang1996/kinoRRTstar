@@ -106,8 +106,6 @@ class OmplBenchmark
     boost::python::list min_cost_hist;
     boost::python::list solution_count_hist;
 
-    
-
     //static callback functions
     static bool isStateValid(World &world, const oc::SpaceInformation *si, const ob::State *state);
     static void propagate(const ob::State *start, const oc::Control *control, const double duration, ob::State *result);

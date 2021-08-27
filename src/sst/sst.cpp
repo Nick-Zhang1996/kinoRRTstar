@@ -135,6 +135,50 @@ bool OmplBenchmark::solveIncrementally(double in_duration, double step)
     double min_cost_path = ss->getSolutionPath().asGeometric().cost(optimization_objective).value();
     //double min_cost_planner = ss->getPlanner()->as<oc::mySST>()->getBestCost().value();
     //double min_cost_planner = ss->getPlanner()->as<oc::RRTstar>()->bestCost().value();
+    cout << "asGeometric() path cost " << min_cost_path << endl;;
+    // custom cost
+    auto states = ss->getSolutionPath().getStates();
+    //ob::Cost cost(0);
+    double cost = 0.0;
+    //cout << "states.size() " << states.size() << endl;
+    for (std::size_t j=1; j<states.size(); ++j){
+      ob::Cost segment_cost = optimization_objective->motionCost(states[j-1], states[j]);
+
+      cout << "prior state: ";
+      double* this_state = states[j-1]->as<ob::RealVectorStateSpace::StateType>()->values;
+      for (int k=0; k<6; k++){
+        cout << " , " << this_state[k];
+      }
+      cout << endl;
+
+      /*
+      cout << "post state: ";
+      this_state = states[j]->as<ob::RealVectorStateSpace::StateType>()->values;
+      for (int k=0; k<6; k++){
+        cout << " , " << this_state[k];
+      }
+      cout << endl;
+      */
+
+      double* s1 = states[j-1]->as<ob::RealVectorStateSpace::StateType>()->values;
+      double* s2 = states[j]->as<ob::RealVectorStateSpace::StateType>()->values;
+      // calculate time interval
+      double dt = (s2[0] - s1[0]) / (s2[3] + s1[3]) * 2; 
+      // calculate  control effort
+      double ax = (s2[3] - s1[3]) / dt;
+      double ay = (s2[4] - s1[4]) / dt;
+      double az = (s2[5] - s1[5]) / dt;
+      double cost = dt * (ax*ax + ay*ay + az*az) + dt;
+      cout << "time: " << dt << endl;
+      cout << "control: " << ax << ay << az << endl;
+      cout << "calculated_cost: " << cost << endl;
+      //cout << "segment_cost: " << segment_cost.value() << endl;
+      //cost = optimization_objective -> combineCosts(cost, segment_cost);
+      cost += segment_cost.value();
+    }
+    cout << "custom calculated cost " << cost << endl;
+
+
     min_cost_hist.append(min_cost_path);
 
     // node count ?
@@ -432,15 +476,17 @@ ob::Cost mixedOptimizationObjective::motionCost(const ob::State *s1, const ob::S
   double* _s2 = s2->as<ob::RealVectorStateSpace::StateType>()->values;
   // calculate time interval
   double dt = (_s2[0] - _s1[0]) / (_s2[3] + _s1[3]) * 2; 
+  /*
   double dt_alt = (_s2[1] - _s1[1]) / (_s2[4] + _s1[4]) * 2; 
   if (dt/dt_alt > 1.01 || dt/dt_alt < 0.99 || dt < 0)
   {
     std::cout << " --- bu hao le ---" << std::endl;
   }
+  */
   // calculate  control effort
-  double ax = (_s2[3] - _s2[3]) / dt;
-  double ay = (_s2[4] - _s2[4]) / dt;
-  double az = (_s2[5] - _s2[5]) / dt;
+  double ax = (_s2[3] - _s1[3]) / dt;
+  double ay = (_s2[4] - _s1[4]) / dt;
+  double az = (_s2[5] - _s1[5]) / dt;
   double cost = dt * (ax*ax + ay*ay + az*az) + dt;
 
   return ob::Cost(cost);
@@ -461,9 +507,9 @@ ob::Cost mixedOptimizationObjective::motionCost(const ob::State *s1, const ob::S
     std::cout << " --- bu hao le ---" << std::endl;
   }
   // calculate  control effort
-  double ax = (_s2[3] - _s2[3]) / dt;
-  double ay = (_s2[4] - _s2[4]) / dt;
-  double az = (_s2[5] - _s2[5]) / dt;
+  double ax = (_s2[3] - _s1[3]) / dt;
+  double ay = (_s2[4] - _s1[4]) / dt;
+  double az = (_s2[5] - _s1[5]) / dt;
   double cost = dt * (ax*ax + ay*ay + az*az)*0.0002 + dt;
 
   return ob::Cost(cost);
