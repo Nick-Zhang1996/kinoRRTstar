@@ -94,6 +94,8 @@ class KinoRrtStar{
     vector<int> getNodeCountHist();
     vector<double> getMinCostHist();
     vector<int> getSolutionCountHist();
+    double cost(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06,  double  x11, double  x12, double  x13, double  x14, double  x15, double  x16){
+      return oc.cost( t_s,  x01,   x02,   x03,   x04,   x05,   x06,    x11,   x12,   x13,   x14,   x15,   x16);}
 
     boost::python::list getNodeCountHistPy();
     boost::python::list getMinCostHistPy();

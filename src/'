@@ -9,7 +9,6 @@ KinoRrtStar::KinoRrtStar(World& in_world, Node& in_start_node, Node& in_end_node
     oc(in_interior_point_count),
     interior_point_count(in_interior_point_count),
     rewire_count(0),
-    overall_lowest_cost_id(0),
     log_interval_s(1.0)
 {
     overall_lowest_cost = std::numeric_limits<double>::max();
@@ -29,10 +28,10 @@ void KinoRrtStar::run(int in_target_node_count){
   }
 
   if (tree.getSolutionCount() > 0){
-    cout << "[RRT] found " << tree.getSolutionCount() << " solutions \n";
+    cout << "found " << tree.getSolutionCount() << " solutions \n";
     showResult();
   } else {
-    cout << "[RRT] no results find with " << target_node_count << "nodes \n";
+    cout << "no results find with " << target_node_count << "nodes \n";
   }
 
   oc.printTotalTime();
@@ -79,7 +78,7 @@ void KinoRrtStar::showResult(){
     cout << "\n";
     this_node_id = node.id_parent;
   }
-  cout << "[RRT] rewire: " << rewire_count << "\n";
+  cout << "rewire: " << rewire_count << "\n";
 
 }
 
@@ -87,7 +86,7 @@ void KinoRrtStar::buildTreeTillFirstSolution(){
   while (tree.getSolutionCount() == 0 && tree.getNodeCount() < 10000) {
     sampleNode();
     if (tree.getNodeCount() % 100 == 0){
-      cout << "[RRT] node count = " << tree.getNodeCount() << "\n";
+      cout << tree.getNodeCount() << "\n";
     }
   }
 }
@@ -97,7 +96,7 @@ void KinoRrtStar::buildTreeTillNodeCount(){
   while (tree.getNodeCount() < target_node_count ){
     sampleNode();
     if (tree.getNodeCount() % 100 == 0){
-      cout << "[RRT] node count = " << tree.getNodeCount() << "\n";
+      cout << tree.getNodeCount() << "\n";
     }
   }
 
@@ -117,7 +116,7 @@ void KinoRrtStar::sampleNode(){
   //   check node collision
   if (!world.checkNoCollision(new_node)){ return; }
 
-  // find traj from closest node to new node
+  // find traj
   double t = oc.timePartialFinalState(closest_node, new_node);
   double* interior_pos = oc.interiorPositionPartialFinalState(t, closest_node, new_node);
   //   check traj collision
@@ -153,9 +152,9 @@ void KinoRrtStar::sampleNode(){
   new_node.cost = lowest_cost;
   // TODO verify here
   /*
+  double segment_cost = lowest_cost - tree.node(id_best_parent).cost;
   double new_t = oc.time(tree.node(id_best_parent), new_node);
   assert (abs(new_t-t)<0.01);
-  double segment_cost = lowest_cost - tree.node(id_best_parent).cost;
   double calculated_cost = oc.cost(t, tree.node(id_best_parent), new_node);
   assert (abs(segment_cost-calculated_cost)<0.01);
   */
@@ -183,7 +182,6 @@ void KinoRrtStar::sampleNode(){
   // sets id_parent, id
   int id_new_node = tree.addNode(new_node,id_best_parent);
   // rewire
-  // FIXME
   list<int> id_neighbour = tree.getNeighbourId(id_new_node, radius);
   // can new node be a parent to neighbour nodes?
   for (auto i=id_neighbour.begin(); i!=id_neighbour.end(); i++){
@@ -197,20 +195,12 @@ void KinoRrtStar::sampleNode(){
       //   check traj collision
       if (!world.checkNoPathCollision(interior_pos)){ continue; }
       tree.transferChild(*i, id_new_node);
-      //cout << "rewire node " << *i << " delta cost " << new_cost - tree.node(*i).cost << endl;
       tree.updateCost(*i, new_cost - tree.node(*i).cost);
-      // TODO check here
-      /*
-      double section_t = oc.time(tree.node(id_new_node), tree.node(*i));
-      assert ( abs(new_t - section_t) < 0.01);
-      double check_cost = oc.cost(section_t, tree.node(id_new_node), tree.node(*i));
-      assert ( abs(tree.node(*i).cost - tree.node(id_new_node).cost - check_cost) < 0.01);
-      */
-
       //cout << "rewiring... \n";
       rewire_count++;
     } catch (err_NoSolution&){ continue; }
   }
+  
 
 }
 
@@ -259,13 +249,12 @@ double KinoRrtStar::getSampleRadius(){
   return 0.3;
 }
 
-// obsolete
 int KinoRrtStar::prepareSolutionWithInteriorPoints(){
   // first retrieve the optimal path, this is done in reverse order from goal to start
   // key_waypoints_reversed includes index of lowest cost node connected to end node ... root node(start) 
   list<int> key_waypoints_reversed;
   int this_node_id = overall_lowest_cost_id;
-  //cout << "node id for lowest cost: " << this_node_id << endl;
+  cout << "node id for lowest cost: " << this_node_id << endl;
   assert (tree.node(this_node_id).is_end);
 
   key_waypoints_reversed.push_back(this_node_id);
@@ -311,8 +300,8 @@ int KinoRrtStar::prepareSolutionWithInteriorPoints(){
     //cout << "examining path from node x:" << p.x << ", y:" << p.y << ", z:" << p.z << endl;
     //cout << "                 to node x:" << late_node.x << ", y:" << late_node.y << ", z:" << late_node.z << endl;
 
-    double section_time = oc.time(early_node, late_node);
-    double* pos_buffer = oc.interiorPosition(section_time, early_node, late_node);
+    double section_time = oc.timePartialFinalState(early_node, late_node);
+    double* pos_buffer = oc.interiorPositionPartialFinalState(section_time, early_node, late_node);
     double step_time = section_time / (interior_point_count+1);
 
     waypoint_t += step_time;
@@ -425,16 +414,14 @@ boost::python::list KinoRrtStar::getSolutionCountHistPy(){
 int KinoRrtStar::prepareSolution(){
   // first retrieve the optimal path, this is done in reverse order from goal to start
   // key_waypoints_reversed includes index of lowest cost node connected to end node ... root node(start) 
-  //cout << "prepareSolution" << endl;
   list<int> key_waypoints_reversed;
   int this_node_id = overall_lowest_cost_id;
-  //cout << "Lowest cost node id" << this_node_id << endl;
   if (!tree.node(this_node_id).is_end){
     return 0;
   }
-  //cout << "prepare solution" << endl;
-  //cout << "node id for lowest cost: " << this_node_id << endl;
-  //cout << "cost: " << overall_lowest_cost << endl;
+  cout << "prepare solution" << endl;
+  cout << "node id for lowest cost: " << this_node_id << endl;
+  cout << "cost: " << overall_lowest_cost << endl;
 
   key_waypoints_reversed.push_back(this_node_id);
   while (this_node_id != 0){
@@ -451,7 +438,7 @@ int KinoRrtStar::prepareSolution(){
   for ( ; i != key_waypoints_reversed.rend(); ++i){
     Node& late_node = tree.node(*i);
     Node& early_node = tree.node(late_node.id_parent);
-    double section_time = oc.time(early_node, late_node);
+    double section_time = oc.timePartialFinalState(early_node, late_node);
     // add early_node
     Waypoint p;
     p.t = waypoint_t;
@@ -482,28 +469,8 @@ int KinoRrtStar::prepareSolution(){
   waypoints.push_back(p);
 
   // TODO verify cost
-  /*
   cout << "verify cost" << endl;
-  Node this_node = tree.node(overall_lowest_cost_id);
-  double verify_cost = 0.0;
-  // final section cost
-  double test_t = oc.time(this_node, end_node);
-  verify_cost += oc.cost(test_t,this_node, end_node);
-  while (this_node.id != 0){
-    test_t = oc.time( tree.node(this_node.id_parent), this_node);
-    double section_cost = oc.cost(test_t, tree.node(this_node.id_parent), this_node);
-    verify_cost += section_cost;
-    assert ( abs((this_node.cost - tree.node(this_node.id_parent).cost) - section_cost) < 0.01);
-
-    this_node = tree.node(this_node.id_parent);
-  }
-  if (abs(verify_cost - overall_lowest_cost) > 0.01){
-    cout << "--- cost verification error : " << abs(verify_cost - overall_lowest_cost) << endl;
-  }
-  */
-
   cout << "total waypoint: " << waypoints.size() << endl;
-  // verify cost again, with waypoints
   double reconstructed_cost = 0.0;
   auto j = waypoints.begin();
   int counter = 0;
@@ -512,7 +479,7 @@ int KinoRrtStar::prepareSolution(){
   Waypoint late_waypoint;
   j++;
   for(; j!=waypoints.end(); ++j){
-    //cout << "checking waypoint no." << counter++ <<endl;
+    cout << "checking waypoint no." << counter++ <<endl;
     late_waypoint = *j;
     double t = oc.time(early_waypoint, late_waypoint);
     assert (abs(t-(late_waypoint.t-early_waypoint.t))<0.01);
@@ -521,9 +488,8 @@ int KinoRrtStar::prepareSolution(){
     reconstructed_cost += test_cost;
     early_waypoint = late_waypoint;
   }
-  if (abs(reconstructed_cost - overall_lowest_cost) > 0.01){
-    cout << "\033[02m" << "[RRT] cost verification error : " << abs(reconstructed_cost - overall_lowest_cost) << "\033[0m"<< endl;
-  }
+  assert(abs(reconstructed_cost - overall_lowest_cost)<0.01);
+  cout << "no problem" << endl;
 
   waypoints_iter = waypoints.begin();
   return waypoints.size();

@@ -3,7 +3,7 @@ project(kinoRRT VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undef")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-undef -g")
 
 
 find_package(PythonLibs 3.6 REQUIRED)

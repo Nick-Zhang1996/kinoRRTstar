@@ -122,7 +122,9 @@ void Tree::updateCost(Node& node, double cost_delta){
 }
 
 void Tree::updateCost(int id_node, double cost_delta){
+  //cout << "change cost of node " << id_node << " from " << tree[id_node].cost;
   tree[id_node].cost += cost_delta;
+  //cout << " to " << tree[id_node].cost << endl;
   for (auto p_child_id=tree[id_node].id_children.begin(); p_child_id!=tree[id_node].id_children.end(); p_child_id++){
     updateCost(*p_child_id,cost_delta);
   }

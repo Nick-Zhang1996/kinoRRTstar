@@ -49,9 +49,9 @@ class DoubleIntegrator{
   }
 
   void printTotalTime(){
-    cout << "total time in roots " << total_time << "sec \n";
-    cout << "total count " << total_count << "\n";
-    cout << "avg time " << total_time/total_count << "\n";
+    cout << "[OC] total time in roots " << total_time << "sec \n";
+    cout << "[OC] total count " << total_count << "\n";
+    cout << "[OC] avg time each root " << total_time/total_count << "\n";
   }
 
   // following group of functions deals with real root finding for a polynomial
@@ -96,6 +96,7 @@ class DoubleIntegrator{
   // given initial and final full state, give cost
   double cost(double t_s, double x01, double  x02, double  x03, double  x04, double  x05, double  x06,  double  x11, double  x12, double  x13, double  x14, double  x15, double  x16);
   double cost(double t_s, Node& node_i, Node& node_f){ return cost(t_s, node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz);}
+  double cost(double t_s, Waypoint& waypoint_i, Waypoint& waypoint_f){ return cost(t_s, waypoint_i.x, waypoint_i.y, waypoint_i.z, waypoint_i.vx, waypoint_i.vy, waypoint_i.vz, waypoint_f.x, waypoint_f.y, waypoint_f.z, waypoint_f.vx, waypoint_f.vy, waypoint_f.vz);}
 
   //  find cost given partial state (xyz) only
   double costPartialFreeFinalState(double t_s, double x01, double x02, double x03, double x04, double x05, double x06,  double x11, double x12, double x13);
@@ -130,7 +131,7 @@ class DoubleIntegrator{
   // this requires solving a polynomial
   double time(double x01, double  x02, double  x03, double  x04, double  x05, double  x06,  double  x11, double  x12, double  x13, double  x14, double  x15, double  x16);
   double time( Node& node_i, Node& node_f){ return time( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz);}
-  double time( Waypoint& node_i, Waypoint& node_f){ return time( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz,  node_f.x, node_f.y, node_f.z, node_f.vx, node_f.vy, node_f.vz);}
+  double time( Waypoint& waypoint_i, Waypoint& waypoint_f){ return time( waypoint_i.x, waypoint_i.y, waypoint_i.z, waypoint_i.vx, waypoint_i.vy, waypoint_i.vz,  waypoint_f.x, waypoint_f.y, waypoint_f.z, waypoint_f.vx, waypoint_f.vy, waypoint_f.vz);}
 
   double timePartialFinalState(double x01, double  x02, double  x03, double  x04, double  x05, double  x06, double  x11, double  x12, double  x13);
   double timePartialFinalState( Node& node_i, Node& node_f){ return timePartialFinalState( node_i.x, node_i.y, node_i.z, node_i.vx, node_i.vy, node_i.vz, node_f.x, node_f.y, node_f.z);}

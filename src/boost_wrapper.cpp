@@ -54,6 +54,7 @@ BOOST_PYTHON_MODULE(kinoRRT){
     .def("getNodeCountHistPy", &KinoRrtStar::getNodeCountHistPy)
     .def("getMinCostHistPy", &KinoRrtStar::getMinCostHistPy)
     .def("getSolutionCountHistPy", &KinoRrtStar::getSolutionCountHistPy)
+    .def("cost", &KinoRrtStar::cost)
 
     .def_readonly("waypoint", &KinoRrtStar::waypoint)
     ;
