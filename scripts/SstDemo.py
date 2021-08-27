@@ -61,6 +61,7 @@ waypoints = np.array(waypoints)
 # verify cost
 interior_points = 50
 rrt = KinoRrtStar(world, start_node, goal_node, interior_points)
+'''
 cost_oc = 0.0
 cost_direct = 0.0
 for i in range(waypoints.shape[0]-1):
@@ -77,10 +78,9 @@ for i in range(waypoints.shape[0]-1):
     segment_cost = np.linalg.norm(acc)**2* t_s + t_s
     print_ok(segment_cost)
     cost_direct += segment_cost
-
-
 print("[python] total cost_oc = %.3f"%(cost_oc))
 print("[python] total cost_direct = %.3f"%(cost_direct))
+'''
 
 
 ax = visual.visualizeWorld(show=False)

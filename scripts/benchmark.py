@@ -40,7 +40,7 @@ def benchmarkKinoRRT(world, start_node, goal_node, duration):
     rrt = KinoRrtStar(world, start_node, goal_node, interior_points)
 
     try:
-        duration = 30
+        duration = 60
         print_info("running kinoRRT* for %.2f seconds"%(duration))
         t0 = time()
         rrt.runWithTimeLimit(duration)
@@ -82,15 +82,14 @@ def benchmarkKinoRRT(world, start_node, goal_node, duration):
         if (not waypoint.valid):
             print_error("waypoint error")
             break;
-        waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z, waypoint.vx, waypoint.vy, waypoint.vz, waypoint.ax, waypoint.ay, waypoint.az])
+        waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z, waypoint.vx, waypoint.vy, waypoint.vz])
     waypoints = np.array(waypoints)
+    '''
     max_speed = (np.max(waypoints[:,4]**2 + waypoints[:,5]**2 + waypoints[:,6]**2))**0.5
     max_acc = (np.max(waypoints[:,7]**2 + waypoints[:,8]**2 + waypoints[:,9]**2))**0.5
-    '''
     print_info("total time : %.1f sec "%(traj_t))
     print_info("max speed : %.1f m/s "%(max_speed))
     print_info("max acc : %.1f m/s "%(max_acc))
-    '''
 
     # find max speed and scale time respectively
     diff = np.diff(waypoints, axis=0)
@@ -101,6 +100,7 @@ def benchmarkKinoRRT(world, start_node, goal_node, duration):
 
     diff = np.diff(waypoints, axis=0)
     new_v = (diff[:,1]**2+diff[:,1]**2+diff[:,1]**2)**0.5 / diff[:,0]
+    '''
 
     ax = visual.visualizeWorld(show=False)
     #ax.plot(-waypoints[:,1], waypoints[:,2], -waypoints[:,3],'b')
@@ -125,7 +125,8 @@ def benchmarkSST(world, start_node, goal_node, duration):
     waypoints = []
     for i in range(count):
         waypoint = sst.getWaypoint(i)
-        waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z, waypoint.vx, waypoint.vy, waypoint.vz, waypoint.ax, waypoint.ay, waypoint.az])
+        #waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z, waypoint.vx, waypoint.vy, waypoint.vz, waypoint.ax, waypoint.ay, waypoint.az])
+        waypoints.append([waypoint.t, waypoint.x, waypoint.y, waypoint.z, waypoint.vx, waypoint.vy, waypoint.vz])
 
     waypoints = np.array(waypoints)
     #print(waypoints)
@@ -149,7 +150,7 @@ if __name__ == "__main__":
     rrt_nodes, rrt_cost, rrt_sols = benchmarkKinoRRT(world, start_node, goal_node, duration)
     sst_nodes, sst_cost, sst_sols = benchmarkSST(world, start_node, goal_node, duration)
     pass
-    with open("log.txt", 'wb') as f:
+    with open("log.p", 'wb') as f:
         rrt = [rrt_nodes, rrt_cost, rrt_sols]
         sst = [sst_nodes, sst_cost, sst_sols]
         data = [rrt, sst]

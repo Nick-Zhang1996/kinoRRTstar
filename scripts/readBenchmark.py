@@ -11,7 +11,7 @@ def show(tt, rrt_data, sst_data,  title, xlabel):
     plt.legend()
     plt.show()
 
-with open("log.txt", 'rb') as f:
+with open("log.p", 'rb') as f:
     data = pickle.load(f)
 rrt, sst = data
 rrt_nodes, rrt_cost, rrt_sols = rrt
