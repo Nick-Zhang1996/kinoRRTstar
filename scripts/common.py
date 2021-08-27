@@ -25,3 +25,8 @@ def angular_difference(a, b):
         angle_diff += 2 * np.pi
     return angle_diff
 
+if __name__ == "__main__":
+    print_ok("print_ok")
+    print_info("print_ok")
+    print_warning("print_ok")
+    print_error("print_error")

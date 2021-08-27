@@ -11,6 +11,7 @@ from kinoRRT import *
 from WorldVisualization import WorldVisualization
 from common import *
 from window import createWindow
+np.set_printoptions(precision=4)
 
 
 # Original big test world
@@ -38,7 +39,7 @@ interior_points = 50
 rrt = KinoRrtStar(world, start_node, goal_node, interior_points)
 
 try:
-    duration = 30
+    duration = 10
     print_info("running kinoRRT* for %.2f seconds"%(duration))
     t0 = time()
     rrt.runWithTimeLimit(duration)
@@ -49,8 +50,11 @@ except (RuntimeError):
 print_info("rrt search finished in " + str(elapsed) +"sec")
 
 # progress statistics
+print_ok("node count hist")
 print(rrt.getNodeCountHistPy())
+print_ok("min cost hist")
 print(rrt.getMinCostHistPy())
+print_ok("solution count hist")
 print(rrt.getSolutionCountHistPy())
 
 key_waypoint_n = rrt.prepareSolution()
@@ -61,10 +65,19 @@ key_waypoints = []
 
 #for i in range(key_waypoint_n):
 p = rrt.getNextWaypoint()
-key_waypoints.append( (p.t,p.x,p.y,p.z) )
+key_waypoints.append( (p.t,p.x,p.y,p.z,p.vx,p.vy,p.vz) )
 while (p.valid):
     p = rrt.getNextWaypoint()
-    key_waypoints.append( (p.t,p.x,p.y,p.z) )
+    key_waypoints.append( (p.t,p.x,p.y,p.z,p.vx,p.vy,p.vz) )
+
+# verify cost
+cost = 0.0
+for i in range(key_waypoint_n-1):
+    t_s = key_waypoints[i+1][0] - key_waypoints[i][0]
+    p0 = key_waypoints[i]
+    p1 = key_waypoints[i+1]
+    cost += rrt.cost(t_s, p0[1], p0[2], p0[3],p0[4], p0[5], p0[6],p1[1], p1[2], p1[3],p1[4], p1[5], p1[6])
+print("[python] total cost = %.3f"%(cost))
 
 # list of (t,x,y,z) 
 key_waypoints = np.array(key_waypoints)

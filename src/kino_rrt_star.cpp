@@ -57,7 +57,7 @@ void KinoRrtStar::runWithTimeLimit(double duration){
       node_count_hist.push_back(tree.getNodeCount());
       min_cost_hist.push_back(overall_lowest_cost);
       solution_count_hist.push_back(tree.getSolutionCount());
-      cout << "runtime: " << elapsed_seconds.count() << " nodes: " << tree.getNodeCount() << " cost: " << overall_lowest_cost << " solutions: " << tree.getSolutionCount() << endl;
+      cout << "[RRT] runtime: " << elapsed_seconds.count() << " nodes: " << tree.getNodeCount() << " cost: " << overall_lowest_cost << " solutions: " << tree.getSolutionCount() << endl;
     }
 
   }
@@ -171,9 +171,7 @@ void KinoRrtStar::sampleNode(){
     if (total_cost < overall_lowest_cost){
       overall_lowest_cost = total_cost;
       overall_lowest_cost_id = tree.getNodeCount();
-      cout << "new overall lowest cost found" << endl;
-      cout << "node id for lowest cost: " << overall_lowest_cost_id << endl;
-      cout << "cost: " << overall_lowest_cost << endl;
+      cout << "[RRT] new best solution, cost " << overall_lowest_cost <<"id" << overall_lowest_cost_id << endl;
       //cout << "avg neighbor count: " << (double) neighbour_total_count / neighbour_count << "\n";
       neighbour_total_count = 0;
       neighbour_count = 0;
@@ -522,7 +520,7 @@ int KinoRrtStar::prepareSolution(){
     early_waypoint = late_waypoint;
   }
   if (abs(reconstructed_cost - overall_lowest_cost) > 0.01){
-    cout << "\033[02m" << "[RRT] cost verification error : " << abs(reconstructed_cost - overall_lowest_cost) << "\033[0m"<< endl;
+    cout << "\033[92m" << "[RRT] cost verification error : " << abs(reconstructed_cost - overall_lowest_cost) << "\033[0m"<< endl;
   }
 
   waypoints_iter = waypoints.begin();
